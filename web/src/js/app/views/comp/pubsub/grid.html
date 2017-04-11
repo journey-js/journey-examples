@@ -1,0 +1,35 @@
+<div class="row">
+    <div class="col-md-2">
+        <table class='table'>
+            <thead>
+                <tr>
+
+                    <th>Name</th>
+                    <th>Age</th>                
+                    <th>Delete</th>  
+                </tr>
+            </thead>
+
+            <tbody>
+                {{#rows:i}}
+                <tr>
+                    <td>{{name}}</td>
+                    <td>{{age}}</td>
+                    <td>
+                        <button class="btn btn-danger" on-click="fire('public.remove', id, i)">Remove</button>
+                    </td>
+
+                </tr>
+
+
+                {{/rows}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-2">
+        <button class="btn btn-success" on-click="add({name: 'Default', age: 10})">Add row</button>
+    </div>
+</div>

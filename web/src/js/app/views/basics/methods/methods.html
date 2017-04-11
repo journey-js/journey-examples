@@ -1,0 +1,148 @@
+<div class="container" fade-in={duration:1500}>
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;">Method <span class="highlightLetter">Calls</span></h1>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <p>Ractive provides <a href="http://docs.ractivejs.org/latest/method-calls" class="link">Method Calls</a> as a way to invoke
+                Javascript methods from HTML templates.
+            </p>
+
+            <p>Let's look at the most basic example.</p>
+
+            <em class="ln">methods.html</em>:
+            <pre><code  class="line-numbers language-markup">&lt;a on-click="@this.test()" href='#'>test&lt;a>
+</code></pre>
+            <p>In <span class="ln">line 1</span> above, we register an <span class="var">on-click</span> listener that calls the
+                <span class="met">@this.test()</span> method below.
+            </p>
+
+            <em class="ln">methods.js</em>:
+            <pre><code  class="line-numbers language-js">...
+that.onInit = function (options) {
+    var view = new template({});        
+
+    // Add a test() method to the Ractive view
+    view.test = function () {
+        console.log("test() invoked!");
+        return false; //returning false cancels the original event, the link that was clicked
+    };
+    return view;
+};
+</code></pre>
+
+            <p>Let's test the above code. Click <a href='#' on-click='@this.test()' class="link">here</a>, and view the output in your
+                browser console.</p>
+
+            <p>Next, let's look at an example showing <span class="var">this</span> in action.</p>
+
+            <p>Inside the methods, Ractive binds <span class="var">this</span> to the ractive instance, <span class="var">this.event</span>
+                references the <a href="http://docs.ractivejs.org/latest/proxy-events" target="_blank" class="link">ractive event</a>,
+                and <span class="var">this.event.original</span> references the DOM event.
+            </p>
+
+            <p>Let's look at an example.</p>
+
+            <em class="ln">methods.html</em>:
+            <pre><code  class="line-numbers language-markup">&lt;a on-click="@.testThis()" href='#'>test&lt;a>
+</code></pre>
+
+            <em class="ln">methods.js</em>:
+            <pre><code  class="line-numbers language-js">...
+that.onInit = function (options) {
+    var view = new template({});        
+
+    // Add a testThis() method to the Ractive view
+    view.testThis = function () {
+        // 'this' refers to the Ractive instance
+        console.log("[ractive instance]:", this);
+
+        // 'this.event' refers to the Ractive event
+        console.log("[ractive event]:", this.event);
+
+        // 'this.event.original' refers to the DOM event, the link that was clicked
+        console.log("[DOM 'click' event]:", this.event.original);
+        return false; //returning false cancels the original event, the link that was clicked
+    };
+    return view;
+};
+</code></pre>
+
+            <p>Let's test the above code. Click <a href='#' on-click='@.testThis()' class="link">here</a>, and view the output in your
+                browser console.
+            </p>
+
+            <p>Next, let's look at an example showing how to pass <span class="var">arguments</span> from the HTML template to the <span class="met">method</span>.
+            </p>
+
+            <p>You can pass as many arguments to the methods as you like. Strings need to be quoted.
+            </p>
+
+            <p>Let's look at an example, where we loop over items in an array and render a <span class="ln">link</span> to print information
+                about the item.</p>
+
+            <em class="ln">methods.html</em>:
+            <pre><code  class="line-numbers language-markup">
+&lt;ul>
+    \{{#each items :i}}
+        &lt;li>
+            Click &lt;a href='#' on-click="@.testArgs(this, @event, 'hello', true, {key: 'value'})" class="link">\{{name}}&lt;/a>, and view the output in your 
+browser console.
+        &lt;/li>
+    \{{/each}}
+&lt;/ul>
+</code></pre>
+
+            <em class="ln">methods.js</em>:
+            <pre><code  class="line-numbers language-js">...
+that.onInit = function (options) {
+			var view = createView();
+			return view;
+		};
+
+    function createView() {
+
+        var view = new template({
+            data: {
+                // an array of items
+                items: [ {name: 'Item 1'}, {name: 'Item 2'}, {name: 'Item 3'} ]
+            },
+
+            // Our testArgs method that will be called for each item in the array
+            // It accepts a reference to the 'this' object, the ractive event that is passed in explicitly, a string, a boolean and an object
+            testArgs: function (currentInstance, event, str, bool, obj) {
+                console.log("arg this", currentInstance);
+                console.log("arg event", event);
+                console.log("arg str", str);
+                console.log("arg bool", bool);
+                console.log("arg object", obj);
+                return false;
+            }
+        });
+        return view;
+    }
+</code></pre>
+
+            <p>Let's test the above code. 
+            </p>
+            <ul>
+
+                {{#each items :i}}
+                <li>
+                Click <a href='#' on-click="@.testArgs(this, @event, 'hello', true, {key: 'value'})" class="link">{{name}}</a>, and view the output in your
+                browser console.
+                </li>
+                {{/each}}
+
+            </ul>
+
+
+        </div>
+    </div>
+
+</div>

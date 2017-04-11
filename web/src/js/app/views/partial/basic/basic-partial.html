@@ -1,0 +1,52 @@
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;">Basic <span class="highlightLetter">Partial</span></h1>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <p>Partials are template snippets that can be embedded into other templates. See <a href="http://docs.ractivejs.org/latest/partials" class="link">here</a> for details.</p>
+            
+            <p>Below is an example partial                
+            </p>
+            
+             {{>hello}} 
+
+             <p>Below is the javascript code:</p>
+             <pre><code  class="line-numbers language-js"> var helloPartial = require("rv!./partial");
+
+function createView() {
+
+    var view = new template({				
+        partials: {hello: helloPartial}
+    });
+    return view;
+}</code></pre>
+             
+             
+             <p>In <span class="ln">line 1</span> we <span class="fun">require</span> a partial called <span class="var">helloPartial</span>.
+                 Note: we use the <span class="var">rv!</span> plugin instead of the <span class="var">rvc!</span> plugin since we simply
+                 want the template, not a component. The <span class="var">rv!</span> plugin compiles the template ready for Ractive to comsume.</p>
+             <p><span class="ln">Line 6</span> we register the <span class="var">hello</span> partial which references the <span class="var">helloPartial</span>.</p>
+             
+             <p>Next we show the template to render a partial:</p>
+                 <pre><code  class="line-numbers language-markup"> \{{>hello}} 
+</code></pre>
+             <p>In <span class="ln">line 1</span> we use <span class="var">></span> character inside a <span class="met">mustache</span>
+                 to reference the <span class="var">hello</span> partial.
+             </p>
+             
+             <p>Finally we show the actual partial below:</p>
+             
+             <pre><code  class="line-numbers language-markup">&lt;h3 class="partial">
+    Hi, I am a partial!
+&lt;/h3>
+</code></pre>
+             
+        </div>
+    </div>
+</div>

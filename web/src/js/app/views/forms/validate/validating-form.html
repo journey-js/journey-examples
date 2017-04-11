@@ -1,0 +1,63 @@
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;">Form <span class="highlightLetter">Validation</span></h1>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="bs-callout bs-callout-warning hidden">
+                <h4>Oh snap!</h4>
+                <p>This form seems to be invalid :(</p>
+            </div>
+
+            <div class="bs-callout bs-callout-info hidden">
+                <h4>Yay!</h4>
+                <p>Everything seems to be ok :)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+
+            <div class="well">
+                <form name="form" novalidate>
+                    <div class="form-group label-floating">
+                        <label class="control-label" for="exampleInputEmail1" >Name <span class="required">*</span></label>
+                        <input type="text" name="name" class="form-control" placeholder="Name" id="name"  required="">
+                    </div>
+                    <div class="form-group label-floating">
+                        <label class="control-label" for="exampleInputEmail1">Email address</label>
+                        <input type="text" name="email" class="form-control" id="exampleInputEmail1" data-parsley-type="email" placeholder="Email">
+                    </div>
+                    <div class="form-group label-floating">
+                        <label class="control-label" for="password" >Password <span class="required">*</span></label>
+                        <input type="password" placeholder="Password" class="form-control" id="password"  required="">
+                    </div>
+                    <div class="form-group label-floating">
+                        <label class="control-label" for="confirmPassword">Confirm password <span class="required">*</span></label>
+                        <input type="password" class="form-control" id="confirmPassword" data-parsley-equalto="#password" placeholder="Confirm Password" 
+                               data-parsley-equalto-message="Password confirmation must match the password." required="">
+                    </div>
+
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="chk"> Checkbox
+                        </label>
+                    </div>
+
+
+                    <button type="submit" class="btn btn-primary" on-click="submit()">Submit</button>
+                    <button type="reset" class="btn btn-default" on-click="reset()">Reset</button>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,73 @@
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;"><span class="highlightLetter">AjaxTracker</span></h1>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <p>In this demo, we show how to abort a long running Ajax request, using Kudu's <span class="met">AjaxTracker</span>.</p>
+
+            <p><em>Note: if you are viewing this demo online the Ajax requests are too quick to show off AjaxTracker. You could use
+                    a throttler to simulate slow connections. For example, the Chrome browser supports a throttle function in the Network tab.</em></p>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <p>Kudu provides an <span class="met">AjaxTracker</span> instance as part of onInit's <span class="var">options</span>.                
+            </p>
+            <p>You can add XmlHttpRequests, including jQuery's XHR instances, to <span class="met">AjaxTracker</span>. If a user moves
+                to a different view, Kudu will automatically <span class="var">abort</span> all Ajax requests registered  with the
+                <span class="met">AjaxTracker</span>.
+            </p>
+
+            <p>Here is an example:</p>
+
+            <pre><code  class="line-numbers language-js">that.onInit = function (options) {
+
+        var promise = new Promise(function (resolve, reject) {
+
+        var xhr = $.getJSON("/data");
+
+        options.ajaxTracker.add(xhr);
+
+        xhr.then(function (data) {
+            var view = createView(data);
+            resolve(view);
+
+        }, function () {
+            reject("Could not load data for BasicAjax");
+        });
+    });
+
+			return promise;
+		};
+}); </code></pre>
+
+            <p>In <span class="ln">line 5</span>, we use jQuery to fetch a <span class="var">JSON</span> file from the server, and store
+                the <span class="var">xhr</span> object in a variable.</p>
+            <p><span class="ln">Line 7</span> we add the <span class="var">xhr</span> object to the <span class="met">AjaxTracker</span>
+                instance.</p>
+
+            <p>If we were to load the view, the Ajax request could take a long time to return. If we decide to navigate to another view while
+                the Ajax request is still in progress, Kudu will automatically abort the request.</p>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <button class="btn btn-success" on-click="load()">Fetch data</button>
+            <button class="btn btn-danger" on-click="abort()">Abort</button>
+            <p>Result:</p>
+            <pre><code  class="language-js">{{response}}</code></pre>
+            
+            
+        </div>
+    </div>
+</div>

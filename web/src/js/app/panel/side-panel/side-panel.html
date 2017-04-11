@@ -1,0 +1,14 @@
+<div class="cd-panel from-right {{ visible ? "is-visible" : "" }}" on-click='close()'>
+    <header class="cd-panel-header">
+        <h1>{{title}}</h1>
+        <a href="#" class="cd-panel-close" on-click='close()'>Close</a>
+    </header>
+
+    <div class="cd-panel-container">
+        <div class="cd-panel-content">
+           
+            <pre class="line-numbers"  data-src="{{code}}"></pre>
+          
+        </div> <!-- cd-panel-content -->
+    </div> <!-- cd-panel-container -->
+</div> <!-- cd-panel -->     

@@ -1,0 +1,12 @@
+/dist/
+/build/
+/nbproject/
+/build.xml
+/jsbuild/nbproject/private/
+/web/node_modules/
+/web/src/js/lib/kudulib/src/
+/.idea/
+/web/dist/
+/jsbuild/
+/node_modules/
+/web/META-INF/

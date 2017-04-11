@@ -1,0 +1,95 @@
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <a class="navbar-brand">Kudu Demos</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse">
+
+            <ul class="nav navbar-nav" id="navbar">
+                
+                <div id="nav-ind"></div>
+                <li ><a href="/home">Home</a></li>
+<!--                <li><a href="/basic">Basic controller demo</a></li>-->
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Basics <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/basic">Basic controller demo</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="/methods">Method calls</a></li>
+                        <li><a href="/binding">Binding</a></li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Navigation <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#nav">Navigate to views</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#nav-target-params/1?name=Bob">Navigate to view and pass URL parameters</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#redirect">Redirect to another view</a></li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Forms <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#basic-form">Basic Form</a></li>
+                        <li><a href="#form-validation">Form Validation (using Parsley)</a></li>
+                    </ul>
+                </li>
+
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Life cycle <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#ctrl-events" on-click='gotoCtrlEvents()'>Controller lifecycle events</a></li>
+                        <li><a href="#global-events">Global lifecycle events</a></li>
+                        <li><a href="#go-events">Kudu.go() lifecycle events</a></li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Ajax <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#ajax-basics">Basic Ajax</a></li>
+                        <li><a href="#ajax-events">Ajax Events</a></li>
+                        <li><a href="#ajax-tracker">Ajax Tracker</a></li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Partials <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#partial-basics">Basic Partial</a></li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Components <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#comp-basics">Basic Component</a></li>
+                        <li><a href="#comp-pubsub">Publish/Subscribe to Components</a></li>
+                        <li><a href="#comp-multi">Multiple Components</a></li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Transitions <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#/transition-basics">Basic transtion (fade)</a></li>
+                    </ul>
+                </li>
+
+                <li><a id="showJs" href="#" on-click='showJavascript()'>Show Javascript</a></li>
+                <li><a id="showHtml" href="#" on-click='showHtml()'>Show Html</a></li>
+
+            </ul>
+
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>

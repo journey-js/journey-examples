@@ -1,0 +1,57 @@
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;">Ajax <span class="highlightLetter">Events</span></h1>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <p>When using the <span class="met">AjaxTracker</span> feature, we can listen to the <span class="var">ajax events</span>:
+                <span class="var">ajax.start</span>, <span class="var">ajax.success</span>, <span class="var">ajax.error</span>,
+                <span class="var">ajax.complete</span> and <span class="var">ajax.stop</span>.</p>
+
+            <p><span class="met">AjaxTracker</span> also emits the events <span class="var">global.ajax.start</span> and
+                <span class="var">global.ajax.stop</span> to signal when the <span class="ln">first</span> ajax request added to <span class="met">AjaxTracker</span>
+                <span class="var">starts</span> and when the <span class="ln">last</span> ajax request <span class="var">stops</span>.</p>
+            <p>Below is the code to show how to listen to events emitted from <span class="met">AjaxTracker</span>:</p>
+
+            <pre><code  class="line-numbers language-js">kudu.on("global.ajax.start", function (options) {
+    console.log("global.ajax.start", options);
+});
+
+kudu.on("ajax.start", function (options) {
+    console.log("ajax.start", options);
+});
+
+kudu.on("ajax.success", function (options) {
+    console.log("ajax.success", options);
+});
+
+kudu.on("ajax.error", function (options) {
+    console.log("ajax.error", options);
+});
+
+kudu.on("ajax.complete", function (options) {
+    console.log("ajax.complete", options);
+});
+
+kudu.on("ajax.stop", function (options) {
+    console.log("ajax.stop", options);
+});
+
+kudu.on("global.ajax.stop", function (options) {
+    console.log("global.ajax.stop", options);
+}); </code></pre>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-2">
+            <button class="btn btn-success" on-click="reload()">Reload View</button>
+        </div>
+    </div>
+
+</div>
