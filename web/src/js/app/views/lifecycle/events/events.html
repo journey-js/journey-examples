@@ -1,8 +1,8 @@
-<div class="container">
+<div class="container" fade-in-out={duration:1500}>
     <div class="row">
 
         <div class="col-md-12">
-            <h1 style="padding-top:30px; padding-bottom:0px;">Controller <span class="highlightLetter">Events</span></h1>
+            <h1 style="padding-top:30px; padding-bottom:0px;">Lifecycle <span class="highlightLetter">Events</span></h1>
         </div>
 
     </div>
@@ -59,8 +59,15 @@
                 the <span class='var'>Reload view</span> button below, to see the order of events called.
             </p>
             <p style="margin-top: 1 0px">
+                
+                <button class="btn btn-success" on-click="@.toggle( 'isListening' )">{{isListening ? "Stop" : "Start"}} listening</button>
 
-                <button class="btn btn-success" on-click="reloadView()">Reload view</button>
+                <!-- Below we use JS expression to call journey.goto() -->
+                <button class="btn btn-success" on-click="@.journey.goto('/events', {forceReload: true})">Reload view</button>
+                
+                <!-- We invoke -->
+                <button class="btn btn-success" on-click="@.updateView()">Update view</button>
+
         </div>
     </div>
 </div>

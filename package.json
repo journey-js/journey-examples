@@ -2,9 +2,9 @@
   "name": "journeyExmples",
   "description": "Journey examples",
   "version": "0.0.1",
-  "main": "dist/js/app/start.js",
-  "module": "dist/js/app/start.js",
-  "jsnext:main": "dist/js/app/start.js",
+  "main": "dist/js/app/app.js",
+  "module": "dist/js/app/app.js",
+  "jsnext:main": "dist/js/app/app.js",
   "devDependencies": {
     "body-parser": "^1.14.1",
     "chokidar": "^1.6.1",

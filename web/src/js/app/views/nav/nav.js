@@ -1,56 +1,46 @@
-define(function (require) {
-	var $ = require("jquery");
-	var kudu = require("kudu");
-	var template = require("rvc!./nav");
-	var  navTargetWithParams = require("./nav-target-params");
+import journey from "lib/journey/journey";
+import Ractive from "lib/ractive";
+import template from "./nav.html";
 
-	function nav() {
+var nav = {
 
-		var that = {};
+	enter: function ( route, prevRoute, options ) {
+		route.view = new Ractive( {
+			el: options.target,
+			template: template,
+			gotoNewView: function () {
 
-		that.onInit = function (options) {
-			var view = createView();
-			return view;
-		};
+				var args = { 'myArray': [ 'one', 'two', 'three' ] };
+				journey.goto( "/navTargetParams/1?name=Bob", { args: args } );
+			}
+		} );
 
-		function createView() {
-			var routes;
-			require(["app/config/routes"], function (arg) {
-				routes = arg;
-			});
+	},
 
-			var view = new template({
-				data: {
-					example1: "js/app/views/nav/nav1-example.js",
-					example2: ""
-				},
-				gotoTargetWithParams: function (routeName) {
-					// Navigate to the route specified
-					var params = {'id': 1, 'name': 'Bob'};
-					var args = {'myargs': ['one', 'two', 'three']};
-					kudu.go({ctrl: navTargetWithParams, routeParams: params, args: args});
-
-					// Cancel the click event by returning false, otherwise the link function would execute ie. follow the link href
-					return false;
-				}
-
-				/*
-				 goto: function (routeName, params, args) {
-				 // Retrieve the route from routes
-				 var route = routes[routeName];
-				 
-				 // Navigate to the route specified
-				 kudu.go({ctrl: route.ctrl, routeParams: params, args: args});
-				 
-				 // Cancel the click event by returning false, otherwise the link function would execute ie. follow the link href
-				 return false;
-				 }*/
-			});
-
-			return view;
-		}
-
-		return that;
+	leave: function ( route, nextRoute ) {
+		route.view.teardown();
 	}
-	return nav;
-});
+};
+
+function createView() {
+
+	var view = new template( {
+		data: {
+			example1: "js/app/views/nav/nav1-example.js",
+			example2: ""
+		},
+		gotoTargetWithParams: function ( routeName ) {
+			// Navigate to the route specified
+			var params = { 'id': 1, 'name': 'Bob' };
+			var args = { 'myargs': [ 'one', 'two', 'three' ] };
+			kudu.go( { ctrl: navTargetWithParams, routeParams: params, args: args } );
+
+			// Cancel the click event by returning false, otherwise the link function would execute ie. follow the link href
+			return false;
+		}
+	} );
+
+	return view;
+}
+
+export default nav;

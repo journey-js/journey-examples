@@ -985,7 +985,7 @@ Prism.hooks.add('complete', function (env) {
 
 	};
 
-	document.addEventListener('DOMContentLoaded', self.Prism.fileHighlight);
+	//document.addEventListener('DOMContentLoaded', self.Prism.fileHighlight);
 
 })();
 

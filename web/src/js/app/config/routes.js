@@ -1,10 +1,17 @@
-import journey from "lib/journey/journey";
-	
-import home from "../views/home/home";
-import basic from "../views/basics/controller/basic";
-import methods from "../views/basics/methods/methods";
-import binding from "../views/basics/binding/binding";
-import notFound from "../views/notfound/notFound";
+import journey from "lib/journey/journey.js";	
+import home from "../views/home/home.js";
+import basic from "../views/basics/controller/basic.js";
+import methods from "../views/basics/methods/methods.js";
+import binding from "../views/basics/binding/binding.js";
+import nav from "../views/nav/nav.js";
+import navTarget from "../views/nav/navTarget.js";
+import navTargetWithParams from "../views/nav/navTargetParams.js";
+import notFound from "../views/notfound/notFound.js";
+import redirect from "../views/nav/redirect/redirect.js";
+import redirectTarget from "../views/nav/redirect/redirectTarget.js";
+import basicForm from "../views/forms/basic/basicForm.js";
+import validatingForm from "../views/forms/validate/validatingForm.js";
+import events from "../views/lifecycle/events/events.js";
 
 			/*
 	var Ractive = require("ractive");
@@ -30,16 +37,24 @@ import notFound from "../views/notfound/notFound";
 	var compPubSub = require("app/views/comp/pubsub/comp-pubsub");
 	var multiComp = require("app/views/comp/multple/multiple-comp");
 	var partialBasics = require("app/views/partial/basic/basic-partial");
-	var transitionBasics = require("app/views/transition/basic/basic-transition");
+	var transitionBasics = require("app/views/transition/basic/bf/asic-transition");
 	var notFound = require("app/views/notfound/notFound");
 */
-
+home.path = "js/app/views/home/home";
 journey.add("/home", home);
 journey.add("/basic", basic);
 journey.add("/methods", methods);
 journey.add("/binding", binding);
+journey.add("/navTargetParams/:id", navTargetWithParams);	
+journey.add("/navTarget", navTarget);
+journey.add("/redirect", redirect);
+journey.add("/redirectTarget", redirectTarget);
+journey.add("/nav", nav);
 journey.add("/", home);
 journey.add("/notFound", notFound);
+journey.add("/basicForm", basicForm);
+journey.add("/validatingForm", validatingForm);
+journey.add("/events", events);
 
 /*
 	function routes() {

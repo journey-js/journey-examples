@@ -23,7 +23,7 @@ kudu.go({
 });
                         </code></pre>
                 </div>
-                <button type="button" class="search btn btn-home"  on-click="gotoTargetWithParams()"><i class="fa fa-search"></i> Go</button>
+                <button type="button" class="search btn btn-home"  on-click="@.gotoNewView()"><i class="fa fa-search"></i> Go</button>
 
             </div>            
                 <br>
@@ -42,9 +42,9 @@ kudu.go({
 
                 <div class="content">     
                     <pre><code  class="line-numbers language-markup">&lt;!-- To navigate declaratively, set the path you want to navigate to as the href url hash -->
-&lt;a href="#nav-target">Go&lt;/a></code></pre>
+&lt;a href="/navTarget">Go&lt;/a></code></pre>
                 </div>
-                <a class="search btn btn-home" href="#nav-target" style="text-decoration: underline"><i class="fa fa-search"></i> Go</a>
+                <a class="search btn btn-home" href="/navTarget" style="text-decoration: underline"><i class="fa fa-search"></i> Go</a>
 
             </div>            
         </div>

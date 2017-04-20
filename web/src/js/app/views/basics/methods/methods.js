@@ -2,8 +2,9 @@ import journey from "lib/journey/journey";
 import Ractive from "lib/ractive";
 import template from "./methods.html";
 
-var methods = {
+var methods = {	
 	enter: function ( route, prevRoute, options ) {
+		/*%injectPath%*/
 		route.view = createView( options.target );
 	},
 

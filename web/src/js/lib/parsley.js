@@ -1,6 +1,6 @@
 /*!
 * Parsley.js
-* Version 2.3.5 - built Sun, Feb 28th 2016, 6:25 am
+* Version 2.7.0 - built Wed, Mar 1st 2017, 3:53 pm
 * http://parsleyjs.org
 * Guillaume Potier - <guillaume@wisembly.com>
 * Marc-Andre Lafortune - <petroselinum@marc-andre.ca>
@@ -12,17 +12,19 @@
 //
 var _slice = Array.prototype.slice;
 
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('jquery')) : typeof define === 'function' && define.amd ? define(['jquery'], factory) : global.parsley = factory(global.jQuery);
-})(this, function ($) {
+})(this || window, function ($) {
   'use strict';
 
   var globalID = 1;
   var pastWarnings = {};
 
-  var ParsleyUtils__ParsleyUtils = {
+  var Utils__Utils = {
     // Parsley DOM-API
     // returns object from dom attributes and values
     attr: function attr($element, namespace, obj) {
@@ -109,12 +111,91 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return string.replace(/^\s+|\s+$/g, '');
     },
 
+    parse: {
+      date: function date(string) {
+        var parsed = string.match(/^(\d{4,})-(\d\d)-(\d\d)$/);
+        if (!parsed) return null;
+
+        var _parsed$map = parsed.map(function (x) {
+          return parseInt(x, 10);
+        });
+
+        var _parsed$map2 = _slicedToArray(_parsed$map, 4);
+
+        var _ = _parsed$map2[0];
+        var year = _parsed$map2[1];
+        var month = _parsed$map2[2];
+        var day = _parsed$map2[3];
+
+        var date = new Date(year, month - 1, day);
+        if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) return null;
+        return date;
+      },
+      string: function string(_string) {
+        return _string;
+      },
+      integer: function integer(string) {
+        if (isNaN(string)) return null;
+        return parseInt(string, 10);
+      },
+      number: function number(string) {
+        if (isNaN(string)) throw null;
+        return parseFloat(string);
+      },
+      'boolean': function _boolean(string) {
+        return !/^\s*false\s*$/i.test(string);
+      },
+      object: function object(string) {
+        return Utils__Utils.deserializeValue(string);
+      },
+      regexp: function regexp(_regexp) {
+        var flags = '';
+
+        // Test if RegExp is literal, if not, nothing to be done, otherwise, we need to isolate flags and pattern
+        if (/^\/.*\/(?:[gimy]*)$/.test(_regexp)) {
+          // Replace the regexp literal string with the first match group: ([gimy]*)
+          // If no flag is present, this will be a blank string
+          flags = _regexp.replace(/.*\/([gimy]*)$/, '$1');
+          // Again, replace the regexp literal string with the first match group:
+          // everything excluding the opening and closing slashes and the flags
+          _regexp = _regexp.replace(new RegExp('^/(.*?)/' + flags + '$'), '$1');
+        } else {
+          // Anchor regexp:
+          _regexp = '^' + _regexp + '$';
+        }
+        return new RegExp(_regexp, flags);
+      }
+    },
+
+    parseRequirement: function parseRequirement(requirementType, string) {
+      var converter = this.parse[requirementType || 'string'];
+      if (!converter) throw 'Unknown requirement specification: "' + requirementType + '"';
+      var converted = converter(string);
+      if (converted === null) throw 'Requirement is not a ' + requirementType + ': "' + string + '"';
+      return converted;
+    },
+
     namespaceEvents: function namespaceEvents(events, namespace) {
       events = this.trimString(events || '').split(/\s+/);
       if (!events[0]) return '';
       return $.map(events, function (evt) {
         return evt + '.' + namespace;
       }).join(' ');
+    },
+
+    difference: function difference(array, remove) {
+      // This is O(N^2), should be optimized
+      var result = [];
+      $.each(array, function (_, elem) {
+        if (remove.indexOf(elem) == -1) result.push(elem);
+      });
+      return result;
+    },
+
+    // Alter-ego to native Promise.all, but for jQuery
+    all: function all(promises) {
+      // jQuery treats $.when() and $.when(singlePromise) differently; let's avoid that and add spurious elements
+      return $.when.apply($, _toConsumableArray(promises).concat([42, 42]));
     },
 
     // Object.create polyfill, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create#Polyfill
@@ -132,17 +213,19 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         Object.prototype = null;
         return result;
       };
-    })()
+    })(),
+
+    _SubmitSelector: 'input[type="submit"], button:submit'
   };
 
-  var ParsleyUtils__default = ParsleyUtils__ParsleyUtils;
+  var Utils__default = Utils__Utils;
 
   // All these options could be overriden and specified directly in DOM using
   // `data-parsley-` default DOM-API
   // eg: `inputs` can be set in DOM using `data-parsley-inputs="input, textarea"`
   // eg: `data-parsley-stop-on-first-failing-constraint="false"`
 
-  var ParsleyDefaults = {
+  var Defaults = {
     // ### General
 
     // Default data-namespace for DOM API
@@ -189,11 +272,11 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
     // Return the `$element` that will receive these above success or error classes
     // Could also be (and given directly from DOM) a valid selector like `'#div'`
-    classHandler: function classHandler(ParsleyField) {},
+    classHandler: function classHandler(Field) {},
 
     // Return the `$element` where errors will be appended
     // Could also be (and given directly from DOM) a valid selector like `'#div'`
-    errorsContainer: function errorsContainer(ParsleyField) {},
+    errorsContainer: function errorsContainer(Field) {},
 
     // ul elem that would receive errors' list
     errorsWrapper: '<ul class="parsley-errors-list"></ul>',
@@ -202,20 +285,33 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     errorTemplate: '<li></li>'
   };
 
-  var ParsleyAbstract = function ParsleyAbstract() {};
+  var Base = function Base() {
+    this.__id__ = Utils__default.generateID();
+  };
 
-  ParsleyAbstract.prototype = {
+  Base.prototype = {
     asyncSupport: true, // Deprecated
 
+    _pipeAccordingToValidationResult: function _pipeAccordingToValidationResult() {
+      var _this = this;
+
+      var pipe = function pipe() {
+        var r = $.Deferred();
+        if (true !== _this.validationResult) r.reject();
+        return r.resolve().promise();
+      };
+      return [pipe, pipe];
+    },
+
     actualizeOptions: function actualizeOptions() {
-      ParsleyUtils__default.attr(this.$element, this.options.namespace, this.domOptions);
+      Utils__default.attr(this.$element, this.options.namespace, this.domOptions);
       if (this.parent && this.parent.actualizeOptions) this.parent.actualizeOptions();
       return this;
     },
 
     _resetOptions: function _resetOptions(initOptions) {
-      this.domOptions = ParsleyUtils__default.objectCreate(this.parent.options);
-      this.options = ParsleyUtils__default.objectCreate(this.domOptions);
+      this.domOptions = Utils__default.objectCreate(this.parent.options);
+      this.options = Utils__default.objectCreate(this.domOptions);
       // Shallow copy of ownProperties of initOptions:
       for (var i in initOptions) {
         if (initOptions.hasOwnProperty(i)) this.options[i] = initOptions[i];
@@ -280,41 +376,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return true;
     },
 
-    // Reset UI
-    reset: function reset() {
-      // Field case: just emit a reset event for UI
-      if ('ParsleyForm' !== this.__class__) {
-        this._resetUI();
-        return this._trigger('reset');
-      }
-
-      // Form case: emit a reset event for each field
-      for (var i = 0; i < this.fields.length; i++) this.fields[i].reset();
-
-      this._trigger('reset');
-    },
-
-    // Destroy Parsley instance (+ UI)
-    destroy: function destroy() {
-      // Field case: emit destroy event to clean UI and then destroy stored instance
-      this._destroyUI();
-      if ('ParsleyForm' !== this.__class__) {
-        this.$element.removeData('Parsley');
-        this.$element.removeData('ParsleyFieldMultiple');
-        this._trigger('destroy');
-
-        return;
-      }
-
-      // Form case: destroy all its fields and then destroy stored instance
-      for (var i = 0; i < this.fields.length; i++) this.fields[i].destroy();
-
-      this.$element.removeData('Parsley');
-      this._trigger('destroy');
-    },
-
     asyncIsValid: function asyncIsValid(group, force) {
-      ParsleyUtils__default.warnOnce("asyncIsValid is deprecated; please use whenValid instead");
+      Utils__default.warnOnce("asyncIsValid is deprecated; please use whenValid instead");
       return this.whenValid({ group: group, force: force });
     },
 
@@ -323,61 +386,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
   };
 
-  var requirementConverters = {
-    string: function string(_string) {
-      return _string;
-    },
-    integer: function integer(string) {
-      if (isNaN(string)) throw 'Requirement is not an integer: "' + string + '"';
-      return parseInt(string, 10);
-    },
-    number: function number(string) {
-      if (isNaN(string)) throw 'Requirement is not a number: "' + string + '"';
-      return parseFloat(string);
-    },
-    reference: function reference(string) {
-      // Unused for now
-      var result = $(string);
-      if (result.length === 0) throw 'No such reference: "' + string + '"';
-      return result;
-    },
-    boolean: function boolean(string) {
-      return string !== 'false';
-    },
-    object: function object(string) {
-      return ParsleyUtils__default.deserializeValue(string);
-    },
-    regexp: function regexp(_regexp) {
-      var flags = '';
-
-      // Test if RegExp is literal, if not, nothing to be done, otherwise, we need to isolate flags and pattern
-      if (/^\/.*\/(?:[gimy]*)$/.test(_regexp)) {
-        // Replace the regexp literal string with the first match group: ([gimy]*)
-        // If no flag is present, this will be a blank string
-        flags = _regexp.replace(/.*\/([gimy]*)$/, '$1');
-        // Again, replace the regexp literal string with the first match group:
-        // everything excluding the opening and closing slashes and the flags
-        _regexp = _regexp.replace(new RegExp('^/(.*?)/' + flags + '$'), '$1');
-      } else {
-        // Anchor regexp:
-        _regexp = '^' + _regexp + '$';
-      }
-      return new RegExp(_regexp, flags);
-    }
-  };
-
   var convertArrayRequirement = function convertArrayRequirement(string, length) {
     var m = string.match(/^\s*\[(.*)\]\s*$/);
     if (!m) throw 'Requirement is not an array: "' + string + '"';
-    var values = m[1].split(',').map(ParsleyUtils__default.trimString);
+    var values = m[1].split(',').map(Utils__default.trimString);
     if (values.length !== length) throw 'Requirement has ' + values.length + ' values when ' + length + ' are needed';
     return values;
-  };
-
-  var convertRequirement = function convertRequirement(requirementType, string) {
-    var converter = requirementConverters[requirementType || 'string'];
-    if (!converter) throw 'Unknown requirement specification: "' + requirementType + '"';
-    return converter(string);
   };
 
   var convertExtraOptionRequirement = function convertExtraOptionRequirement(requirementSpec, string, extraOptionReader) {
@@ -386,10 +400,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     for (var key in requirementSpec) {
       if (key) {
         var value = extraOptionReader(key);
-        if ('string' === typeof value) value = convertRequirement(requirementSpec[key], value);
+        if ('string' === typeof value) value = Utils__default.parseRequirement(requirementSpec[key], value);
         extra[key] = value;
       } else {
-        main = convertRequirement(requirementSpec[key], string);
+        main = Utils__default.parseRequirement(requirementSpec[key], string);
       }
     }
     return [main, extra];
@@ -397,11 +411,11 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   // A Validator needs to implement the methods `validate` and `parseRequirements`
 
-  var ParsleyValidator = function ParsleyValidator(spec) {
+  var Validator = function Validator(spec) {
     $.extend(true, this, spec);
   };
 
-  ParsleyValidator.prototype = {
+  Validator.prototype = {
     // Returns `true` iff the given `value` is valid according the given requirements.
     validate: function validate(value, requirementFirstArg) {
       if (this.fn) {
@@ -409,13 +423,19 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
         if (arguments.length > 3) // If more args then value, requirement, instance...
           requirementFirstArg = [].slice.call(arguments, 1, -1); // Skip first arg (value) and last (instance), combining the rest
-        return this.fn.call(this, value, requirementFirstArg);
+        return this.fn(value, requirementFirstArg);
       }
 
       if ($.isArray(value)) {
         if (!this.validateMultiple) throw 'Validator `' + this.name + '` does not handle multiple values';
         return this.validateMultiple.apply(this, arguments);
       } else {
+        var instance = arguments[arguments.length - 1];
+        if (this.validateDate && instance._isDateInput()) {
+          arguments[0] = Utils__default.parse.date(arguments[0]);
+          if (arguments[0] === null) return false;
+          return this.validateDate.apply(this, arguments);
+        }
         if (this.validateNumber) {
           if (isNaN(value)) return false;
           arguments[0] = parseFloat(arguments[0]);
@@ -439,12 +459,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       var type = this.requirementType;
       if ($.isArray(type)) {
         var values = convertArrayRequirement(requirements, type.length);
-        for (var i = 0; i < values.length; i++) values[i] = convertRequirement(type[i], values[i]);
+        for (var i = 0; i < values.length; i++) values[i] = Utils__default.parseRequirement(type[i], values[i]);
         return values;
       } else if ($.isPlainObject(type)) {
         return convertExtraOptionRequirement(type, requirements, extraOptionReader);
       } else {
-        return [convertRequirement(type, requirements)];
+        return [Utils__default.parseRequirement(type, requirements)];
       }
     },
     // Defaults:
@@ -454,8 +474,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   };
 
-  var ParsleyValidatorRegistry = function ParsleyValidatorRegistry(validators, catalog) {
-    this.__class__ = 'ParsleyValidatorRegistry';
+  var ValidatorRegistry = function ValidatorRegistry(validators, catalog) {
+    this.__class__ = 'ValidatorRegistry';
 
     // Default Parsley locale is en
     this.locale = 'en';
@@ -463,7 +483,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     this.init(validators || {}, catalog || {});
   };
 
-  var typeRegexes = {
+  var typeTesters = {
     email: /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i,
 
     // Follow https://www.w3.org/TR/html5/infrastructure.html#floating-point-numbers
@@ -474,6 +494,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     digits: /^\d+$/,
 
     alphanum: /^\w+$/i,
+
+    date: {
+      test: function test(value) {
+        return Utils__default.parse.date(value) !== null;
+      }
+    },
 
     url: new RegExp("^" +
     // protocol identifier
@@ -502,7 +528,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // resource path
     "(?:/\\S*)?" + "$", 'i')
   };
-  typeRegexes.range = typeRegexes.number;
+  typeTesters.range = typeTesters.number;
 
   // See http://stackoverflow.com/a/10454560/8279
   var decimalPlaces = function decimalPlaces(num) {
@@ -517,7 +543,32 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     match[2] ? +match[2] : 0));
   };
 
-  ParsleyValidatorRegistry.prototype = {
+  // parseArguments('number', ['1', '2']) => [1, 2]
+  var ValidatorRegistry__parseArguments = function ValidatorRegistry__parseArguments(type, args) {
+    return args.map(Utils__default.parse[type]);
+  };
+  // operatorToValidator returns a validating function for an operator function, applied to the given type
+  var ValidatorRegistry__operatorToValidator = function ValidatorRegistry__operatorToValidator(type, operator) {
+    return function (value) {
+      for (var _len = arguments.length, requirementsAndInput = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        requirementsAndInput[_key - 1] = arguments[_key];
+      }
+
+      requirementsAndInput.pop(); // Get rid of `input` argument
+      return operator.apply(undefined, [value].concat(_toConsumableArray(ValidatorRegistry__parseArguments(type, requirementsAndInput))));
+    };
+  };
+
+  var ValidatorRegistry__comparisonOperator = function ValidatorRegistry__comparisonOperator(operator) {
+    return {
+      validateDate: ValidatorRegistry__operatorToValidator('date', operator),
+      validateNumber: ValidatorRegistry__operatorToValidator('number', operator),
+      requirementType: operator.length <= 2 ? 'string' : ['string', 'string'], // Support operators with a 1 or 2 requirement(s)
+      priority: 30
+    };
+  };
+
+  ValidatorRegistry.prototype = {
     init: function init(validators, catalog) {
       this.catalog = catalog;
       // Copy prototype's validators:
@@ -577,8 +628,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // Old API was addValidator(name, function, priority)
     //
     addValidator: function addValidator(name, arg1, arg2) {
-      if (this.validators[name]) ParsleyUtils__default.warn('Validator "' + name + '" is already defined.');else if (ParsleyDefaults.hasOwnProperty(name)) {
-        ParsleyUtils__default.warn('"' + name + '" is a restricted keyword and is not a valid validator name.');
+      if (this.validators[name]) Utils__default.warn('Validator "' + name + '" is already defined.');else if (Defaults.hasOwnProperty(name)) {
+        Utils__default.warn('"' + name + '" is a restricted keyword and is not a valid validator name.');
         return;
       }
       return this._setValidator.apply(this, arguments);
@@ -586,14 +637,14 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
     updateValidator: function updateValidator(name, arg1, arg2) {
       if (!this.validators[name]) {
-        ParsleyUtils__default.warn('Validator "' + name + '" is not already defined.');
+        Utils__default.warn('Validator "' + name + '" is not already defined.');
         return this.addValidator.apply(this, arguments);
       }
-      return this._setValidator(this, arguments);
+      return this._setValidator.apply(this, arguments);
     },
 
     removeValidator: function removeValidator(name) {
-      if (!this.validators[name]) ParsleyUtils__default.warn('Validator "' + name + '" is not defined.');
+      if (!this.validators[name]) Utils__default.warn('Validator "' + name + '" is not defined.');
 
       delete this.validators[name];
 
@@ -609,7 +660,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         };
       }
       if (!validator.validate) {
-        validator = new ParsleyValidator(validator);
+        validator = new Validator(validator);
       }
       this.validators[name] = validator;
 
@@ -671,15 +722,15 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           var _ref = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
           var _ref$step = _ref.step;
-          var step = _ref$step === undefined ? '1' : _ref$step;
+          var step = _ref$step === undefined ? 'any' : _ref$step;
           var _ref$base = _ref.base;
           var base = _ref$base === undefined ? 0 : _ref$base;
 
-          var regex = typeRegexes[type];
-          if (!regex) {
+          var tester = typeTesters[type];
+          if (!tester) {
             throw new Error('validator type `' + type + '` is not supported');
           }
-          if (!regex.test(value)) return false;
+          if (!tester.test(value)) return false;
           if ('number' === type) {
             if (!/^any$/i.test(step || '')) {
               var nb = Number(value);
@@ -751,27 +802,15 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         requirementType: ['integer', 'integer'],
         priority: 30
       },
-      min: {
-        validateNumber: function validateNumber(value, requirement) {
-          return value >= requirement;
-        },
-        requirementType: 'number',
-        priority: 30
-      },
-      max: {
-        validateNumber: function validateNumber(value, requirement) {
-          return value <= requirement;
-        },
-        requirementType: 'number',
-        priority: 30
-      },
-      range: {
-        validateNumber: function validateNumber(value, min, max) {
-          return value >= min && value <= max;
-        },
-        requirementType: ['number', 'number'],
-        priority: 30
-      },
+      min: ValidatorRegistry__comparisonOperator(function (value, requirement) {
+        return value >= requirement;
+      }),
+      max: ValidatorRegistry__comparisonOperator(function (value, requirement) {
+        return value <= requirement;
+      }),
+      range: ValidatorRegistry__comparisonOperator(function (value, min, max) {
+        return value >= min && value <= max;
+      }),
       equalto: {
         validateString: function validateString(value, refOrValue) {
           var $reference = $(refOrValue);
@@ -782,7 +821,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
   };
 
-  var ParsleyUI = {};
+  var UI = {};
 
   var diffResults = function diffResults(newResult, oldResult, deep) {
     var added = [];
@@ -806,16 +845,16 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     };
   };
 
-  ParsleyUI.Form = {
+  UI.Form = {
 
     _actualizeTriggers: function _actualizeTriggers() {
-      var _this = this;
+      var _this2 = this;
 
       this.$element.on('submit.Parsley', function (evt) {
-        _this.onSubmitValidate(evt);
+        _this2.onSubmitValidate(evt);
       });
-      this.$element.on('click.Parsley', 'input[type="submit"], button[type="submit"]', function (evt) {
-        _this.onSubmitButton(evt);
+      this.$element.on('click.Parsley', Utils__default._SubmitSelector, function (evt) {
+        _this2.onSubmitButton(evt);
       });
 
       // UI could be disabled
@@ -849,7 +888,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   };
 
-  ParsleyUI.Field = {
+  UI.Field = {
 
     _reflowUI: function _reflowUI() {
       this._buildUI();
@@ -1027,7 +1066,11 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       // If this function returned a valid existing DOM element, go for it
       if ('undefined' !== typeof $handler && $handler.length) return $handler;
 
-      // Otherwise, if simple element (input, texatrea, select...) it will perfectly host the classes
+      return this._inputHolder();
+    },
+
+    _inputHolder: function _inputHolder() {
+      // if simple element (input, texatrea, select...) it will perfectly host the classes and precede the error container
       if (!this.options.multiple || this.$element.is('select')) return this.$element;
 
       // But if multiple element (radio, checkbox), that would be their parent
@@ -1041,39 +1084,45 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       if (0 !== this._ui.$errorsWrapper.parent().length) return this._ui.$errorsWrapper.parent();
 
       if ('string' === typeof this.options.errorsContainer) {
-        if ($(this.options.errorsContainer).length) return $(this.options.errorsContainer).append(this._ui.$errorsWrapper);else ParsleyUtils__default.warn('The errors container `' + this.options.errorsContainer + '` does not exist in DOM');
+        if ($(this.options.errorsContainer).length) return $(this.options.errorsContainer).append(this._ui.$errorsWrapper);else Utils__default.warn('The errors container `' + this.options.errorsContainer + '` does not exist in DOM');
       } else if ('function' === typeof this.options.errorsContainer) $errorsContainer = this.options.errorsContainer.call(this, this);
 
       if ('undefined' !== typeof $errorsContainer && $errorsContainer.length) return $errorsContainer.append(this._ui.$errorsWrapper);
 
-      var $from = this.$element;
-      if (this.options.multiple) $from = $from.parent();
-      return $from.after(this._ui.$errorsWrapper);
+      return this._inputHolder().after(this._ui.$errorsWrapper);
     },
 
     _actualizeTriggers: function _actualizeTriggers() {
-      var _this2 = this;
+      var _this3 = this;
 
       var $toBind = this._findRelated();
+      var trigger;
 
       // Remove Parsley events already bound on this field
       $toBind.off('.Parsley');
-      if (this._failedOnce) $toBind.on(ParsleyUtils__default.namespaceEvents(this.options.triggerAfterFailure, 'Parsley'), function () {
-        _this2.validate();
-      });else {
-        $toBind.on(ParsleyUtils__default.namespaceEvents(this.options.trigger, 'Parsley'), function (event) {
-          _this2._eventValidate(event);
+      if (this._failedOnce) $toBind.on(Utils__default.namespaceEvents(this.options.triggerAfterFailure, 'Parsley'), function () {
+        _this3._validateIfNeeded();
+      });else if (trigger = Utils__default.namespaceEvents(this.options.trigger, 'Parsley')) {
+        $toBind.on(trigger, function (event) {
+          _this3._validateIfNeeded(event);
         });
       }
     },
 
-    _eventValidate: function _eventValidate(event) {
+    _validateIfNeeded: function _validateIfNeeded(event) {
+      var _this4 = this;
+
       // For keyup, keypress, keydown, input... events that could be a little bit obstrusive
       // do not validate if val length < min threshold on first validation. Once field have been validated once and info
       // about success or failure have been displayed, always validate with this trigger to reflect every yalidation change.
-      if (/key|input/.test(event.type)) if (!(this._ui && this._ui.validationInformationVisible) && this.getValue().length <= this.options.validationThreshold) return;
+      if (event && /key|input/.test(event.type)) if (!(this._ui && this._ui.validationInformationVisible) && this.getValue().length <= this.options.validationThreshold) return;
 
-      this.validate();
+      if (this.options.debounce) {
+        window.clearTimeout(this._debounced);
+        this._debounced = window.setTimeout(function () {
+          return _this4.validate();
+        }, this.options.debounce);
+      } else this.validate();
     },
 
     _resetUI: function _resetUI() {
@@ -1116,9 +1165,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
   };
 
-  var ParsleyForm = function ParsleyForm(element, domOptions, options) {
-    this.__class__ = 'ParsleyForm';
-    this.__id__ = ParsleyUtils__default.generateID();
+  var Form = function Form(element, domOptions, options) {
+    this.__class__ = 'Form';
 
     this.$element = $(element);
     this.domOptions = domOptions;
@@ -1129,17 +1177,17 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     this.validationResult = null;
   };
 
-  var ParsleyForm__statusMapping = { pending: null, resolved: true, rejected: false };
+  var Form__statusMapping = { pending: null, resolved: true, rejected: false };
 
-  ParsleyForm.prototype = {
+  Form.prototype = {
     onSubmitValidate: function onSubmitValidate(event) {
-      var _this3 = this;
+      var _this5 = this;
 
       // This is a Parsley generated submit event, do not validate, do not prevent, simply exit and keep normal behavior
       if (true === event.parsley) return;
 
       // If we didn't come here through a submit button, use the first one in the form
-      var $submitSource = this._$submitSource || this.$element.find('input[type="submit"], button[type="submit"]').first();
+      var $submitSource = this._$submitSource || this.$element.find(Utils__default._SubmitSelector).first();
       this._$submitSource = null;
       this.$element.find('.parsley-synthetic-submit-button').prop('disabled', true);
       if ($submitSource.is('[formnovalidate]')) return;
@@ -1154,13 +1202,13 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           event.stopImmediatePropagation();
           event.preventDefault();
           if ('pending' === promise.state()) promise.done(function () {
-            _this3._submit($submitSource);
+            _this5._submit($submitSource);
           });
         }
     },
 
     onSubmitButton: function onSubmitButton(event) {
-      this._$submitSource = $(event.target);
+      this._$submitSource = $(event.currentTarget);
     },
     // internal
     // _submit submits the form, this time without going through the validations.
@@ -1187,7 +1235,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // Consider using `whenValidate` instead.
     validate: function validate(options) {
       if (arguments.length >= 1 && !$.isPlainObject(options)) {
-        ParsleyUtils__default.warnOnce('Calling validate on a parsley form without passing arguments as an object is deprecated.');
+        Utils__default.warnOnce('Calling validate on a parsley form without passing arguments as an object is deprecated.');
 
         var _arguments = _slice.call(arguments);
 
@@ -1197,11 +1245,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
         options = { group: group, force: force, event: event };
       }
-      return ParsleyForm__statusMapping[this.whenValidate(options).state()];
+      return Form__statusMapping[this.whenValidate(options).state()];
     },
 
     whenValidate: function whenValidate() {
-      var _this4 = this;
+      var _Utils__default$all$done$fail$always,
+          _this6 = this;
 
       var _ref7 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -1212,39 +1261,33 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       this.submitEvent = event;
       if (event) {
         this.submitEvent = $.extend({}, event, { preventDefault: function preventDefault() {
-            ParsleyUtils__default.warnOnce("Using `this.submitEvent.preventDefault()` is deprecated; instead, call `this.validationResult = false`");
-            _this4.validationResult = false;
+            Utils__default.warnOnce("Using `this.submitEvent.preventDefault()` is deprecated; instead, call `this.validationResult = false`");
+            _this6.validationResult = false;
           } });
       }
       this.validationResult = true;
 
-      // fire validate event to eventually modify things before very validation
+      // fire validate event to eventually modify things before every validation
       this._trigger('validate');
 
       // Refresh form DOM options and form's fields that could have changed
       this._refreshFields();
 
       var promises = this._withoutReactualizingFormOptions(function () {
-        return $.map(_this4.fields, function (field) {
+        return $.map(_this6.fields, function (field) {
           return field.whenValidate({ force: force, group: group });
         });
       });
 
-      var promiseBasedOnValidationResult = function promiseBasedOnValidationResult() {
-        var r = $.Deferred();
-        if (false === _this4.validationResult) r.reject();
-        return r.resolve().promise();
-      };
-
-      return $.when.apply($, _toConsumableArray(promises)).done(function () {
-        _this4._trigger('success');
+      return (_Utils__default$all$done$fail$always = Utils__default.all(promises).done(function () {
+        _this6._trigger('success');
       }).fail(function () {
-        _this4.validationResult = false;
-        _this4.focus();
-        _this4._trigger('error');
+        _this6.validationResult = false;
+        _this6.focus();
+        _this6._trigger('error');
       }).always(function () {
-        _this4._trigger('validated');
-      }).pipe(promiseBasedOnValidationResult, promiseBasedOnValidationResult);
+        _this6._trigger('validated');
+      })).pipe.apply(_Utils__default$all$done$fail$always, _toConsumableArray(this._pipeAccordingToValidationResult()));
     },
 
     // Iterate over refreshed fields, and stop on first failure.
@@ -1253,7 +1296,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // Prefer using `whenValid` instead.
     isValid: function isValid(options) {
       if (arguments.length >= 1 && !$.isPlainObject(options)) {
-        ParsleyUtils__default.warnOnce('Calling isValid on a parsley form without passing arguments as an object is deprecated.');
+        Utils__default.warnOnce('Calling isValid on a parsley form without passing arguments as an object is deprecated.');
 
         var _arguments2 = _slice.call(arguments);
 
@@ -1262,14 +1305,14 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
         options = { group: group, force: force };
       }
-      return ParsleyForm__statusMapping[this.whenValid(options).state()];
+      return Form__statusMapping[this.whenValid(options).state()];
     },
 
     // Iterate over refreshed fields and validate them.
     // Returns a promise.
     // A validation that immediately fails will interrupt the validations.
     whenValid: function whenValid() {
-      var _this5 = this;
+      var _this7 = this;
 
       var _ref8 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -1279,11 +1322,31 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       this._refreshFields();
 
       var promises = this._withoutReactualizingFormOptions(function () {
-        return $.map(_this5.fields, function (field) {
+        return $.map(_this7.fields, function (field) {
           return field.whenValid({ group: group, force: force });
         });
       });
-      return $.when.apply($, _toConsumableArray(promises));
+      return Utils__default.all(promises);
+    },
+
+    // Reset UI
+    reset: function reset() {
+      // Form case: emit a reset event for each field
+      for (var i = 0; i < this.fields.length; i++) this.fields[i].reset();
+
+      this._trigger('reset');
+    },
+
+    // Destroy Parsley instance (+ UI)
+    destroy: function destroy() {
+      // Field case: emit destroy event to clean UI and then destroy stored instance
+      this._destroyUI();
+
+      // Form case: destroy all its fields and then destroy stored instance
+      for (var i = 0; i < this.fields.length; i++) this.fields[i].destroy();
+
+      this.$element.removeData('Parsley');
+      this._trigger('destroy');
     },
 
     _refreshFields: function _refreshFields() {
@@ -1291,7 +1354,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     },
 
     _bindFields: function _bindFields() {
-      var _this6 = this;
+      var _this8 = this;
 
       var oldFields = this.fields;
 
@@ -1299,18 +1362,21 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       this.fieldsMappedById = {};
 
       this._withoutReactualizingFormOptions(function () {
-        _this6.$element.find(_this6.options.inputs).not(_this6.options.excluded).each(function (_, element) {
-          var fieldInstance = new window.Parsley.Factory(element, {}, _this6);
+        _this8.$element.find(_this8.options.inputs).not(_this8.options.excluded).each(function (_, element) {
+          var fieldInstance = new window.Parsley.Factory(element, {}, _this8);
 
-          // Only add valid and not excluded `ParsleyField` and `ParsleyFieldMultiple` children
-          if (('ParsleyField' === fieldInstance.__class__ || 'ParsleyFieldMultiple' === fieldInstance.__class__) && true !== fieldInstance.options.excluded) if ('undefined' === typeof _this6.fieldsMappedById[fieldInstance.__class__ + '-' + fieldInstance.__id__]) {
-            _this6.fieldsMappedById[fieldInstance.__class__ + '-' + fieldInstance.__id__] = fieldInstance;
-            _this6.fields.push(fieldInstance);
+          // Only add valid and not excluded `Field` and `FieldMultiple` children
+          if (('Field' === fieldInstance.__class__ || 'FieldMultiple' === fieldInstance.__class__) && true !== fieldInstance.options.excluded) {
+            var uniqueId = fieldInstance.__class__ + '-' + fieldInstance.__id__;
+            if ('undefined' === typeof _this8.fieldsMappedById[uniqueId]) {
+              _this8.fieldsMappedById[uniqueId] = fieldInstance;
+              _this8.fields.push(fieldInstance);
+            }
           }
         });
 
-        $(oldFields).not(_this6.fields).each(function (_, field) {
-          field._trigger('reset');
+        $.each(Utils__default.difference(oldFields, _this8.fields), function (_, field) {
+          field.reset();
         });
       });
       return this;
@@ -1342,11 +1408,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   };
 
-  var ConstraintFactory = function ConstraintFactory(parsleyField, name, requirements, priority, isDomConstraint) {
-    if (!/ParsleyField/.test(parsleyField.__class__)) throw new Error('ParsleyField or ParsleyFieldMultiple instance expected');
-
+  var Constraint = function Constraint(parsleyField, name, requirements, priority, isDomConstraint) {
     var validatorSpec = window.Parsley._validatorRegistry.validators[name];
-    var validator = new ParsleyValidator(validatorSpec);
+    var validator = new Validator(validatorSpec);
 
     $.extend(this, {
       validator: validator,
@@ -1363,26 +1427,24 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return cap + str.slice(1);
   };
 
-  ConstraintFactory.prototype = {
+  Constraint.prototype = {
     validate: function validate(value, instance) {
-      var args = this.requirementList.slice(0); // Make copy
-      args.unshift(value);
-      args.push(instance);
-      return this.validator.validate.apply(this.validator, args);
+      var _validator;
+
+      return (_validator = this.validator).validate.apply(_validator, [value].concat(_toConsumableArray(this.requirementList), [instance]));
     },
 
     _parseRequirements: function _parseRequirements(options) {
-      var _this7 = this;
+      var _this9 = this;
 
       this.requirementList = this.validator.parseRequirements(this.requirements, function (key) {
-        return options[_this7.name + capitalize(key)];
+        return options[_this9.name + capitalize(key)];
       });
     }
   };
 
-  var ParsleyField = function ParsleyField(field, domOptions, options, parsleyFormInstance) {
-    this.__class__ = 'ParsleyField';
-    this.__id__ = ParsleyUtils__default.generateID();
+  var Field = function Field(field, domOptions, options, parsleyFormInstance) {
+    this.__class__ = 'Field';
 
     this.$element = $(field);
 
@@ -1397,7 +1459,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // Initialize some properties
     this.constraints = [];
     this.constraintsByName = {};
-    this.validationResult = [];
+    this.validationResult = true;
 
     // Bind constraints
     this._bindConstraints();
@@ -1405,14 +1467,14 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   var parsley_field__statusMapping = { pending: null, resolved: true, rejected: false };
 
-  ParsleyField.prototype = {
+  Field.prototype = {
     // # Public API
-    // Validate field and trigger some events for mainly `ParsleyUI`
+    // Validate field and trigger some events for mainly `UI`
     // @returns `true`, an array of the validators that failed, or
     // `null` if validation is not finished. Prefer using whenValidate
     validate: function validate(options) {
       if (arguments.length >= 1 && !$.isPlainObject(options)) {
-        ParsleyUtils__default.warnOnce('Calling validate on a parsley field without passing arguments as an object is deprecated.');
+        Utils__default.warnOnce('Calling validate on a parsley field without passing arguments as an object is deprecated.');
         options = { options: options };
       }
       var promise = this.whenValidate(options);
@@ -1428,11 +1490,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       }
     },
 
-    // Validate field and trigger some events for mainly `ParsleyUI`
+    // Validate field and trigger some events for mainly `UI`
     // @returns a promise that succeeds only when all validations do
     // or `undefined` if field is not in the given `group`.
     whenValidate: function whenValidate() {
-      var _this8 = this;
+      var _whenValid$always$done$fail$always,
+          _this10 = this;
 
       var _ref9 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -1448,15 +1511,15 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       // Field Validate event. `this.value` could be altered for custom needs
       this._trigger('validate');
 
-      return this.whenValid({ force: force, value: this.value, _refreshed: true }).always(function () {
-        _this8._reflowUI();
+      return (_whenValid$always$done$fail$always = this.whenValid({ force: force, value: this.value, _refreshed: true }).always(function () {
+        _this10._reflowUI();
       }).done(function () {
-        _this8._trigger('success');
+        _this10._trigger('success');
       }).fail(function () {
-        _this8._trigger('error');
+        _this10._trigger('error');
       }).always(function () {
-        _this8._trigger('validated');
-      });
+        _this10._trigger('validated');
+      })).pipe.apply(_whenValid$always$done$fail$always, _toConsumableArray(this._pipeAccordingToValidationResult()));
     },
 
     hasConstraints: function hasConstraints() {
@@ -1485,7 +1548,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // See also `whenValid`.
     isValid: function isValid(options) {
       if (arguments.length >= 1 && !$.isPlainObject(options)) {
-        ParsleyUtils__default.warnOnce('Calling isValid on a parsley field without passing arguments as an object is deprecated.');
+        Utils__default.warnOnce('Calling isValid on a parsley field without passing arguments as an object is deprecated.');
 
         var _arguments3 = _slice.call(arguments);
 
@@ -1506,7 +1569,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // The argument `force` will force validation of empty fields.
     // If a `value` is given, it will be validated instead of the value of the input.
     whenValid: function whenValid() {
-      var _this9 = this;
+      var _this11 = this;
 
       var _ref10 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -1526,7 +1589,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       // A field without constraint is valid
       if (!this.hasConstraints()) return $.when();
 
-      // Value could be passed as argument, needed to add more power to 'parsley:field:validate'
+      // Value could be passed as argument, needed to add more power to 'field:validate'
       if ('undefined' === typeof value || null === value) value = this.getValue();
 
       if (!this.needsValidation(value) && true !== force) return $.when();
@@ -1536,26 +1599,26 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       $.each(groupedConstraints, function (_, constraints) {
         // Process one group of constraints at a time, we validate the constraints
         // and combine the promises together.
-        var promise = $.when.apply($, _toConsumableArray($.map(constraints, function (constraint) {
-          return _this9._validateConstraint(value, constraint);
-        })));
+        var promise = Utils__default.all($.map(constraints, function (constraint) {
+          return _this11._validateConstraint(value, constraint);
+        }));
         promises.push(promise);
         if (promise.state() === 'rejected') return false; // Interrupt processing if a group has already failed
       });
-      return $.when.apply($, promises);
+      return Utils__default.all(promises);
     },
 
     // @returns a promise
     _validateConstraint: function _validateConstraint(value, constraint) {
-      var _this10 = this;
+      var _this12 = this;
 
       var result = constraint.validate(value, this);
       // Map false to a failed promise
       if (false === result) result = $.Deferred().reject();
       // Make sure we return a promise and that we record failures
-      return $.when(result).fail(function (errorMessage) {
-        if (true === _this10.validationResult) _this10.validationResult = [];
-        _this10.validationResult.push({
+      return Utils__default.all([result]).fail(function (errorMessage) {
+        if (!(_this12.validationResult instanceof Array)) _this12.validationResult = [];
+        _this12.validationResult.push({
           assert: constraint,
           errorMessage: 'string' === typeof errorMessage && errorMessage
         });
@@ -1575,6 +1638,21 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return this._handleWhitespace(value);
     },
 
+    // Reset UI
+    reset: function reset() {
+      this._resetUI();
+      return this._trigger('reset');
+    },
+
+    // Destroy Parsley instance (+ UI)
+    destroy: function destroy() {
+      // Field case: emit destroy event to clean UI and then destroy stored instance
+      this._destroyUI();
+      this.$element.removeData('Parsley');
+      this.$element.removeData('FieldMultiple');
+      this._trigger('destroy');
+    },
+
     // Actualize options that could have change since previous validation
     // Re-bind accordingly constraints (could be some new, removed or updated)
     refreshConstraints: function refreshConstraints() {
@@ -1592,7 +1670,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     addConstraint: function addConstraint(name, requirements, priority, isDomConstraint) {
 
       if (window.Parsley._validatorRegistry.validators[name]) {
-        var constraint = new ConstraintFactory(this, name, requirements, priority, isDomConstraint);
+        var constraint = new Constraint(this, name, requirements, priority, isDomConstraint);
 
         // if constraint already exist, delete it and push new version
         if ('undefined' !== this.constraintsByName[constraint.name]) this.removeConstraint(constraint.name);
@@ -1647,7 +1725,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // Bind specific HTML5 constraints to be HTML5 compliant
     _bindHtml5Constraints: function _bindHtml5Constraints() {
       // html5 required
-      if (this.$element.hasClass('required') || this.$element.attr('required')) this.addConstraint('required', true, undefined, true);
+      if (this.$element.attr('required')) this.addConstraint('required', true, undefined, true);
 
       // html5 pattern
       if ('string' === typeof this.$element.attr('pattern')) this.addConstraint('pattern', this.$element.attr('pattern'), undefined, true);
@@ -1678,11 +1756,11 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       // Small special case here for HTML5 number: integer validator if step attribute is undefined or an integer value, number otherwise
       if ('number' === type) {
         return this.addConstraint('type', ['number', {
-          step: this.$element.attr('step'),
+          step: this.$element.attr('step') || '1',
           base: this.$element.attr('min') || this.$element.attr('value')
         }], undefined, true);
         // Regular other HTML5 supported types
-      } else if (/^(email|url|range)$/i.test(type)) {
+      } else if (/^(email|url|range|date)$/i.test(type)) {
           return this.addConstraint('type', type, undefined, true);
         }
       return this;
@@ -1707,13 +1785,18 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // Use `data-parsley-whitespace="squish"` to auto squish input value
     // Use `data-parsley-whitespace="trim"` to auto trim input value
     _handleWhitespace: function _handleWhitespace(value) {
-      if (true === this.options.trimValue) ParsleyUtils__default.warnOnce('data-parsley-trim-value="true" is deprecated, please use data-parsley-whitespace="trim"');
+      if (true === this.options.trimValue) Utils__default.warnOnce('data-parsley-trim-value="true" is deprecated, please use data-parsley-whitespace="trim"');
 
       if ('squish' === this.options.whitespace) value = value.replace(/\s{2,}/g, ' ');
 
-      if ('trim' === this.options.whitespace || 'squish' === this.options.whitespace || true === this.options.trimValue) value = ParsleyUtils__default.trimString(value);
+      if ('trim' === this.options.whitespace || 'squish' === this.options.whitespace || true === this.options.trimValue) value = Utils__default.trimString(value);
 
       return value;
+    },
+
+    _isDateInput: function _isDateInput() {
+      var c = this.constraintsByName.type;
+      return c && c.requirements === 'date';
     },
 
     // Internal only.
@@ -1741,13 +1824,13 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   };
 
-  var parsley_field = ParsleyField;
+  var parsley_field = Field;
 
-  var ParsleyMultiple = function ParsleyMultiple() {
-    this.__class__ = 'ParsleyFieldMultiple';
+  var Multiple = function Multiple() {
+    this.__class__ = 'FieldMultiple';
   };
 
-  ParsleyMultiple.prototype = {
+  Multiple.prototype = {
     // Add new `$element` sibling for multiple field
     addElement: function addElement($element) {
       this.$elements.push($element);
@@ -1755,7 +1838,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return this;
     },
 
-    // See `ParsleyField.refreshConstraints()`
+    // See `Field.refreshConstraints()`
     refreshConstraints: function refreshConstraints() {
       var fieldConstraints;
 
@@ -1777,7 +1860,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           continue;
         }
 
-        fieldConstraints = this.$elements[i].data('ParsleyFieldMultiple').refreshConstraints().constraints;
+        fieldConstraints = this.$elements[i].data('FieldMultiple').refreshConstraints().constraints;
 
         for (var j = 0; j < fieldConstraints.length; j++) this.addConstraint(fieldConstraints[j].name, fieldConstraints[j].requirements, fieldConstraints[j].priority, fieldConstraints[j].isDomConstraint);
       }
@@ -1785,10 +1868,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return this;
     },
 
-    // See `ParsleyField.getValue()`
+    // See `Field.getValue()`
     getValue: function getValue() {
       // Value could be overriden in DOM
-      if ('function' === typeof this.options.value) value = this.options.value(this);else if ('undefined' !== typeof this.options.value) return this.options.value;
+      if ('function' === typeof this.options.value) return this.options.value(this);else if ('undefined' !== typeof this.options.value) return this.options.value;
 
       // Radio input case
       if (this.$element.is('input[type=radio]')) return this._findRelated().filter(':checked').val() || '';
@@ -1818,17 +1901,21 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
   };
 
-  var ParsleyFactory = function ParsleyFactory(element, options, parsleyFormInstance) {
+  var Factory = function Factory(element, options, parsleyFormInstance) {
     this.$element = $(element);
 
     // If the element has already been bound, returns its saved Parsley instance
     var savedparsleyFormInstance = this.$element.data('Parsley');
     if (savedparsleyFormInstance) {
 
-      // If the saved instance has been bound without a ParsleyForm parent and there is one given in this call, add it
+      // If the saved instance has been bound without a Form parent and there is one given in this call, add it
       if ('undefined' !== typeof parsleyFormInstance && savedparsleyFormInstance.parent === window.Parsley) {
         savedparsleyFormInstance.parent = parsleyFormInstance;
         savedparsleyFormInstance._resetOptions(savedparsleyFormInstance.options);
+      }
+
+      if ('object' === typeof options) {
+        $.extend(savedparsleyFormInstance.options, options);
       }
 
       return savedparsleyFormInstance;
@@ -1837,25 +1924,25 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // Parsley must be instantiated with a DOM element or jQuery $element
     if (!this.$element.length) throw new Error('You must bind Parsley on an existing element.');
 
-    if ('undefined' !== typeof parsleyFormInstance && 'ParsleyForm' !== parsleyFormInstance.__class__) throw new Error('Parent instance must be a ParsleyForm instance');
+    if ('undefined' !== typeof parsleyFormInstance && 'Form' !== parsleyFormInstance.__class__) throw new Error('Parent instance must be a Form instance');
 
     this.parent = parsleyFormInstance || window.Parsley;
     return this.init(options);
   };
 
-  ParsleyFactory.prototype = {
+  Factory.prototype = {
     init: function init(options) {
       this.__class__ = 'Parsley';
-      this.__version__ = '2.3.5';
-      this.__id__ = ParsleyUtils__default.generateID();
+      this.__version__ = '2.7.0';
+      this.__id__ = Utils__default.generateID();
 
       // Pre-compute options
       this._resetOptions(options);
 
-      // A ParsleyForm instance is obviously a `<form>` element but also every node that is not an input and has the `data-parsley-validate` attribute
-      if (this.$element.is('form') || ParsleyUtils__default.checkAttr(this.$element, this.options.namespace, 'validate') && !this.$element.is(this.options.inputs)) return this.bind('parsleyForm');
+      // A Form instance is obviously a `<form>` element but also every node that is not an input and has the `data-parsley-validate` attribute
+      if (this.$element.is('form') || Utils__default.checkAttr(this.$element, this.options.namespace, 'validate') && !this.$element.is(this.options.inputs)) return this.bind('parsleyForm');
 
-      // Every other element is bound as a `ParsleyField` or `ParsleyFieldMultiple`
+      // Every other element is bound as a `Field` or `FieldMultiple`
       return this.isMultiple() ? this.handleMultiple() : this.bind('parsleyField');
     },
 
@@ -1866,7 +1953,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // Multiples fields are a real nightmare :(
     // Maybe some refactoring would be appreciated here...
     handleMultiple: function handleMultiple() {
-      var _this11 = this;
+      var _this13 = this;
 
       var name;
       var multiple;
@@ -1883,7 +1970,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
         // Else for radio / checkboxes, we need a `name` or `data-parsley-multiple` to properly bind it
       } else if (!this.options.multiple) {
-          ParsleyUtils__default.warn('To be bound by Parsley, a radio, a checkbox and a multiple select input must have either a name or a multiple option.', this.$element);
+          Utils__default.warn('To be bound by Parsley, a radio, a checkbox and a multiple select input must have either a name or a multiple option.', this.$element);
           return this;
         }
 
@@ -1893,7 +1980,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       // Add proper `data-parsley-multiple` to siblings if we have a valid multiple name
       if ('undefined' !== typeof name) {
         $('input[name="' + name + '"]').each(function (i, input) {
-          if ($(input).is('input[type=radio], input[type=checkbox]')) $(input).attr(_this11.options.namespace + 'multiple', _this11.options.multiple);
+          if ($(input).is('input[type=radio], input[type=checkbox]')) $(input).attr(_this13.options.namespace + 'multiple', _this13.options.multiple);
         });
       }
 
@@ -1903,7 +1990,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         parsleyMultipleInstance = $($previouslyRelated.get(i)).data('Parsley');
         if ('undefined' !== typeof parsleyMultipleInstance) {
 
-          if (!this.$element.data('ParsleyFieldMultiple')) {
+          if (!this.$element.data('FieldMultiple')) {
             parsleyMultipleInstance.addElement(this.$element);
           }
 
@@ -1911,35 +1998,35 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         }
       }
 
-      // Create a secret ParsleyField instance for every multiple field. It will be stored in `data('ParsleyFieldMultiple')`
-      // And will be useful later to access classic `ParsleyField` stuff while being in a `ParsleyFieldMultiple` instance
+      // Create a secret Field instance for every multiple field. It will be stored in `data('FieldMultiple')`
+      // And will be useful later to access classic `Field` stuff while being in a `FieldMultiple` instance
       this.bind('parsleyField', true);
 
       return parsleyMultipleInstance || this.bind('parsleyFieldMultiple');
     },
 
-    // Return proper `ParsleyForm`, `ParsleyField` or `ParsleyFieldMultiple`
+    // Return proper `Form`, `Field` or `FieldMultiple`
     bind: function bind(type, doNotStore) {
       var parsleyInstance;
 
       switch (type) {
         case 'parsleyForm':
-          parsleyInstance = $.extend(new ParsleyForm(this.$element, this.domOptions, this.options), window.ParsleyExtend)._bindFields();
+          parsleyInstance = $.extend(new Form(this.$element, this.domOptions, this.options), new Base(), window.ParsleyExtend)._bindFields();
           break;
         case 'parsleyField':
-          parsleyInstance = $.extend(new parsley_field(this.$element, this.domOptions, this.options, this.parent), window.ParsleyExtend);
+          parsleyInstance = $.extend(new parsley_field(this.$element, this.domOptions, this.options, this.parent), new Base(), window.ParsleyExtend);
           break;
         case 'parsleyFieldMultiple':
-          parsleyInstance = $.extend(new parsley_field(this.$element, this.domOptions, this.options, this.parent), new ParsleyMultiple(), window.ParsleyExtend)._init();
+          parsleyInstance = $.extend(new parsley_field(this.$element, this.domOptions, this.options, this.parent), new Multiple(), new Base(), window.ParsleyExtend)._init();
           break;
         default:
           throw new Error(type + 'is not a supported Parsley type');
       }
 
-      if (this.options.multiple) ParsleyUtils__default.setAttr(this.$element, this.options.namespace, 'multiple', this.options.multiple);
+      if (this.options.multiple) Utils__default.setAttr(this.$element, this.options.namespace, 'multiple', this.options.multiple);
 
       if ('undefined' !== typeof doNotStore) {
-        this.$element.data('ParsleyFieldMultiple', parsleyInstance);
+        this.$element.data('FieldMultiple', parsleyInstance);
 
         return parsleyInstance;
       }
@@ -1947,7 +2034,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       // Store the freshly bound instance in a DOM element for later access using jQuery `data()`
       this.$element.data('Parsley', parsleyInstance);
 
-      // Tell the world we have a new ParsleyForm or ParsleyField instance!
+      // Tell the world we have a new Form or Field instance!
       parsleyInstance._actualizeTriggers();
       parsleyInstance._trigger('init');
 
@@ -1960,23 +2047,23 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     throw "The loaded version of jQuery is too old. Please upgrade to 1.8.x or better.";
   }
   if (!vernums.forEach) {
-    ParsleyUtils__default.warn('Parsley requires ES5 to run properly. Please include https://github.com/es-shims/es5-shim');
+    Utils__default.warn('Parsley requires ES5 to run properly. Please include https://github.com/es-shims/es5-shim');
   }
   // Inherit `on`, `off` & `trigger` to Parsley:
-  var Parsley = $.extend(new ParsleyAbstract(), {
+  var Parsley = $.extend(new Base(), {
     $element: $(document),
     actualizeOptions: null,
     _resetOptions: null,
-    Factory: ParsleyFactory,
-    version: '2.3.5'
+    Factory: Factory,
+    version: '2.7.0'
   });
 
-  // Supplement ParsleyField and Form with ParsleyAbstract
+  // Supplement Field and Form with Base
   // This way, the constructors will have access to those methods
-  $.extend(parsley_field.prototype, ParsleyUI.Field, ParsleyAbstract.prototype);
-  $.extend(ParsleyForm.prototype, ParsleyUI.Form, ParsleyAbstract.prototype);
+  $.extend(parsley_field.prototype, UI.Field, Base.prototype);
+  $.extend(Form.prototype, UI.Form, Base.prototype);
   // Inherit actualizeOptions and _resetOptions:
-  $.extend(ParsleyFactory.prototype, ParsleyAbstract.prototype);
+  $.extend(Factory.prototype, Base.prototype);
 
   // ### jQuery API
   // `$('.elem').parsley(options)` or `$('.elem').psly(options)`
@@ -1993,69 +2080,70 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
     // Return undefined if applied to non existing DOM element
     if (!$(this).length) {
-      ParsleyUtils__default.warn('You must bind Parsley on an existing element.');
+      Utils__default.warn('You must bind Parsley on an existing element.');
 
       return;
     }
 
-    return new ParsleyFactory(this, options);
+    return new Factory(this, options);
   };
 
-  // ### ParsleyField and ParsleyForm extension
+  // ### Field and Form extension
   // Ensure the extension is now defined if it wasn't previously
   if ('undefined' === typeof window.ParsleyExtend) window.ParsleyExtend = {};
 
   // ### Parsley config
   // Inherit from ParsleyDefault, and copy over any existing values
-  Parsley.options = $.extend(ParsleyUtils__default.objectCreate(ParsleyDefaults), window.ParsleyConfig);
+  Parsley.options = $.extend(Utils__default.objectCreate(Defaults), window.ParsleyConfig);
   window.ParsleyConfig = Parsley.options; // Old way of accessing global options
 
   // ### Globals
   window.Parsley = window.psly = Parsley;
-  window.ParsleyUtils = ParsleyUtils__default;
+  Parsley.Utils = Utils__default;
+  window.ParsleyUtils = {};
+  $.each(Utils__default, function (key, value) {
+    if ('function' === typeof value) {
+      window.ParsleyUtils[key] = function () {
+        Utils__default.warnOnce('Accessing `window.ParsleyUtils` is deprecated. Use `window.Parsley.Utils` instead.');
+        return Utils__default[key].apply(Utils__default, arguments);
+      };
+    }
+  });
 
   // ### Define methods that forward to the registry, and deprecate all access except through window.Parsley
-  var registry = window.Parsley._validatorRegistry = new ParsleyValidatorRegistry(window.ParsleyConfig.validators, window.ParsleyConfig.i18n);
+  var registry = window.Parsley._validatorRegistry = new ValidatorRegistry(window.ParsleyConfig.validators, window.ParsleyConfig.i18n);
   window.ParsleyValidator = {};
   $.each('setLocale addCatalog addMessage addMessages getErrorMessage formatMessage addValidator updateValidator removeValidator'.split(' '), function (i, method) {
     window.Parsley[method] = $.proxy(registry, method);
     window.ParsleyValidator[method] = function () {
       var _window$Parsley;
 
-      ParsleyUtils__default.warnOnce('Accessing the method \'' + method + '\' through ParsleyValidator is deprecated. Simply call \'window.Parsley.' + method + '(...)\'');
+      Utils__default.warnOnce('Accessing the method \'' + method + '\' through Validator is deprecated. Simply call \'window.Parsley.' + method + '(...)\'');
       return (_window$Parsley = window.Parsley)[method].apply(_window$Parsley, arguments);
     };
   });
 
-  // ### ParsleyUI
+  // ### UI
   // Deprecated global object
-  window.Parsley.UI = ParsleyUI;
+  window.Parsley.UI = UI;
   window.ParsleyUI = {
     removeError: function removeError(instance, name, doNotUpdateClass) {
       var updateClass = true !== doNotUpdateClass;
-      ParsleyUtils__default.warnOnce('Accessing ParsleyUI is deprecated. Call \'removeError\' on the instance directly. Please comment in issue 1073 as to your need to call this method.');
+      Utils__default.warnOnce('Accessing UI is deprecated. Call \'removeError\' on the instance directly. Please comment in issue 1073 as to your need to call this method.');
       return instance.removeError(name, { updateClass: updateClass });
     },
     getErrorsMessages: function getErrorsMessages(instance) {
-      ParsleyUtils__default.warnOnce('Accessing ParsleyUI is deprecated. Call \'getErrorsMessages\' on the instance directly.');
+      Utils__default.warnOnce('Accessing UI is deprecated. Call \'getErrorsMessages\' on the instance directly.');
       return instance.getErrorsMessages();
     }
   };
   $.each('addError updateError'.split(' '), function (i, method) {
     window.ParsleyUI[method] = function (instance, name, message, assert, doNotUpdateClass) {
       var updateClass = true !== doNotUpdateClass;
-      ParsleyUtils__default.warnOnce('Accessing ParsleyUI is deprecated. Call \'' + method + '\' on the instance directly. Please comment in issue 1073 as to your need to call this method.');
+      Utils__default.warnOnce('Accessing UI is deprecated. Call \'' + method + '\' on the instance directly. Please comment in issue 1073 as to your need to call this method.');
       return instance[method](name, { message: message, assert: assert, updateClass: updateClass });
     };
   });
-
-  // Alleviate glaring Firefox bug https://bugzilla.mozilla.org/show_bug.cgi?id=1250521
-  // See also https://github.com/guillaumepotier/Parsley.js/issues/1068
-  if (/firefox/i.test(navigator.userAgent)) {
-    $(document).on('change', 'select', function (evt) {
-      $(evt.target).trigger('input');
-    });
-  }
 
   // ### PARSLEY auto-binding
   // Prevent it by setting `ParsleyConfig.autoBind` to `false`
@@ -2068,7 +2156,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   var o = $({});
   var deprecated = function deprecated() {
-    ParsleyUtils__default.warnOnce("Parsley's pubsub module is deprecated; use the 'on' and 'off' methods on parsley instances or window.Parsley");
+    Utils__default.warnOnce("Parsley's pubsub module is deprecated; use the 'on' and 'off' methods on parsley instances or window.Parsley");
   };
 
   // Returns an event handler that calls `fn` with the arguments it expects
@@ -2107,7 +2195,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   $.listenTo = function (instance, name, fn) {
     deprecated();
-    if (!(instance instanceof parsley_field) && !(instance instanceof ParsleyForm)) throw new Error('Must give Parsley instance');
+    if (!(instance instanceof parsley_field) && !(instance instanceof Form)) throw new Error('Must give Parsley instance');
 
     if ('string' !== typeof name || 'function' !== typeof fn) throw new Error('Wrong parameters');
 
@@ -2122,7 +2210,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   $.unsubscribeTo = function (instance, name) {
     deprecated();
-    if (!(instance instanceof parsley_field) && !(instance instanceof ParsleyForm)) throw new Error('Must give Parsley instance');
+    if (!(instance instanceof parsley_field) && !(instance instanceof Form)) throw new Error('Must give Parsley instance');
     instance.off(eventName(name));
   };
 
@@ -2142,7 +2230,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     var _instance;
 
     deprecated();
-    var instanceGiven = instance instanceof parsley_field || instance instanceof ParsleyForm;
+    var instanceGiven = instance instanceof parsley_field || instance instanceof Form;
     var args = Array.prototype.slice.call(arguments, instanceGiven ? 2 : 1);
     args.unshift(eventName(name));
     if (!instanceGiven) {
@@ -2250,7 +2338,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   });
 
   window.ParsleyExtend.addAsyncValidator = function () {
-    ParsleyUtils.warnOnce('Accessing the method `addAsyncValidator` through an instance is deprecated. Simply call `Parsley.addAsyncValidator(...)`');
+    Utils.warnOnce('Accessing the method `addAsyncValidator` through an instance is deprecated. Simply call `Parsley.addAsyncValidator(...)`');
     return Parsley.addAsyncValidator.apply(Parsley, arguments);
   };
 
@@ -2282,6 +2370,74 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   });
 
   Parsley.setLocale('en');
+
+  /**
+   * inputevent - Alleviate browser bugs for input events
+   * https://github.com/marcandre/inputevent
+   * @version v0.0.3 - (built Thu, Apr 14th 2016, 5:58 pm)
+   * @author Marc-Andre Lafortune <github@marc-andre.ca>
+   * @license MIT
+   */
+
+  function InputEvent() {
+    var _this14 = this;
+
+    var globals = window || global;
+
+    // Slightly odd way construct our object. This way methods are force bound.
+    // Used to test for duplicate library.
+    $.extend(this, {
+
+      // For browsers that do not support isTrusted, assumes event is native.
+      isNativeEvent: function isNativeEvent(evt) {
+        return evt.originalEvent && evt.originalEvent.isTrusted !== false;
+      },
+
+      fakeInputEvent: function fakeInputEvent(evt) {
+        if (_this14.isNativeEvent(evt)) {
+          $(evt.target).trigger('input');
+        }
+      },
+
+      misbehaves: function misbehaves(evt) {
+        if (_this14.isNativeEvent(evt)) {
+          _this14.behavesOk(evt);
+          $(document).on('change.inputevent', evt.data.selector, _this14.fakeInputEvent);
+          _this14.fakeInputEvent(evt);
+        }
+      },
+
+      behavesOk: function behavesOk(evt) {
+        if (_this14.isNativeEvent(evt)) {
+          $(document) // Simply unbinds the testing handler
+          .off('input.inputevent', evt.data.selector, _this14.behavesOk).off('change.inputevent', evt.data.selector, _this14.misbehaves);
+        }
+      },
+
+      // Bind the testing handlers
+      install: function install() {
+        if (globals.inputEventPatched) {
+          return;
+        }
+        globals.inputEventPatched = '0.0.3';
+        var _arr = ['select', 'input[type="checkbox"]', 'input[type="radio"]', 'input[type="file"]'];
+        for (var _i = 0; _i < _arr.length; _i++) {
+          var selector = _arr[_i];
+          $(document).on('input.inputevent', selector, { selector: selector }, _this14.behavesOk).on('change.inputevent', selector, { selector: selector }, _this14.misbehaves);
+        }
+      },
+
+      uninstall: function uninstall() {
+        delete globals.inputEventPatched;
+        $(document).off('.inputevent');
+      }
+
+    });
+  };
+
+  var inputevent = new InputEvent();
+
+  inputevent.install();
 
   var parsley = Parsley;
 

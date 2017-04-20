@@ -1,9 +1,9 @@
-import journey from "lib/journey/journey";
-import "lib/pace";
+import journey from "lib/journey/journey.js";
+import "lib/pace.js";
 import template from "./menu.html";
-import Ractive from "lib/ractive";
-//import sidePanel from "app/panel/side-panel/sidePanel";
-//import ctrlEvents from "app/views/lifecycle/ctrl-events/ctrl-events";
+import Ractive from "lib/ractive.js";
+import sidePanel from "../panel/side-panel/sidePanel.js";
+import menuSlider from "./menuSlider.js";
 
 let sidePanelObj;
 
@@ -17,16 +17,15 @@ var menu = {
 
 			template: template,
 
-			gotoCtrlEvents: function () {
-				journey.goto( "ctrlEvents" );
-				return false;
+			gotoEvents: function () {
+				journey.goto( "/events" );
 			},
 
 			showJavascript: function ( routeName ) {
-				/*
-				 sidePanelObj.show( {
-				 ext: "js"
-				 } );*/
+
+				sidePanelObj.show( {
+					ext: "js"
+				} );
 				// Cancel the click event by returning false, otherwise the link function would execute ie. follow the link href
 				return false;
 			},
@@ -42,37 +41,14 @@ var menu = {
 		} );
 
 		// Create sidePanel instance
-		/*
-		 sidePanelObj = sidePanel( {
-		 el: '#side-panel'
-		 } );*/
 
-		// Add highlight to menu
-		highlightActiveMenu();
+		sidePanelObj = sidePanel('#side-panel');
+
+		// Add highlighting slider to menu
+		menuSlider.init();
 
 		Pace.stop();
 	}
 };
-
-function highlightActiveMenu() {
-	$( ".nav a" ).on( "click", function () {
-		var $el = $( this );
-
-		var navId = $el.attr( "id" );
-
-		// Don't highlight showJavascript and showHtml menu items since they trigger a slide panel, not an actual new view
-		if ( navId === "showJs" || navId === "showHtml" ) {
-			return;
-		}
-
-		// If we click on dropdown do not change to active
-		if ( $el.parent().hasClass( "dropdown" ) ) {
-			return;
-		}
-		$( ".nav" ).find( ".active" ).removeClass( "active" );
-		$( this ).parent().addClass( "active" );
-		$( '.active' ).closest( 'li.dropdown' ).addClass( 'active' );
-	} );
-}
 
 export default menu;

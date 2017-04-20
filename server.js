@@ -1,4 +1,5 @@
 var express = require( "express" );
+var fsPath = require( "path" );
 var open = require( 'open' );
 var chokidar = require( "chokidar" );
 var fs = require( "fs-extra" );
@@ -28,45 +29,62 @@ function transpileJS() {
 			} )
 			.on( 'event', e => {
 				if ( e.code == 'BUILD_END' ) {
-					setupServer();
+					if ( starting ) {
+						setupServer(); // setupServer is called every time a rollup completes a build ie everytime a file is changed.
+						starting = false;
+					}
 				}
 			} );
 }
 
 function setupServer() {
-	if ( starting ) {
-		watchAssets();
-		startServer();
-		// Only start servier once
-		starting = false;
-	}
+	watchAssets();
+	startServer();
+	// Only start server once
 }
 
 function watchAssets() {
 
-	chokidar.watch( 'web/src/**/*', { ignored: [ 'web/src/js/app/**/*.js' ] } ).on( 'all', ( event, path ) => {
+	chokidar.watch( 'web/src/**/*', { ignored: [ '' ] } ).on( 'all', ( event, path ) => {
 
 		if ( ! fs.lstatSync( path ).isDirectory() ) {
-			var dest = path.replace( "web\\src\\", "dist\\" );
-			//console.log("path: ", dest)
-			
-			// Ensure src wss renamed to dist before copying, otherwise you end up copying over the source file itself
-			if (dest.indexOf("dist") >= 0) {
-				fs.copySync( path, dest );
-			}
+
+			writeToDest( path );
 		}
 	} );
+}
 
+function writeToDest( path ) {
+
+	let srcDir = fsPath.normalize( "web/src/" );
+	let destDir = fsPath.normalize( "dist/" );
+	var dest = path.replace( srcDir, destDir );
+
+	// Ensure src wss renamed to dist before copying, otherwise you end up overwriting the source file itself
+	if ( dest.indexOf( "dist" ) >= 0 ) {
+		let dir = fsPath.dirname( dest );
+		fs.ensureDirSync( dir );
+		var content = fs.readFileSync( path ).toString();
+		content = removeInjectPathComment( content );
+		fs.writeFileSync( dest, content );
+	}
+}
+
+function removeInjectPathComment( content ) {
+	content = content.replace( "/*%injectPath%*/", "" ); // remove the indexPath comment
+	return content;
 }
 
 function startServer() {
-	
+
 	var app = express();
-	
+
 	// requests with . in them is passed to original request eg: my.js -> my.js, my.css -> my.css etc. Requests without an extension
 	// are handled below
 	app.get( "*.*", function ( req, res, next ) {
-		res.sendFile( __dirname + root + req.url );
+		let idx = req.url.indexOf( '?' );
+		let path = req.url.substring( 0, idx != - 1 ? idx : req.url.length );
+		res.sendFile( __dirname + root + path );
 	} );
 
 	// Catchall request: always return index.html. Thus we can support PUSHSTATE requests such as host/a and host/b. If user refresh browser
@@ -77,5 +95,8 @@ function startServer() {
 
 	app.use( express.static( __dirname + root ) );
 	app.listen( 9988 );
+	
+	console.log("*** Server started ***");
+	
 	open( 'http://localhost:9988/' );
 }

@@ -1,29 +1,30 @@
-define(function (require) {
-	var $ = require("jquery");
-	var kudu = require("kudu");
-	var template = require("rvc!./redirect");
-	var target = require("../redirect/redirect-target");
+import journey from "lib/journey/journey";
+import Ractive from "lib/ractive";
+import template from "./redirect.html";
 
-	function redirect() {
+var redirect = {
 
-		var that = {};
+	enter: function ( route, prevRoute, options ) {
+		// 
+		if ( route.query.typeId == null ) {
+			journey.goto( "/redirectTarget" );
+			return;
 
-		that.onInit = function (options) {
-			if (options.routeParams.typeId == null) {
-				kudu.go({ctrl: target, updateUrl: false});
-				return null;
-			}
-			
-			return createView();
-		};
+		} else {
 
-		function createView() {
-			var view = new template();
-
-			return view;
+			route.view = new Ractive( {
+				el: options.target,
+				template: template
+			} );
 		}
+	},
 
-		return that;
+	leave: function ( route, nextRoute, options ) {
+		if ( route.view == null ) {
+			return;
+		}
+		route.view.teardown();
 	}
-	return redirect;
-});
+};
+
+export default redirect;

@@ -5,26 +5,34 @@
             <h1 style="padding-top:30px; padding-bottom:0px;">Navigation with parameters<span class="highlightLetter"> successful!</span></h1>
         </div>
     </div>
+    
+    <div class="row">
+
+        <div class="col-md-12">
+            The following <em>params</em> was received:
+            <pre><code class="language-js">{{JSON.stringify(params, null, 2)}}</code></pre>
+        </div>
+    </div>
 
     <div class="row">
 
         <div class="col-md-12">
-            The following parameters was received:
-            <pre><code class="language-js">{{JSON.stringify(params, null, 2)}}</code></pre>
+            The following <em>query string</em> was received:
+            <pre><code class="language-js">{{JSON.stringify(query, null, 2)}}</code></pre>
         </div>
     </div>
     
     <div class="row">
 
         <div class="col-md-12">
-            The following arguments was received:
+            The following <em>arguments</em> was received:
             <pre><code class="language-js">{{JSON.stringify(args, null, 2)}}</code></pre>
         </div>
     </div>
 
     <div class="row">
         <div class="col-md-6">
-            <a href="#nav" class="link">Go back</a>
+            <a href="/nav" class="link">Go back</a>
         </div>
     </div>
 
