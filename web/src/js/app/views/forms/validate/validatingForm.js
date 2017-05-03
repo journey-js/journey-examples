@@ -14,7 +14,16 @@ var validatingForm = {
 			template: template,
 			
 			oncomplete: function() {
+				console.log("FORM: oncomplete!")
 				setupParsley();
+			},
+			
+			onteardown: function() {
+				console.log("FORM: onteardown!")
+			},
+			
+			ondestruct: function() {
+				console.log("FORM: ondestruct!")
 			},
 
 			submit: function () {

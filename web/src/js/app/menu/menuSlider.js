@@ -5,86 +5,105 @@ let windowResizeTimeoutId;
 
 let menuSlider = {
 
-	init: () => {
+	init( options ) {
 		setupWindowResizeListener();
+
+		setupMenuListener();
+		/*
+		 let $fallbackMenu = $( options.fallbackMenu );
+		 let $initialLi = $fallbackMenu.parent();
+		 setSliderOnActiveMenu( $initialLi );*/
+	},
+
+	updateSlider( $li ) {
+		// Parent dropdown menus should be skipped and handled by the child menu when selected
+		if ( $li.length == 0 ) {
+			return;
+		}
+
+		updateMenu( $li );
+
+		slideToMenu( $li );
 	}
-
-
 };
 
-journey.on( "entered", function ( options ) {
-	slideToActiveMenu( options.to );
+function setupMenuListener() {
 
-} );
+	journey.on( "entered", options => {
+		let viewName = getViewName( options );
+		console.log( "viewname:", viewName );
 
-function slideToActiveMenu( route ) {
+		let $li = getMenu( viewName );
 
-	var $activeMenu = $( "#navbar li.active" );
+		if ( hasActiveMenu() ) {
+			menuSlider.updateSlider( $li );
 
-	let path = route.pathname;
-
-	let $liItem = $( "#menu-" + path ).parent();
-	if ( $liItem.length == 0 ) {
-		$liItem = $( ".navbar [href='/" + path + "']" ).parent();
-	}
-
-
-	$liItem = handleDropdown( $liItem );
-
-	if ( $activeMenu.length > 0 ) {
-		let $subLi = $( "#navbar li.active li.sub-active" );
-		$subLi.removeClass( "sub-active" );
-
-		let $activeLi = $( "#navbar li.active" );
-		$activeLi.removeClass( "active" );
-		slideToActive( $liItem );
-	} else {
-		setInitialActiveMenu( $liItem );
-	}
-}
-
-function handleDropdown( $item ) {
-	if ( $item.length === 1 ) {
-
-		// If this menu is in a dropdown, we need to reference the top parent menu item to highlight it
-		var $dropdown = $item.closest( '.dropdown' );
-
-		if ( $dropdown.length === 1 ) {
-			$item.addClass( "sub-active" );
-
-			// store reference to $item 
-			$dropdown.child = $item;
-			$item = $dropdown;
+		} else {
+			updateMenu( $li );						
+			initializeSlider( $li );
 		}
-	}
+	} );
 
-	return $item;
+//	$( '.navbar li' ).click( function ( e ) {
+//		var $li = $( this );
+//
+//		menuSlider.updateSlider( $li );
+//	} );
 }
 
-function slideToActive( $liItem ) {
-	//let $li = $item.parent();
-	$liItem.addClass( 'active' );
+function updateMenu( $li ) {
 
-	// If this menu is in a dropdown, we need to reference the top parent menu item to highlight it
-	if ( $liItem.child ) {
-		$liItem.child.addClass( "sub-active" );
+	if ( hasParent( $li ) ) {
+		let $parent = getParent( $li );
+		updateChild( $parent, $li );
+		//slideToActiveMenu( $parent );
+
+	} else {
+		updateLeaf( $li );
+		//slideToActiveMenu( $li );
+	}
+	//}
+
+	return $li;
+}
+
+function updateLeaf( $li ) {
+	$( '.navbar li.active' ).removeClass( 'active' );
+	$li.addClass( 'active' );
+}
+
+function updateChild( $parent, $leaf ) {
+	$( '.navbar li.active' ).removeClass( 'active' );
+	$parent.addClass( 'active' );
+
+	$( "#navbar .sub-active" ).removeClass( "sub-active" );
+	$leaf.addClass( "sub-active" );
+}
+
+function slideToMenu( $li ) {
+	if ( hasParent( $li ) ) {
+		$li = getParent( $li );
 	}
 
 	if ( $( "#nav-ind" ).is( ":visible" ) ) {
 		// Only navigate to the menu if the menu has not collapsed yet ie is less than 768px
-		var location = getActiveMenuLocation( $liItem );
+		var location = getActiveMenuLocation( $li );
 		$( '#nav-ind' ).animate( location, 'fast', 'linear' );
 	}
 }
 
-function setInitialActiveMenu( $liItem ) {
-	//var $item = $( ".navbar [href='#" + path + "']" );
-	//let $li = $item.parent();
-	$liItem.addClass( "active" );
-	var loc = getActiveMenuLocation( $liItem );
-	//let $activeMenu = $( "#navbar li.active" );
-	//var loc = getActiveMenuLocation( $activeMenu );
+function initializeSlider( $li ) {
+	if ( hasParent( $li ) ) {
+		$li = getParent( $li );
+	}
+	//$liItem.addClass( "active" );
+	var loc = getActiveMenuLocation( $li );
 	$( '#nav-ind' ).css( loc );
+}
+
+function hasActiveMenu() {
+	let $li = $( ".navbar li.active" );
+	return $li.length > 0;
 }
 
 function setupWindowResizeListener() {
@@ -129,6 +148,53 @@ function getActiveMenuLocation( $li ) {
 		bottom: navbarHeight - liHeight - offsetTop
 	};
 	return location;
+}
+
+function isParent( $li ) {
+	if ( $li.hasClass( "dropdown" ) ) {
+		return true;
+	}
+	return false;
+}
+
+function isLeaf( $li ) {
+	return ! isParent( $li );
+}
+
+function getParent( $li ) {
+	let $parent = $li.closest( '.dropdown' );
+	return $parent;
+}
+
+function hasParent( $li ) {
+	let $parent = getParent( $li );
+	if ( $parent.length == 1 ) {
+		return true;
+	}
+	return false;
+}
+
+function getViewName( options ) {
+	let route = options.to;
+	let path = route.path;
+	if ( path == null ) {
+		return "";
+	}
+
+	let start = path.lastIndexOf( "/" );
+	let name = path.slice( start + 1 );
+	return name;
+}
+
+function getMenu( viewName ) {
+	
+	let selector = "#menu-" + viewName;
+	let $li = $( selector ).parent();
+
+	if ( $li.length == 0 ) {
+		$li = $( ".navbar [href='/" + viewName + "'], .navbar [href='#" + viewName + "'], .navbar [href='" + viewName + "']" ).parent( );
+	}
+	return $li;
 }
 
 export default menuSlider;

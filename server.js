@@ -15,7 +15,9 @@ const pkg = require( './package.json' );
 
 let starting = true;
 
-var root = "/dist";
+const root = "/dist/";
+const useContextPath = true;
+//const useContextPath = false;
 
 transpileJS();
 
@@ -64,9 +66,9 @@ function writeToDest( path ) {
 	if ( dest.indexOf( "dist" ) >= 0 ) {
 		let dir = fsPath.dirname( dest );
 		fs.ensureDirSync( dir );
-		var content = fs.readFileSync( path ).toString();
+		var content = fs.readFileSync( path, 'binary' );
 		content = removeInjectPathComment( content );
-		fs.writeFileSync( dest, content );
+		fs.writeFileSync( dest, content, 'binary' );
 	}
 }
 
@@ -84,19 +86,42 @@ function startServer() {
 	app.get( "*.*", function ( req, res, next ) {
 		let idx = req.url.indexOf( '?' );
 		let path = req.url.substring( 0, idx != - 1 ? idx : req.url.length );
-		res.sendFile( __dirname + root + path );
+
+		if (useContextPath) {
+			res.sendFile( __dirname + path );
+
+		} else {
+			res.sendFile( __dirname + root + path );
+		}
 	} );
 
 	// Catchall request: always return index.html. Thus we can support PUSHSTATE requests such as host/a and host/b. If user refresh browser
 	// express will return index.html and the JS router can route to the neccessary controller
 	app.get( "*", function ( req, res, next ) {
-		res.sendFile( __dirname + root + "/index.html" );
+		
+		var content = fs.readFileSync( __dirname + root + "/index.html", 'binary' );
+		
+		if (useContextPath) {
+			content = content.replace(/\/css\//g, "\/dist\/css\/");
+			content = content.replace(/\/js\//g, "\/dist\/js\/");
+		}
+		//res.sendFile( __dirname + root + "/index.html" );
+		res.send( content );
 	} );
-
-	app.use( express.static( __dirname + root ) );
+	
+	if (useContextPath) {
+		app.use( express.static( __dirname ) );
+		
+	} else {
+		app.use( express.static( __dirname + root ) );
+	}
 	app.listen( 9988 );
+
+	console.log( "*** Server started ***" );
 	
-	console.log("*** Server started ***");
-	
-	open( 'http://localhost:9988/' );
+	if (useContextPath) {
+		open( 'http://localhost:9988/dist/' );
+	} else {
+		open( 'http://localhost:9988/' );
+	}
 }

@@ -5,13 +5,14 @@ import Ractive from "lib/ractive.js";
 var home = {
 
 	enter: function ( route, prevRoute, options ) {
+		console.log("HOME enter:", arguments);
 		/*%injectPath%*/
 		route.view = new Ractive( {
 			el: options.target,
 			template: template,
 
 			start: function () {
-				journey.goto( "/basic", { x: "1234" } );
+				journey.goto( "#basic?b=2#a=b", { x: "1234" } );
 			}
 		} );
 

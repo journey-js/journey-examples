@@ -17,8 +17,9 @@ var menu = {
 
 			template: template,
 
-			gotoEvents: function () {
+			gotoEvents: function ( e ) {
 				journey.goto( "/events" );
+				e.preventDefault();
 			},
 
 			showJavascript: function ( routeName ) {
@@ -42,12 +43,21 @@ var menu = {
 
 		// Create sidePanel instance
 
-		sidePanelObj = sidePanel('#side-panel');
+		sidePanelObj = sidePanel( '#side-panel' );
 
 		// Add highlighting slider to menu
-		menuSlider.init();
+		menuSlider.init( { fallbackMenu: options.fallbackMenu } );
 
 		Pace.stop();
+
+		journey.on( "entered", () => {
+			Pace.stop();
+		} );
+	},
+
+	updateSlider: selector => {
+		let $li = $( selector );
+		menuSlider.updateSlider( $li );
 	}
 };
 

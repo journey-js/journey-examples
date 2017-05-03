@@ -7,10 +7,13 @@ import menu from "./menu/menu.js";
 import "lib/bootstrap.js";
 import "./animationMonitor.js";
 
-menu.init( { target: "#menu" } );
+let contextPath = "/dist";
+//let contextPath = "";
 
-if (location.pathname == "/"  || location.pathname == "") {
-	history.replaceState(null, null, "/home"); // change url to /home as a default
+menu.init( { target: "#menu", fallbackMenu: "#menu-home" } );
+
+if (location.pathname == "/" || location.pathname == contextPath || location.pathname == "") {
+	//history.replaceState(null, null, "/home"); // change url to /home as a default
 }
 
 Ractive.transitions = {
@@ -22,9 +25,12 @@ journey.on( "entered", function ( options ) {
 	Prism.highlightAll();
 } );
 
-
 journey.start( {
 	target: "#container",
 	debug: Ractive.DEBUG = true,
-	fallback: '/notFound'
+	fallback: '/notFound',
+	base: contextPath,
+	defaultRoute: '/home',
+	useHash: true,
+	hash: '#!'
 } );

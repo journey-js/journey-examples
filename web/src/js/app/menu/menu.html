@@ -11,13 +11,13 @@
             <ul class="nav navbar-nav" id="navbar">
                 
                 <div id="nav-ind"></div>
-                <li ><a href="/home">Home</a></li>
+                <li ><a href="/home" id="menu-home">Home</a></li>
 <!--                <li><a href="/basic">Basic controller demo</a></li>-->
 
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Basics <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="/basic">Basic controller demo</a></li>
+                        <li><a href="#basic?x=y" id="menu-basic">Basic controller demo</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="/methods">Method calls</a></li>
                         <li><a href="/binding">Binding</a></li>
@@ -29,9 +29,9 @@
                     <ul class="dropdown-menu">
                         <li><a href="/nav">Navigate to views</a></li>
                         <li role="separator" class="divider"></li>
-                        <li><a href="/navTargetParams/1?name=Bob" id="menu-nav-target-params">Navigate to view and pass URL parameters</a></li>
+                        <li><a href="/navTargetParams/1?name=Bob" id="menu-navTargetParams">Navigate to view and pass URL parameters</a></li>
                         <li role="separator" class="divider"></li>
-                        <li><a href="/redirect">Redirect to another view</a></li>
+                        <li><a href="/redirect" id="menu-redirectTarget">Redirect to another view</a></li>
                     </ul>
                 </li>
 
@@ -47,7 +47,7 @@
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Life cycle <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="/events" on-click='gotoEvents()'> lifecycle events</a></li>
+                        <li><a href="/events" on-click='gotoEvents(@event)'> lifecycle events</a></li>
                     </ul>
                 </li>
 
