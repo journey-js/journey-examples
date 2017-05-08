@@ -12,6 +12,9 @@ import redirectTarget from "../views/nav/redirect/redirectTarget.js";
 import basicForm from "../views/forms/basic/basicForm.js";
 import validatingForm from "../views/forms/validate/validatingForm.js";
 import events from "../views/lifecycle/events/events.js";
+import basicAjax from "../views/ajax/basic/basicAjax.js";
+import upload from "../views/ajax/upload/upload.js";
+
 
 			/*
 	var Ractive = require("ractive");
@@ -55,6 +58,8 @@ journey.add("/notFound", notFound);
 journey.add("/basicForm", basicForm);
 journey.add("/validatingForm", validatingForm);
 journey.add("/events", events);
+journey.add("/basicAjax", basicAjax);
+journey.add("/upload", upload);
 
 /*
 	function routes() {

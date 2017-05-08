@@ -1,5 +1,5 @@
 import journey from "lib/journey/journey.js";
-import events from "lib/journey/util/events";
+import events from "lib/journey/utils/events";
 import Ractive from "lib/ractive.js";
 import template from "./events.html";
 

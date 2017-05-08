@@ -20,7 +20,6 @@ Ractive.transitions = {
 	fade
 };
 
-
 journey.on( "entered", function ( options ) {
 	Prism.highlightAll();
 } );
@@ -31,6 +30,7 @@ journey.start( {
 	fallback: '/notFound',
 	base: contextPath,
 	defaultRoute: '/home',
-	useHash: true,
+	useOnHashChange: false,
+	useHash: false,
 	hash: '#!'
 } );

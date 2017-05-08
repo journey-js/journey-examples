@@ -80,6 +80,26 @@ function removeInjectPathComment( content ) {
 function startServer() {
 
 	var app = express();
+	
+	app.get( [ "/data/hello.json", "/dist/data/hello.json"], function ( req, res ) {
+		var sleep = req.query.delay || 0;
+		var reject = req.query.reject;
+		if(reject === 'true') {
+			throw new Error("Rejected!");
+		}
+
+		setTimeout( function () {
+			res.sendFile( __dirname + "/web/src" + "/data/hello.json" );
+		}, sleep );
+	} );
+	
+	app.post( ["/data/submitForm", "/dist/data/submitForm"], function ( req, res ) {
+		var sleep = req.query.delay || 0;
+		
+		setTimeout( function () {
+			res.send( '{"msg": "Successfully uploaded file"}' );
+		}, sleep );
+	} );
 
 	// requests with . in them is passed to original request eg: my.js -> my.js, my.css -> my.css etc. Requests without an extension
 	// are handled below
@@ -108,7 +128,7 @@ function startServer() {
 		//res.sendFile( __dirname + root + "/index.html" );
 		res.send( content );
 	} );
-	
+		
 	if (useContextPath) {
 		app.use( express.static( __dirname ) );
 		
