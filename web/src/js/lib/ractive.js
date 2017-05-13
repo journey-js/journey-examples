@@ -1,14 +1,10 @@
 /*
 	Ractive.js v0.9.0-edge
-	Mon Feb 20 2017 08:53:32 GMT+0000 (UTC) - commit 8507b452e719412bdb79ebef5404078e6f9881e8
-
-	http://ractivejs.org
-	http://twitter.com/RactiveJS
-
-	Released under the MIT License.
+	Build: unknown
+	Date: Fri May 12 2017 23:15:19 GMT+0200 (South Africa Standard Time)
+	Website: http://ractivejs.org
+	License: MIT
 */
-
-
 var defaults = {
 	// render placement:
 	el:                     void 0,
@@ -29,6 +25,7 @@ var defaults = {
 	sanitize:               false,
 	stripComments:          true,
 	contextLines:           0,
+	parserTransforms:       [],
 
 	// data & binding:
 	data:                   {},
@@ -87,7 +84,7 @@ var easing = {
 	}
 };
 
-var toString$1$1 = Object.prototype.toString;
+var toString = Object.prototype.toString;
 
 
 function isEqual ( a, b ) {
@@ -108,7 +105,7 @@ function isNumeric ( thing ) {
 }
 
 function isObject ( thing ) {
-	return ( thing && toString$1$1.call( thing ) === '[object Object]' );
+	return ( thing && toString.call( thing ) === '[object Object]' );
 }
 
 function isObjectLike ( thing ) {
@@ -141,13 +138,13 @@ var welcome;
 
 if ( hasConsole ) {
 	var welcomeIntro = [
-		"%cRactive.js %c0.9.0-edge-8507b452e719412bdb79ebef5404078e6f9881e8 %cin debug mode, %cmore...",
+		"%cRactive.js %c0.9.0-edge %cin debug mode, %cmore...",
 		'color: rgb(114, 157, 52); font-weight: normal;',
 		'color: rgb(85, 85, 85); font-weight: normal;',
 		'color: rgb(85, 85, 85); font-weight: normal;',
 		'color: rgb(82, 140, 224); font-weight: normal; text-decoration: underline;'
 	];
-	var welcomeMessage = "You're running Ractive 0.9.0-edge-8507b452e719412bdb79ebef5404078e6f9881e8 in debug mode - messages will be printed to the console to help you fix problems and optimise your application.\n\nTo disable debug mode, add this line at the start of your app:\n  Ractive.DEBUG = false;\n\nTo disable debug mode when your app is minified, add this snippet:\n  Ractive.DEBUG = /unminified/.test(function(){/*unminified*/});\n\nGet help and support:\n  http://docs.ractivejs.org\n  http://stackoverflow.com/questions/tagged/ractivejs\n  http://groups.google.com/forum/#!forum/ractive-js\n  http://twitter.com/ractivejs\n\nFound a bug? Raise an issue:\n  https://github.com/ractivejs/ractive/issues\n\n";
+	var welcomeMessage = "You're running Ractive 0.9.0-edge in debug mode - messages will be printed to the console to help you fix problems and optimise your application.\n\nTo disable debug mode, add this line at the start of your app:\n  Ractive.DEBUG = false;\n\nTo disable debug mode when your app is minified, add this snippet:\n  Ractive.DEBUG = /unminified/.test(function(){/*unminified*/});\n\nGet help and support:\n  http://docs.ractivejs.org\n  http://stackoverflow.com/questions/tagged/ractivejs\n  http://groups.google.com/forum/#!forum/ractive-js\n  http://twitter.com/ractivejs\n\nFound a bug? Raise an issue:\n  https://github.com/ractivejs/ractive/issues\n\n";
 
 	welcome = function () {
 		if ( Ractive.WELCOME_MESSAGE === false ) {
@@ -401,7 +398,7 @@ function addToArray ( array, value ) {
 	}
 }
 
-function arrayContains$1 ( array, value ) {
+function arrayContains ( array, value ) {
 	for ( var i = 0, c = array.length; i < c; i++ ) {
 		if ( array[i] == value ) {
 			return true;
@@ -448,7 +445,7 @@ function lastItem ( array ) {
 	return array[ array.length - 1 ];
 }
 
-function removeFromArray$1 ( array, member ) {
+function removeFromArray ( array, member ) {
 	if ( !array ) {
 		return;
 	}
@@ -534,8 +531,9 @@ TransitionManager.prototype.decrementTotal = function decrementTotal () {
 };
 
 TransitionManager.prototype.detachNodes = function detachNodes () {
-	this.detachQueue.forEach( detach$1 );
+	this.detachQueue.forEach( detach );
 	this.children.forEach( _detachNodes );
+	this.detachQueue = [];
 };
 
 TransitionManager.prototype.ready = function ready () {
@@ -544,7 +542,7 @@ TransitionManager.prototype.ready = function ready () {
 
 TransitionManager.prototype.remove = function remove ( transition ) {
 	var list = transition.isIntro ? this.intros : this.outros;
-	removeFromArray$1( list, transition );
+	removeFromArray( list, transition );
 	check( this );
 };
 
@@ -555,7 +553,7 @@ TransitionManager.prototype.start = function start () {
 	check( this );
 };
 
-function detach$1 ( element ) {
+function detach ( element ) {
 	element.detach();
 }
 
@@ -729,14 +727,14 @@ var runloop = {
 	}
 };
 
-function dispatch$1 ( observer ) {
+function dispatch ( observer ) {
 	observer.dispatch();
 }
 
 function flushChanges () {
 	var which = batch.immediateObservers;
 	batch.immediateObservers = [];
-	which.forEach( dispatch$1 );
+	which.forEach( dispatch );
 
 	// Now that changes have been fully propagated, we can update the DOM
 	// and complete other tasks
@@ -755,7 +753,7 @@ function flushChanges () {
 
 	which = batch.deferredObservers;
 	batch.deferredObservers = [];
-	which.forEach( dispatch$1 );
+	which.forEach( dispatch );
 
 	var tasks = batch.tasks;
 	batch.tasks = [];
@@ -814,7 +812,7 @@ function unescapeKey ( key ) {
 
 var keep = false;
 
-function set$1 ( ractive, pairs, options ) {
+function set ( ractive, pairs, options ) {
 	var k = keep;
 
 	var deep = options && options.deep;
@@ -922,14 +920,14 @@ function getComparator ( option ) {
 
 var errorMessage = 'Cannot add to a non-numeric value';
 
-function add$1 ( ractive, keypath, d ) {
+function add ( ractive, keypath, d ) {
 	if ( typeof keypath !== 'string' || !isNumeric( d ) ) {
 		throw new Error( 'Bad arguments' );
 	}
 
 	var sets = build( ractive, keypath, d );
 
-	return set$1( ractive, sets.map( function (pair) {
+	return set( ractive, sets.map( function (pair) {
 		var model = pair[0];
 		var add = pair[1];
 		var value = model.get();
@@ -941,13 +939,13 @@ function add$1 ( ractive, keypath, d ) {
 function Ractive$add ( keypath, d, options ) {
 	var num = typeof d === 'number' ? d : 1;
 	var opts = typeof d === 'object' ? d : options;
-	return add$1( this, keypath, num, opts );
+	return add( this, keypath, num, opts );
 }
 
 var noAnimation = Promise.resolve();
 Object.defineProperty( noAnimation, 'stop', { value: noop });
 
-var linear$1 = easing.linear;
+var linear = easing.linear;
 
 function getOptions ( options, instance ) {
 	options = options || {};
@@ -960,14 +958,14 @@ function getOptions ( options, instance ) {
 	}
 
 	return {
-		easing: easing$$1 || linear$1,
+		easing: easing$$1 || linear,
 		duration: 'duration' in options ? options.duration : 400,
 		complete: options.complete || noop,
 		step: options.step || noop
 	};
 }
 
-function animate$1 ( ractive, model, to, options ) {
+function animate ( ractive, model, to, options ) {
 	options = getOptions( options, ractive );
 	var from = model.get();
 
@@ -999,7 +997,7 @@ function Ractive$animate ( keypath, to, options ) {
 	}
 
 
-	return animate$1( this, this.viewmodel.joinAll( splitKeypath( keypath ) ), to, options );
+	return animate( this, this.viewmodel.joinAll( splitKeypath( keypath ) ), to, options );
 }
 
 function enqueue ( ractive, event ) {
@@ -1118,7 +1116,7 @@ function notifySubscribers ( ractive, subscribers, context, args ) {
 	subscribers = subscribers.slice();
 
 	for ( var i = 0, len = subscribers.length; i < len; i += 1 ) {
-		if ( !subscribers[ i ].off && subscribers[ i ].apply( ractive, args ) === false ) {
+		if ( !subscribers[ i ].off && subscribers[ i ].handler.apply( ractive, args ) === false ) {
 			stopEvent = true;
 		}
 	}
@@ -1141,7 +1139,7 @@ function getRactiveContext ( ractive ) {
 	return fragment.getContext.apply( fragment, assigns );
 }
 
-function getContext$1 () {
+function getContext () {
 	var assigns = [], len = arguments.length;
 	while ( len-- ) assigns[ len ] = arguments[ len ];
 
@@ -1156,7 +1154,7 @@ var FakeFragment = function FakeFragment ( ractive ) {
 
 FakeFragment.prototype.findContext = function findContext () { return this.ractive.viewmodel; };
 var proto = FakeFragment.prototype;
-proto.getContext = getContext$1;
+proto.getContext = getContext;
 proto.find = proto.findComponent = proto.findAll = proto.findAllComponents = noop;
 
 var Hook = function Hook ( event ) {
@@ -1243,8 +1241,8 @@ function attachChild ( child, options ) {
 		ractive: this,
 		name: options.name || child.constructor.name || 'Ractive',
 		target: options.target || false,
-		bubble: bubble$1,
-		findNextNode: findNextNode$1
+		bubble: bubble,
+		findNextNode: findNextNode
 	};
 	meta.nameOption = options.name;
 
@@ -1258,7 +1256,7 @@ function attachChild ( child, options ) {
 			list = [];
 			this.set( ("@this.children.byName." + (meta.target)), list );
 		}
-		var idx = options.prepend ? 0 : options.insertAt || list.length;
+		var idx = options.prepend ? 0 : options.insertAt !== undefined ? options.insertAt : list.length;
 		list.splice( idx, 0, meta );
 	}
 
@@ -1287,9 +1285,9 @@ function attachChild ( child, options ) {
 	return promise.then( function () { return child; } );
 }
 
-function bubble$1 () { runloop.addFragment( this.instance.fragment ); }
+function bubble () { runloop.addFragment( this.instance.fragment ); }
 
-function findNextNode$1 () {
+function findNextNode () {
 	if ( this.anchor ) { return this.anchor.findNextNode(); }
 }
 
@@ -1301,7 +1299,7 @@ function Ractive$detach () {
 	}
 
 	if ( this.el ) {
-		removeFromArray$1( this.el.__ractive_instances__, this );
+		removeFromArray( this.el.__ractive_instances__, this );
 	}
 
 	this.el = this.fragment.detach();
@@ -1525,28 +1523,31 @@ KeyModel.prototype.registerLink = function registerLink ( link ) {
 };
 
 KeyModel.prototype.unregister = function unregister ( dependant ) {
-	removeFromArray$1( this.deps, dependant );
+	removeFromArray( this.deps, dependant );
 };
 
 KeyModel.prototype.unregisterLink = function unregisterLink ( link ) {
-	removeFromArray$1( this.links, link );
+	removeFromArray( this.links, link );
 };
 
-function bind$1$1               ( x ) { x.bind(); }
-function cancel$1             ( x ) { x.cancel(); }
-function destroyed$1$1          ( x ) { x.destroyed(); }
-function handleChange$1$1       ( x ) { x.handleChange(); }
-function mark$1$1               ( x ) { x.mark(); }
+KeyModel.prototype.reference = noop;
+KeyModel.prototype.unreference = noop;
+
+function bind               ( x ) { x.bind(); }
+function cancel             ( x ) { x.cancel(); }
+function destroyed          ( x ) { x.destroyed(); }
+function handleChange       ( x ) { x.handleChange(); }
+function mark               ( x ) { x.mark(); }
 function marked             ( x ) { x.marked(); }
 function markedAll          ( x ) { x.markedAll(); }
-function render$1$1             ( x ) { x.render(); }
-function shuffled$1$1           ( x ) { x.shuffled(); }
-function teardown$1$1           ( x ) { x.teardown(); }
-function unbind$1$1             ( x ) { x.unbind(); }
-function unrender$1$1           ( x ) { x.unrender(); }
+function render             ( x ) { x.render(); }
+function shuffled           ( x ) { x.shuffled(); }
+function teardown           ( x ) { x.teardown(); }
+function unbind             ( x ) { x.unbind(); }
+function unrender           ( x ) { x.unrender(); }
 function unrenderAndDestroy ( x ) { x.unrender( true ); }
-function update$1$1             ( x ) { x.update(); }
-function toString$2           ( x ) { return x.toString(); }
+function update             ( x ) { x.update(); }
+function toString$1           ( x ) { return x.toString(); }
 function toEscapedString    ( x ) { return x.toString( true ); }
 
 var KeypathModel = function KeypathModel ( parent, ractive ) {
@@ -1585,7 +1586,7 @@ KeypathModel.prototype.handleChange = function handleChange$1 () {
 		this$1.children[ keys[i] ].handleChange();
 	}
 
-	this.deps.forEach( handleChange$1$1 );
+	this.deps.forEach( handleChange );
 };
 
 KeypathModel.prototype.rebindChildren = function rebindChildren ( next ) {
@@ -1625,7 +1626,7 @@ KeypathModel.prototype.removeChild = function removeChild ( model ) {
 	if ( model.ractive ) { delete this.children[ model.ractive._guid ]; }
 };
 
-KeypathModel.prototype.teardown = function teardown () {
+KeypathModel.prototype.teardown = function teardown$$1 () {
 		var this$1 = this;
 
 	if ( this.owner ) { this.owner.removeChild( this ); }
@@ -1638,14 +1639,19 @@ KeypathModel.prototype.teardown = function teardown () {
 };
 
 KeypathModel.prototype.unregister = function unregister ( dep ) {
-	removeFromArray$1( this.deps, dep );
+	removeFromArray( this.deps, dep );
 	if ( !this.deps.length ) { this.teardown(); }
 };
 
-function bind$2 ( fn, context ) {
+KeypathModel.prototype.reference = noop;
+KeypathModel.prototype.unreference = noop;
+
+var fnBind = Function.prototype.bind;
+
+function bind$1 ( fn, context ) {
 	if ( !/this/.test( fn.toString() ) ) { return fn; }
 
-	var bound = fn.bind( context );
+	var bound = fnBind.call( fn, context );
 	for ( var prop in fn ) { bound[ prop ] = fn[ prop ]; }
 
 	return bound;
@@ -1818,7 +1824,7 @@ ModelBase.prototype.notifyUpstream = function notifyUpstream ( startPath ) {
 		if ( parent.patternObservers.length ) { parent.patternObservers.forEach( function (o) { return o.notify( path.slice() ); } ); }
 		path.unshift( parent.key );
 		parent.links.forEach( function (l) { return l.notifiedUpstream( path, this$1.root ); } );
-		parent.deps.forEach( handleChange$1$1 );
+		parent.deps.forEach( handleChange );
 		parent = parent.parent;
 	}
 };
@@ -1853,6 +1859,10 @@ ModelBase.prototype.rebind = function rebind ( next, previous, safe ) {
 	}
 };
 
+ModelBase.prototype.reference = function reference () {
+	'refs' in this ? this.refs++ : this.refs = 1;
+};
+
 ModelBase.prototype.register = function register ( dep ) {
 	this.deps.push( dep );
 };
@@ -1870,21 +1880,25 @@ ModelBase.prototype.registerTwowayBinding = function registerTwowayBinding ( bin
 	this.bindings.push( binding );
 };
 
+ModelBase.prototype.unreference = function unreference () {
+	if ( 'refs' in this ) { this.refs--; }
+};
+
 ModelBase.prototype.unregister = function unregister ( dep ) {
-	removeFromArray$1( this.deps, dep );
+	removeFromArray( this.deps, dep );
 };
 
 ModelBase.prototype.unregisterLink = function unregisterLink ( link ) {
-	removeFromArray$1( this.links, link );
+	removeFromArray( this.links, link );
 };
 
 ModelBase.prototype.unregisterPatternObserver = function unregisterPatternObserver ( observer ) {
-	removeFromArray$1( this.patternObservers, observer );
+	removeFromArray( this.patternObservers, observer );
 	this.unregister( observer );
 };
 
 ModelBase.prototype.unregisterTwowayBinding = function unregisterTwowayBinding ( binding ) {
-	removeFromArray$1( this.bindings, binding );
+	removeFromArray( this.bindings, binding );
 };
 
 ModelBase.prototype.updateFromBindings = function updateFromBindings$1 ( cascade ) {
@@ -1913,7 +1927,7 @@ ModelBase.prototype.updateFromBindings = function updateFromBindings$1 ( cascade
 function maybeBind ( model, value, shouldBind ) {
 	if ( shouldBind && typeof value === 'function' && model.parent && model.parent.isRoot ) {
 		if ( !model.boundValue ) {
-			model.boundValue = bind$2( value._r_unbound || value, model.parent.ractive );
+			model.boundValue = bind$1( value._r_unbound || value, model.parent.ractive );
 		}
 
 		return model.boundValue;
@@ -1958,7 +1972,7 @@ function fireShuffleTasks ( stage ) {
 	}
 }
 
-function shuffle$1$1 ( model, newIndices, link ) {
+function shuffle ( model, newIndices, link ) {
 	model.shuffling = true;
 
 	var i = newIndices.length;
@@ -2154,8 +2168,8 @@ var LinkModel = (function (ModelBase$$1) {
 	};
 
 	LinkModel.prototype.handleChange = function handleChange$1 () {
-		this.deps.forEach( handleChange$1$1 );
-		this.links.forEach( handleChange$1$1 );
+		this.deps.forEach( handleChange );
+		this.links.forEach( handleChange );
 		this.notifyUpstream();
 	};
 
@@ -2174,7 +2188,7 @@ var LinkModel = (function (ModelBase$$1) {
 		return this.childByKey[ key ];
 	};
 
-	LinkModel.prototype.mark = function mark ( force ) {
+	LinkModel.prototype.mark = function mark$$1 ( force ) {
 		this.target.mark( force );
 	};
 
@@ -2183,7 +2197,7 @@ var LinkModel = (function (ModelBase$$1) {
 
 		this.links.forEach( marked );
 
-		this.deps.forEach( handleChange$1$1 );
+		this.deps.forEach( handleChange );
 	};
 
 	LinkModel.prototype.markedAll = function markedAll$1 () {
@@ -2195,7 +2209,7 @@ var LinkModel = (function (ModelBase$$1) {
 		var this$1 = this;
 
 		this.links.forEach( function (l) { return l.notifiedUpstream( startPath, this$1.root ); } );
-		this.deps.forEach( handleChange$1$1 );
+		this.deps.forEach( handleChange );
 		if ( startPath && this.rootLink && this.root !== root ) {
 			var path = startPath.slice( 1 );
 			path.unshift( this.key );
@@ -2241,7 +2255,7 @@ var LinkModel = (function (ModelBase$$1) {
 		if ( !this.target.shuffling ) {
 			this.target.shuffle( newIndices );
 		} else {
-			shuffle$1$1( this, newIndices, true );
+			shuffle( this, newIndices, true );
 		}
 
 	};
@@ -2253,7 +2267,8 @@ var LinkModel = (function (ModelBase$$1) {
 
 	LinkModel.prototype.teardown = function teardown$1 () {
 		if ( this._link ) { this._link.teardown(); }
-		this.children.forEach( teardown$1$1 );
+		this.target.unregisterLink( this );
+		this.children.forEach( teardown );
 	};
 
 	return LinkModel;
@@ -2332,7 +2347,7 @@ var Ticker = function Ticker ( options ) {
 	if ( !running ) { requestAnimationFrame( tick ); }
 };
 
-Ticker.prototype.tick = function tick$1 ( now ) {
+Ticker.prototype.tick = function tick ( now ) {
 	if ( !this.running ) { return false; }
 
 	if ( now > this.end ) {
@@ -2544,9 +2559,9 @@ var Model = (function (ModelBase$$1) {
 		}
 
 		// notify dependants
-		this.links.forEach( handleChange$1$1 );
-		this.children.forEach( mark$1$1 );
-		this.deps.forEach( handleChange$1$1 );
+		this.links.forEach( handleChange );
+		this.children.forEach( mark );
+		this.deps.forEach( handleChange );
 
 		if ( notify ) { this.notifyUpstream(); }
 
@@ -2619,10 +2634,10 @@ var Model = (function (ModelBase$$1) {
 				this.isArray = false;
 			}
 
-			this.children.forEach( mark$1$1 );
+			this.children.forEach( mark );
 			this.links.forEach( marked );
 
-			this.deps.forEach( handleChange$1$1 );
+			this.deps.forEach( handleChange );
 		}
 	};
 
@@ -2678,14 +2693,14 @@ var Model = (function (ModelBase$$1) {
 	};
 
 	Model.prototype.shuffle = function shuffle$1 ( newIndices ) {
-		shuffle$1$1( this, newIndices, false );
+		shuffle( this, newIndices, false );
 	};
 
 	Model.prototype.source = function source () { return this; };
 
 	Model.prototype.teardown = function teardown$1 () {
 		if ( this._link ) { this._link.teardown(); }
-		this.children.forEach( teardown$1$1 );
+		this.children.forEach( teardown );
 		if ( this.wrapper ) { this.wrapper.teardown(); }
 		if ( this.keypathModel ) { this.keypathModel.teardown(); }
 	};
@@ -2825,6 +2840,11 @@ function resolveReference ( fragment, ref ) {
 
 		else if ( base === '@context' ) {
 			return new ContextModel( fragment.getContext() );
+		}
+
+		// @context-local data
+		else if ( base === '@local' ) {
+			return fragment.getContext()._data.joinAll( keys );
 		}
 
 		// nope
@@ -3072,7 +3092,7 @@ var makeArrayMethod = function ( methodName ) {
 
 var updateHook = new Hook( 'update' );
 
-function update$2 ( ractive, model, options ) {
+function update$1 ( ractive, model, options ) {
 	// if the parent is wrapped, the adaptor will need to be updated before
 	// updating on this keypath
 	if ( model.parent && model.parent.wrapper ) {
@@ -3094,9 +3114,16 @@ function update$2 ( ractive, model, options ) {
 }
 
 function Ractive$update ( keypath, options ) {
-	if ( keypath ) { keypath = splitKeypath( keypath ); }
+	var opts, path;
 
-	return update$2( this, keypath ? this.viewmodel.joinAll( keypath ) : this.viewmodel, options );
+	if ( typeof keypath === 'string' ) {
+		path = splitKeypath( keypath );
+		opts = options;
+	} else {
+		opts = keypath;
+	}
+
+	return update$1( this, path ? this.viewmodel.joinAll( path ) : this.viewmodel, opts );
 }
 
 var TEXT              = 1;
@@ -3181,13 +3208,37 @@ var modelSort = makeArrayMethod( 'sort' ).model;
 var modelSplice = makeArrayMethod( 'splice' ).model;
 var modelReverse = makeArrayMethod( 'reverse' ).model;
 
+var ContextData = (function (Model$$1) {
+	function ContextData ( options ) {
+		Model$$1.call( this, null, null );
+
+		this.isRoot = true;
+		this.root = this;
+		this.value = {};
+		this.ractive = options.ractive;
+		this.adaptors = [];
+		this.context = options.context;
+	}
+
+	if ( Model$$1 ) ContextData.__proto__ = Model$$1;
+	ContextData.prototype = Object.create( Model$$1 && Model$$1.prototype );
+	ContextData.prototype.constructor = ContextData;
+
+	ContextData.prototype.getKeypath = function getKeypath () {
+		return '@context.data';
+	};
+
+	return ContextData;
+}(Model));
+
 var Context = function Context ( fragment, element ) {
 	this.fragment = fragment;
 	this.element = element || findElement( fragment );
 	this.ractive = fragment.ractive;
+	this.root = this;
 };
 
-var prototypeAccessors = { decorators: {} };
+var prototypeAccessors = { decorators: {},_data: {} };
 
 prototypeAccessors.decorators.get = function () {
 	var items = {};
@@ -3196,11 +3247,15 @@ prototypeAccessors.decorators.get = function () {
 	return items;
 };
 
+prototypeAccessors._data.get = function () {
+	return this.model || ( this.root.model = new ContextData({ ractive: this.ractive, context: this.root }) );
+};
+
 // the usual mutation suspects
 Context.prototype.add = function add ( keypath, d, options ) {
 	var num = typeof d === 'number' ? +d : 1;
 	var opts = typeof d === 'object' ? d : options;
-	return set$1( this.ractive, build$1( this, keypath, num ).map( function (pair) {
+	return set( this.ractive, build$1( this, keypath, num ).map( function (pair) {
 		var model = pair[0];
 			var val = pair[1];
 		var value = model.get();
@@ -3209,16 +3264,17 @@ Context.prototype.add = function add ( keypath, d, options ) {
 	}), opts );
 };
 
-Context.prototype.animate = function animate ( keypath, value, options ) {
+Context.prototype.animate = function animate$$1 ( keypath, value, options ) {
 	var model = findModel( this, keypath ).model;
-	return animate$1( this.ractive, model, value, options );
+	return animate( this.ractive, model, value, options );
 };
 
 // get relative keypaths and values
 Context.prototype.get = function get ( keypath ) {
 	if ( !keypath ) { return this.fragment.findContext().get( true ); }
 
-	var model = resolveReference( this.fragment, keypath );
+	var ref = findModel( this, keypath );
+		var model = ref.model;
 
 	return model ? model.get( true ) : undefined;
 };
@@ -3294,8 +3350,8 @@ Context.prototype.reverse = function reverse ( keypath ) {
 	return modelReverse( findModel( this, keypath ).model, [] );
 };
 
-Context.prototype.set = function set ( keypath, value, options ) {
-	return set$1( this.ractive, build$1( this, keypath, value ), options );
+Context.prototype.set = function set$$1 ( keypath, value, options ) {
+	return set( this.ractive, build$1( this, keypath, value ), options );
 };
 
 Context.prototype.shift = function shift ( keypath ) {
@@ -3317,7 +3373,7 @@ Context.prototype.sort = function sort ( keypath ) {
 Context.prototype.subtract = function subtract ( keypath, d, options ) {
 	var num = typeof d === 'number' ? d : 1;
 	var opts = typeof d === 'object' ? d : options;
-	return set$1( this.ractive, build$1( this, keypath, num ).map( function (pair) {
+	return set( this.ractive, build$1( this, keypath, num ).map( function (pair) {
 		var model = pair[0];
 			var val = pair[1];
 		var value = model.get();
@@ -3329,7 +3385,7 @@ Context.prototype.subtract = function subtract ( keypath, d, options ) {
 Context.prototype.toggle = function toggle ( keypath, options ) {
 	var ref = findModel( this, keypath );
 		var model = ref.model;
-	return set$1( this.ractive, [ [ model, !model.get() ] ], options );
+	return set( this.ractive, [ [ model, !model.get() ] ], options );
 };
 
 Context.prototype.unlink = function unlink ( dest ) {
@@ -3347,8 +3403,8 @@ Context.prototype.unshift = function unshift ( keypath ) {
 	return modelUnshift( findModel( this, keypath ).model, add );
 };
 
-Context.prototype.update = function update ( keypath, options ) {
-	return update$2( this.ractive, findModel( this, keypath ).model, options );
+Context.prototype.update = function update$$1 ( keypath, options ) {
+	return update$1( this.ractive, findModel( this, keypath ).model, options );
 };
 
 Context.prototype.updateModel = function updateModel ( keypath, cascade ) {
@@ -3388,7 +3444,7 @@ Context.prototype.getBindingModel = function getBindingModel ( ctx ) {
 Context.prototype.setBinding = function setBinding ( value ) {
 	var ref = this.getBindingModel( this );
 		var model = ref.model;
-	return set$1( this.ractive, [ [ model, value ] ] );
+	return set( this.ractive, [ [ model, value ] ] );
 };
 
 Object.defineProperties( Context.prototype, prototypeAccessors );
@@ -3434,7 +3490,10 @@ function Ractive$fire ( eventName ) {
 
 	// watch for reproxy
 	if ( args[0] instanceof Context ) {
-		return fireEvent( this, eventName, Context.forRactive( this, args.shift() ), args );
+		var proto = args.shift();
+		var ctx = Object.create( proto );
+		Object.assign( ctx, proto );
+		return fireEvent( this, eventName, ctx, args );
 	} else {
 		return fireEvent( this, eventName, Context.forRactive( this ), args );
 	}
@@ -3690,7 +3749,7 @@ function fireInsertHook( ractive ) {
 	});
 }
 
-function link$1( there, here, options ) {
+function link( there, here, options ) {
 	if ( here === there || (there + '.').indexOf( here + '.' ) === 0 || (here + '.').indexOf( there + '.' ) === 0 ) {
 		throw new Error( 'A keypath cannot be linked to itself.' );
 	}
@@ -3717,10 +3776,10 @@ var Observer = function Observer ( ractive, model, callback, options ) {
 	this.context = options.context || ractive;
 	this.callback = callback;
 	this.ractive = ractive;
+	this.keypath = options.keypath;
+	this.options = options;
 
 	if ( model ) { this.resolved( model ); }
-
-	this.options = options;
 
 	if ( typeof options.old === 'function' ) {
 		this.oldContext = Object.create( ractive );
@@ -3746,7 +3805,7 @@ Observer.prototype.cancel = function cancel () {
 	} else {
 		this.resolver.unbind();
 	}
-	removeFromArray$1( this.ractive._observers, this );
+	removeFromArray( this.ractive._observers, this );
 };
 
 Observer.prototype.dispatch = function dispatch () {
@@ -3788,7 +3847,6 @@ Observer.prototype.rebind = function rebind ( next, previous ) {
 
 Observer.prototype.resolved = function resolved ( model ) {
 	this.model = model;
-	this.keypath = model.getKeypath( this.ractive );
 
 	this.oldValue = undefined;
 	this.newValue = model.get();
@@ -3846,7 +3904,7 @@ var PatternObserver = function PatternObserver ( ractive, baseModel, keys, callb
 
 PatternObserver.prototype.cancel = function cancel () {
 	this.baseModel.unregisterPatternObserver( this );
-	removeFromArray$1( this.ractive._observers, this );
+	removeFromArray( this.ractive._observers, this );
 };
 
 PatternObserver.prototype.dispatch = function dispatch () {
@@ -3993,7 +4051,7 @@ var ArrayObserver = function ArrayObserver ( ractive, model, callback, options )
 
 ArrayObserver.prototype.cancel = function cancel () {
 	this.model.unregister( this );
-	removeFromArray$1( this.ractive._observers, this );
+	removeFromArray( this.ractive._observers, this );
 };
 
 ArrayObserver.prototype.dispatch = function dispatch () {
@@ -4052,7 +4110,7 @@ ArrayObserver.prototype.slice = function slice () {
 	return Array.isArray( value ) ? value.slice() : [];
 };
 
-function observe$1 ( keypath, callback, options ) {
+function observe ( keypath, callback, options ) {
 	var this$1 = this;
 
 	var observers = [];
@@ -4088,6 +4146,7 @@ function observe$1 ( keypath, callback, options ) {
 		if ( keypaths.length > 1 ) { keypaths = keypaths.filter( function (k) { return k; } ); }
 
 		keypaths.forEach( function (keypath) {
+			opts.keypath = keypath;
 			var observer = createObserver( this$1, keypath, caller, opts );
 			if ( observer ) { observers.push( observer ); }
 		});
@@ -4153,7 +4212,7 @@ function createObserver ( ractive, keypath, callback, options ) {
 
 var onceOptions = { init: false, once: true };
 
-function observeOnce$1 ( keypath, callback, options ) {
+function observeOnce ( keypath, callback, options ) {
 	if ( isObject( keypath ) || typeof keypath === 'function' ) {
 		options = Object.assign( callback || {}, onceOptions );
 		return this.observe( keypath, options );
@@ -4181,11 +4240,13 @@ function Ractive$off ( eventName, callback ) {
 			var subs = this$1._subs[ event ];
 			// if given a specific callback to remove, remove only it
 			if ( subs && callback ) {
-				// flag this callback as off so that any in-flight firings don't call
-				// a cancelled handler - this is _slightly_ hacky
-				( callback._proxy || callback ).off = true;
-				removeFromArray$1( subs, callback._proxy || callback );
-				if ( event.indexOf( '.' ) ) { this$1._nsSubs--; }
+				var entry = subs.find( function (s) { return s.callback === callback; } );
+				if ( entry ) {
+					removeFromArray( subs, entry );
+					entry.off = true;
+
+					if ( event.indexOf( '.' ) ) { this$1._nsSubs--; }
+				}
 			}
 
 			// otherwise, remove all listeners for this event
@@ -4218,14 +4279,17 @@ function Ractive$on ( eventName, callback ) {
 
 			if ( !silent ) { return callback$1.apply( this, args ); }
 		};
-		callback$1._proxy = caller;
+		var entry = {
+			callback: callback$1,
+			handler: caller
+		};
 
 		if ( map.hasOwnProperty( k ) ) {
 			var names = k.split( ' ' ).map( trim ).filter( notEmptyString );
 			names.forEach( function (n) {
-				( this$1._subs[ n ] || ( this$1._subs[ n ] = [] ) ).push( caller );
+				( this$1._subs[ n ] || ( this$1._subs[ n ] = [] ) ).push( entry );
 				if ( n.indexOf( '.' ) ) { this$1._nsSubs++; }
-				events.push( [ n, caller ] );
+				events.push( [ n, entry ] );
 			});
 		}
 	};
@@ -4233,7 +4297,7 @@ function Ractive$on ( eventName, callback ) {
 	for ( var k in map ) loop( k );
 
 	return {
-		cancel: function () { return events.forEach( function (e) { return this$1.off( e[0], e[1] ); } ); },
+		cancel: function () { return events.forEach( function (e) { return this$1.off( e[0], e[1].callback ); } ); },
 		isSilenced: function () { return silent; },
 		silence: function () { return silent = true; },
 		resume: function () { return silent = false; }
@@ -4250,11 +4314,11 @@ function Ractive$once ( eventName, handler ) {
 	return listener;
 }
 
-var pop$1 = makeArrayMethod( 'pop' ).path;
+var pop = makeArrayMethod( 'pop' ).path;
 
-var push$1 = makeArrayMethod( 'push' ).path;
+var push = makeArrayMethod( 'push' ).path;
 
-function readLink$1 ( keypath, options ) {
+function readLink ( keypath, options ) {
 	if ( options === void 0 ) options = {};
 
 	var path = splitKeypath( keypath );
@@ -4360,7 +4424,7 @@ var adaptConfigurator = {
 	init: function init () {}
 };
 
-var remove$1 = /\/\*(?:[\s\S]*?)\*\//g;
+var remove = /\/\*(?:[\s\S]*?)\*\//g;
 var escape = /url\(\s*(['"])(?:\\[\s\S]|(?!\1).)*\1\s*\)|url\((?:\\[\s\S]|[^)])*\)|(['"])(?:\\[\s\S]|(?!\2).)*\2/gi;
 var value = /\0(\d+)/g;
 
@@ -4372,7 +4436,7 @@ var cleanCss = function ( css, callback, additionalReplaceRules ) {
 
 	var values = [];
 	var reconstruct = function (css) { return css.replace( value, function ( match, n ) { return values[ n ]; } ); };
-	css = css.replace( escape, function (match) { return ("\u0000" + (values.push( match ) - 1)); }).replace( remove$1, '' );
+	css = css.replace( escape, function (match) { return ("\u0000" + (values.push( match ) - 1)); }).replace( remove, '' );
 
 	additionalReplaceRules.forEach( function ( pattern ) {
 		css = css.replace( pattern, function (match) { return ("\u0000" + (values.push( match ) - 1)); } );
@@ -4548,7 +4612,7 @@ var dataConfigurator = {
 			for ( var prop in result ) {
 				if ( typeof result[ prop ] === 'function' ) {
 					var value = result[ prop ];
-					result[ prop ] = bind$2( value, ractive );
+					result[ prop ] = bind$1( value, ractive );
 					result[ prop ]._r_unbound = value;
 				}
 			}
@@ -4832,6 +4896,12 @@ Parser.prototype = {
 
 	nextChar: function nextChar () {
 		return this.str.charAt( this.pos );
+	},
+
+	warn: function warn$$1 ( message ) {
+		var msg = this.getContextMessage( this.pos, message )[2];
+
+		warnIfDebug( msg );
 	}
 };
 
@@ -4985,7 +5055,7 @@ function validateCode ( code ) {
 	}
 
 	// code points 128-159 are dealt with leniently by browsers, but they're incorrect. We need
-	// to correct the mistake or we'll end up with missing € signs and so on
+	// to correct the mistake or we'll end up with missing â‚¬ signs and so on
 	if ( code <= 159 ) {
 		return controlCharacters[ code - 128 ];
 	}
@@ -5135,7 +5205,7 @@ var readStringLiteral = function ( parser ) {
 var stringMiddlePattern$1 = /^[^`"\\\$]+?(?:(?=[`"\\\$]))/;
 
 var escapes = /[\r\n\t\b\f]/g;
-function getString$1 ( literal ) {
+function getString ( literal ) {
 	return JSON.parse( ("\"" + (literal.replace( escapes, escapeChar )) + "\"") );
 }
 
@@ -5167,7 +5237,7 @@ function readTemplateStringLiteral ( parser ) {
 				literal += '`';
 			} else if ( next === '$' ) {
 				if ( parser.matchString( '{' ) ) {
-					parts.push({ t: STRING_LITERAL, v: getString$1( literal ) });
+					parts.push({ t: STRING_LITERAL, v: getString( literal ) });
 					literal = '';
 
 					parser.allowWhitespace();
@@ -5196,7 +5266,7 @@ function readTemplateStringLiteral ( parser ) {
 		}
 	}
 
-	if ( literal.length ) { parts.push({ t: STRING_LITERAL, v: getString$1( literal ) }); }
+	if ( literal.length ) { parts.push({ t: STRING_LITERAL, v: getString( literal ) }); }
 
 	if ( !parser.matchString( '`' ) ) { parser.error( "Expected closing '`'" ); }
 
@@ -5405,7 +5475,7 @@ var globals = /^(?:Array|console|Date|RegExp|decodeURIComponent|decodeURI|encode
 var keywords = /^(?:break|case|catch|continue|debugger|default|delete|do|else|finally|for|function|if|in|instanceof|new|return|switch|throw|try|typeof|var|void|while|with)$/;
 
 var prefixPattern = /^(?:\@\.|\@|~\/|(?:\^\^\/(?:\^\^\/)*(?:\.\.\/)*)|(?:\.\.\/)+|\.\/(?:\.\.\/)*|\.)/;
-var specials = /^(key|index|keypath|rootpath|this|global|shared|context|event|node)/;
+var specials = /^(key|index|keypath|rootpath|this|global|shared|context|event|node|local)/;
 
 function readReference ( parser ) {
 	var prefix, name$$1, global, reference, lastDotIndex;
@@ -5989,7 +6059,8 @@ function refineExpression ( expression, mustache ) {
 		}
 
 		if ( expression.t === REFERENCE ) {
-			if ( !~expression.n.indexOf( '@context' ) ) {
+			var n = expression.n;
+			if ( !~n.indexOf( '@context' ) ) {
 				mustache.r = expression.n;
 			} else {
 				mustache.x = flattenExpression( expression );
@@ -6444,7 +6515,7 @@ function readMustacheOfType ( parser, tag ) {
 
 		if ( mustache = reader( parser, tag ) ) {
 			if ( tag.isStatic ) {
-				mustache.s = true; // TODO make this `1` instead - more compact
+				mustache.s = 1;
 			}
 
 			if ( parser.includeLinePositions ) {
@@ -6773,8 +6844,8 @@ function readElseIf ( parser, tag ) {
 
 var handlebarsBlockCodes = {
 	each:    SECTION_EACH,
-	'if':      SECTION_IF,
-	'with':    SECTION_IF_WITH,
+	if:      SECTION_IF,
+	with:    SECTION_IF_WITH,
 	unless:  SECTION_UNLESS
 };
 
@@ -6845,6 +6916,10 @@ function readSection ( parser, tag ) {
 				section.i = i;
 			}
 		}
+
+		if ( !block && expression.n ) {
+			expectedClose = expression.n;
+		}
 	}
 
 	parser.allowWhitespace();
@@ -6861,8 +6936,12 @@ function readSection ( parser, tag ) {
 		pos = parser.pos;
 		if ( child = readClosing( parser, tag ) ) {
 			if ( expectedClose && child.r !== expectedClose ) {
-				parser.pos = pos;
-				parser.error( ("Expected " + (tag.open) + "/" + expectedClose + (tag.close)) );
+				if ( !block ) {
+					if ( child.r ) { parser.warn( ("Expected " + (tag.open) + "/" + expectedClose + (tag.close) + " but found " + (tag.open) + "/" + (child.r) + (tag.close)) ); }
+				} else {
+					parser.pos = pos;
+					parser.error( ("Expected " + (tag.open) + "/" + expectedClose + (tag.close)) );
+				}
 			}
 
 			parser.sectionDepth -= 1;
@@ -7206,6 +7285,7 @@ function readClosingTag ( parser ) {
 }
 
 var tagNamePattern = /^[a-zA-Z]{1,}:?[a-zA-Z0-9\-]*/;
+var anchorPattern = /^[a-zA-Z_$][-a-zA-Z0-9_$]*/;
 var validTagNameFollower = /^[\s\n\/>]/;
 var exclude = { exclude: true };
 
@@ -7264,7 +7344,7 @@ function readElement$1 ( parser ) {
 	else if ( anchor = parser.matchString( '#' ) ) {
 		parser.allowWhitespace();
 		element.t = ANCHOR;
-		element.n = parser.matchPattern( relaxedName );
+		element.n = parser.matchPattern( anchorPattern );
 	}
 	// otherwise, it's an element/component
 	else {
@@ -7421,9 +7501,9 @@ function readElement$1 ( parser ) {
 	return element;
 }
 
-function canContain ( name$$1, remaining ) {
+function canContain ( name, remaining ) {
 	var match = /^<([a-zA-Z][a-zA-Z0-9]*)/.exec( remaining );
-	var disallowed = disallowedContents[ name$$1 ];
+	var disallowed = disallowedContents[ name ];
 
 	if ( !match || !disallowed ) {
 		return true;
@@ -7432,7 +7512,7 @@ function canContain ( name$$1, remaining ) {
 	return !~disallowed.indexOf( match[1].toLowerCase() );
 }
 
-function readAnchorClose ( parser, name$$1 ) {
+function readAnchorClose ( parser, name ) {
 	var pos = parser.pos;
 	if ( !parser.matchString( '</' ) ) {
 		return null;
@@ -7441,7 +7521,7 @@ function readAnchorClose ( parser, name$$1 ) {
 	parser.matchString( '#' );
 	parser.allowWhitespace();
 
-	if ( !parser.matchString( name$$1 ) ) {
+	if ( !parser.matchString( name ) ) {
 		parser.pos = pos;
 		return null;
 	}
@@ -7632,6 +7712,8 @@ function hasChildren( ref ) {
 	return Array.isArray( ref ) || isObject( ref );
 }
 
+var shared = {};
+
 // See https://github.com/ractivejs/template-spec for information
 // about the Ractive template specification
 
@@ -7648,11 +7730,11 @@ var StandardParser = Parser.extend({
 	init: function init ( str, options ) {
 		var this$1 = this;
 
-		var tripleDelimiters = options.tripleDelimiters || [ '{{{', '}}}' ];
-		var staticDelimiters = options.staticDelimiters || [ '[[', ']]' ];
-		var staticTripleDelimiters = options.staticTripleDelimiters || [ '[[[', ']]]' ];
+		var tripleDelimiters = options.tripleDelimiters || shared.defaults.tripleDelimiters;
+		var staticDelimiters = options.staticDelimiters || shared.defaults.staticDelimiters;
+		var staticTripleDelimiters = options.staticTripleDelimiters || shared.defaults.staticTripleDelimiters;
 
-		this.standardDelimiters = options.delimiters || [ '{{', '}}' ];
+		this.standardDelimiters = options.delimiters || shared.defaults.delimiters;
 
 		this.tags = [
 			{ isStatic: false, isTriple: false, open: this.standardDelimiters[0], close: this.standardDelimiters[1], readers: STANDARD_READERS },
@@ -7661,14 +7743,14 @@ var StandardParser = Parser.extend({
 			{ isStatic: true,  isTriple: true,  open: staticTripleDelimiters[0],  close: staticTripleDelimiters[1],  readers: TRIPLE_READERS }
 		];
 
-		this.contextLines = options.contextLines || 0;
+		this.contextLines = options.contextLines || shared.defaults.contextLines;
 
 		this.sortMustacheTags();
 
 		this.sectionDepth = 0;
 		this.elementStack = [];
 
-		this.interpolate = Object.create( options.interpolate || {} );
+		this.interpolate = Object.create( options.interpolate || shared.defaults.interpolate || {} );
 		this.interpolate.textarea = true;
 		defaultInterpolate.forEach( function (t) { return this$1.interpolate[ t ] = !options.interpolate || options.interpolate[ t ] !== false; } );
 
@@ -7687,6 +7769,13 @@ var StandardParser = Parser.extend({
 		this.includeLinePositions = options.includeLinePositions;
 		this.textOnlyMode = options.textOnlyMode;
 		this.csp = options.csp;
+
+		this.transforms = options.transforms || options.parserTransforms;
+		if ( this.transforms ) {
+			this.transforms = this.transforms.concat( shared.defaults.parserTransforms );
+		} else {
+			this.transforms = shared.defaults.parserTransforms;
+		}
 	},
 
 	postProcess: function postProcess ( result ) {
@@ -7700,6 +7789,55 @@ var StandardParser = Parser.extend({
 		}
 
 		cleanup( result[0].t, this.stripComments, this.preserveWhitespace, !this.preserveWhitespace, !this.preserveWhitespace );
+
+		var transforms = this.transforms;
+		if ( transforms.length ) {
+			var tlen = transforms.length;
+			var walk = function ( fragment ) {
+				var len = fragment.length;
+
+				for ( var i = 0; i < len; i++ ) {
+					var node = fragment[i];
+
+					if ( node.t === ELEMENT ) {
+						for ( var j = 0; j < tlen; j++ ) {
+							var res = transforms[j].call( shared.Ractive, node );
+							if ( !res ) {
+								continue;
+							} else if ( res.remove ) {
+								fragment.splice( i--, 1 );
+								len--;
+								break;
+							} else if ( res.replace ) {
+								if ( Array.isArray( res.replace ) ) {
+									fragment.splice.apply( fragment, [ i--, 1 ].concat( res.replace ) );
+									len += res.replace.length - 1;
+								} else {
+									fragment[i--] = node = res.replace;
+								}
+
+								break;
+							}
+						}
+
+						// watch for partials
+						if ( node.p ) {
+							for ( var k in node.p ) { walk( node.p[k] ); }
+						}
+					}
+
+					if ( node.f ) { walk( node.f ); }
+				}
+			};
+
+			// process the root fragment
+			walk( result[0].t );
+
+			// watch for root partials
+			if ( result[0].p ) {
+				for ( var k in result[0].p ) { walk( result[0].p[k] ); }
+			}
+		}
 
 		if ( this.csp !== false ) {
 			var expr = {};
@@ -7723,7 +7861,7 @@ var StandardParser = Parser.extend({
 	}
 });
 
-function parse$1$1 ( template, options ) {
+function parse ( template, options ) {
 	return new StandardParser( template, options || {} ).result;
 }
 
@@ -7802,8 +7940,8 @@ var parser = {
 	},
 
 	parse: function parse$1 ( template, options ) {
-		throwNoParse( parse$1$1, 'template', TEMPLATE_INSTRUCTIONS );
-		var parsed = parse$1$1( template, options );
+		throwNoParse( parse, 'template', TEMPLATE_INSTRUCTIONS );
+		var parsed = parse( template, options );
 		addFunctions( parsed );
 		return parsed;
 	},
@@ -8112,9 +8250,9 @@ var order = [].concat(
 );
 
 var config = {
-	extend: function ( Parent, proto, options ) { return configure$1( 'extend', Parent, proto, options ); },
+	extend: function ( Parent, proto, options ) { return configure( 'extend', Parent, proto, options ); },
 
-	init: function ( Parent, ractive, options ) { return configure$1( 'init', Parent, ractive, options ); },
+	init: function ( Parent, ractive, options ) { return configure( 'init', Parent, ractive, options ); },
 
 	reset: function (ractive) {
 		return order.filter( function (c) {
@@ -8127,7 +8265,7 @@ var config = {
 	order: order
 };
 
-function configure$1 ( method, Parent, target, options ) {
+function configure ( method, Parent, target, options ) {
 	deprecate( options );
 
 	for ( var key in options ) {
@@ -8306,7 +8444,7 @@ var ComputationChild = (function (Model$$1) {
 			}
 
 			if ( source ) {
-				source.dependencies.forEach( mark$1$1 );
+				source.dependencies.forEach( mark );
 			}
 		}
 	};
@@ -8329,8 +8467,8 @@ var ComputationChild = (function (Model$$1) {
 		if ( this.boundValue ) { this.boundValue = null; }
 
 		this.links.forEach( marked );
-		this.deps.forEach( handleChange$1$1 );
-		this.children.forEach( handleChange$1$1 );
+		this.deps.forEach( handleChange );
+		this.children.forEach( handleChange );
 	};
 
 	ComputationChild.prototype.joinKey = function joinKey ( key ) {
@@ -8553,7 +8691,7 @@ var ExpressionProxy = (function (Model$$1) {
 		// remove missing deps
 		this.dependencies.filter( function (d) { return !~dependencies.indexOf( d ); } ).forEach( function (d) {
 			d.unregister( this$1 );
-			removeFromArray$1( this$1.dependencies, d );
+			removeFromArray( this$1.dependencies, d );
 		});
 		// register new deps
 		dependencies.filter( function (d) { return !~this$1.dependencies.indexOf( d ); } ).forEach( function (d) {
@@ -8591,9 +8729,14 @@ var ExpressionProxy = (function (Model$$1) {
 		Model$$1.prototype.teardown.call(this);
 	};
 
+	ExpressionProxy.prototype.unreference = function unreference () {
+		Model$$1.prototype.unreference.call(this);
+		if ( !this.deps.length && !this.refs ) { this.teardown(); }
+	};
+
 	ExpressionProxy.prototype.unregister = function unregister ( dep ) {
 		Model$$1.prototype.unregister.call( this, dep );
-		if ( !this.deps.length ) { this.teardown(); }
+		if ( !this.deps.length && !this.refs ) { this.teardown(); }
 	};
 
 	return ExpressionProxy;
@@ -8663,7 +8806,7 @@ var ReferenceExpressionProxy = (function (Model$$1) {
 		this.root = fragment.ractive.viewmodel;
 		this.template = template;
 
-		this.base = resolve$1( fragment, template );
+		this.base = resolve( fragment, template );
 
 		var intermediary = this.intermediary = {
 			handleChange: function () { return this$1.handleChange(); },
@@ -8776,7 +8919,7 @@ var ReferenceExpressionProxy = (function (Model$$1) {
 		return this.model ? this.model.getKeypath() : '@undefined';
 	};
 
-	ReferenceExpressionProxy.prototype.handleChange = function handleChange$1 () {
+	ReferenceExpressionProxy.prototype.handleChange = function handleChange$$1 () {
 		this.dirty = true;
 		this.mark();
 	};
@@ -8795,11 +8938,11 @@ var ReferenceExpressionProxy = (function (Model$$1) {
 
 	ReferenceExpressionProxy.prototype.mark = function mark$1 () {
 		if ( this.dirty ) {
-			this.deps.forEach( handleChange$1$1 );
+			this.deps.forEach( handleChange );
 		}
 
 		this.links.forEach( marked );
-		this.children.forEach( mark$1$1 );
+		this.children.forEach( mark );
 	};
 
 	ReferenceExpressionProxy.prototype.retrieve = function retrieve () {
@@ -8810,11 +8953,26 @@ var ReferenceExpressionProxy = (function (Model$$1) {
 		this.model.set( value );
 	};
 
-	ReferenceExpressionProxy.prototype.unbind = function unbind () {
+	ReferenceExpressionProxy.prototype.teardown = function teardown$$1 () {
+		var this$1 = this;
+
 		if ( this.model ) {
 			this.model.unregister( this );
 			this.model.unregisterTwowayBinding( this );
 		}
+		if ( this.members ) {
+			this.members.forEach( function (m) { return m && m.unregister && m.unregister( this$1 ); } );
+		}
+	};
+
+	ReferenceExpressionProxy.prototype.unreference = function unreference () {
+		Model$$1.prototype.unreference.call(this);
+		if ( !this.deps.length && !this.refs ) { this.teardown(); }
+	};
+
+	ReferenceExpressionProxy.prototype.unregister = function unregister ( dep ) {
+		Model$$1.prototype.unregister.call( this, dep );
+		if ( !this.deps.length && !this.refs ) { this.teardown(); }
 	};
 
 	return ReferenceExpressionProxy;
@@ -8822,7 +8980,7 @@ var ReferenceExpressionProxy = (function (Model$$1) {
 
 ReferenceExpressionProxy.prototype.rebind = noop;
 
-function resolve$1 ( fragment, template ) {
+function resolve ( fragment, template ) {
 	if ( template.r ) {
 		return resolveReference( fragment, template.r );
 	}
@@ -8840,7 +8998,11 @@ function resolveAliases( aliases, fragment ) {
 	var resolved = {};
 
 	for ( var i = 0; i < aliases.length; i++ ) {
-		resolved[ aliases[i].n ] = resolve$1( fragment, aliases[i].x );
+		resolved[ aliases[i].n ] = resolve( fragment, aliases[i].x );
+	}
+
+	for ( var k in resolved ) {
+		resolved[k].reference();
 	}
 
 	return resolved;
@@ -8873,6 +9035,12 @@ var Alias = (function (ContainerItem$$1) {
 	};
 
 	Alias.prototype.unbind = function unbind () {
+		var this$1 = this;
+
+		for ( var k in this$1.fragment.aliases ) {
+			this$1.fragment.aliases[k].unreference();
+		}
+
 		this.fragment.aliases = {};
 		if ( this.fragment ) { this.fragment.unbind(); }
 	};
@@ -9008,7 +9176,7 @@ function updateMultipleSelectValue ( reset ) {
 				option._ractive.value :
 				option.value; // options inserted via a triple don't have _ractive
 
-			option.selected = arrayContains$1( value, optionValue );
+			option.selected = arrayContains( value, optionValue );
 		}
 	}
 }
@@ -9084,7 +9252,7 @@ function updateValue ( reset ) {
 			var value = this.getValue();
 
 			this.node.value = this.node._ractive.value = value;
-			this.node.setAttribute( 'value', value );
+			this.node.setAttribute( 'value', safeToStringValue( value ) );
 		}
 	}
 }
@@ -9173,28 +9341,22 @@ function updateInlineStyle ( reset ) {
 
 function updateClassName ( reset ) {
 	var value = reset ? [] : readClass( safeToStringValue( this.getValue() ) );
-	var attr = readClass( this.node.className );
+
+	// watch out for werdo svg elements
+	var cls = this.node.className;
+	cls = cls.baseVal !== undefined ? cls.baseVal : cls;
+
+	var attr = readClass( cls );
 	var prev = this.previous || attr.slice( 0 );
 
-	var i = 0;
-	while ( i < value.length ) {
-		if ( !~attr.indexOf( value[i] ) ) { attr.push( value[i] ); }
-		i++;
-	}
+	var className = value.concat( attr.filter( function (c) { return !~prev.indexOf( c ); } ) ).join( ' ' );
 
-	// remove now-missing classes
-	i = prev.length;
-	while ( i-- ) {
-		if ( !~value.indexOf( prev[i] ) ) {
-			var idx = attr.indexOf( prev[i] );
-			if ( ~idx ) { attr.splice( idx, 1 ); }
+	if ( className !== cls ) {
+		if ( typeof this.node.className !== 'string' ) {
+			this.node.className.baseVal = className;
+		} else {
+			this.node.className = className;
 		}
-	}
-
-	var className = attr.join( ' ' );
-
-	if ( className !== this.node.className ) {
-		this.node.className = className;
 	}
 
 	this.previous = value;
@@ -9202,7 +9364,12 @@ function updateClassName ( reset ) {
 
 function updateInlineClass ( reset ) {
 	var name = this.name.substr( 6 );
-	var attr = readClass( this.node.className );
+
+	// watch out for werdo svg elements
+	var cls = this.node.className;
+	cls = cls.baseVal !== undefined ? cls.baseVal : cls;
+
+	var attr = readClass( cls );
 	var value = reset ? false : this.getValue();
 
 	if ( !this.inlineClass ) { this.inlineClass = name; }
@@ -9210,7 +9377,11 @@ function updateInlineClass ( reset ) {
 	if ( value && !~attr.indexOf( name ) ) { attr.push( name ); }
 	else if ( !value && ~attr.indexOf( name ) ) { attr.splice( attr.indexOf( name ), 1 ); }
 
-	this.node.className = attr.join( ' ' );
+	if ( typeof this.node.className !== 'string' ) {
+		this.node.className.baseVal = attr.join( ' ' );
+	} else {
+		this.node.className = attr.join( ' ' );
+	}
 }
 
 function updateBoolean ( reset ) {
@@ -9248,13 +9419,13 @@ var propertyNames = {
 	'accept-charset': 'acceptCharset',
 	accesskey: 'accessKey',
 	bgcolor: 'bgColor',
-	'class': 'className',
+	class: 'className',
 	codebase: 'codeBase',
 	colspan: 'colSpan',
 	contenteditable: 'contentEditable',
 	datetime: 'dateTime',
 	dirname: 'dirName',
-	'for': 'htmlFor',
+	for: 'htmlFor',
 	'http-equiv': 'httpEquiv',
 	ismap: 'isMap',
 	maxlength: 'maxLength',
@@ -9530,7 +9701,7 @@ var Attribute = (function (Item$$1) {
 			return;
 		}
 
-		// Special case – bound radio `name` attributes
+		// Special case â€“ bound radio `name` attributes
 		if ( this.name === 'name' && this.element.name === 'input' && this.interpolator && this.element.getAttribute( 'type' ) === 'radio' ) {
 			return ("name=\"{{" + (this.interpolator.model.getKeypath()) + "}}\"");
 		}
@@ -9614,7 +9785,7 @@ var BindingFlag = (function (Item$$1) {
 
 	BindingFlag.prototype.bind = function bind () {
 		if ( this.fragment ) { this.fragment.bind(); }
-		set$2( this, this.getValue(), true );
+		set$1( this, this.getValue(), true );
 	};
 
 	BindingFlag.prototype.bubble = function bubble () {
@@ -9632,7 +9803,7 @@ var BindingFlag = (function (Item$$1) {
 	};
 
 	BindingFlag.prototype.render = function render () {
-		set$2( this, this.getValue(), true );
+		set$1( this, this.getValue(), true );
 	};
 
 	BindingFlag.prototype.toString = function toString () { return ''; };
@@ -9650,14 +9821,14 @@ var BindingFlag = (function (Item$$1) {
 	BindingFlag.prototype.update = function update () {
 		if ( this.dirty ) {
 			if ( this.fragment ) { this.fragment.update(); }
-			set$2( this, this.getValue(), true );
+			set$1( this, this.getValue(), true );
 		}
 	};
 
 	return BindingFlag;
 }(Item));
 
-function set$2 ( flag, value, update ) {
+function set$1 ( flag, value, update ) {
 	if ( value === 0 ) {
 		flag.value = true;
 	} else if ( value === 'true' ) {
@@ -9820,7 +9991,7 @@ var RootModel = (function (Model$$1) {
 			}
 		});
 
-		for ( var k in this.computations ) {
+		for ( var k in this$1.computations ) {
 			children.push( this$1.computations[k] );
 		}
 
@@ -9885,19 +10056,19 @@ var RootModel = (function (Model$$1) {
 			this.adapt();
 		}
 
-		this.deps.forEach( handleChange$1$1 );
-		this.children.forEach( mark$1$1 );
+		this.deps.forEach( handleChange );
+		this.children.forEach( mark );
 	};
 
 	RootModel.prototype.retrieve = function retrieve () {
 		return this.wrapper ? this.wrapper.get() : this.value;
 	};
 
-	RootModel.prototype.teardown = function teardown () {
+	RootModel.prototype.teardown = function teardown$$1 () {
 		var this$1 = this;
 
 		Model$$1.prototype.teardown.call(this);
-		for ( var k in this.computations ) {
+		for ( var k in this$1.computations ) {
 			this$1.computations[ k ].teardown();
 		}
 	};
@@ -9945,7 +10116,7 @@ function getComputationSignature ( ractive, key, signature ) {
 	var setterString;
 
 	if ( typeof signature === 'function' ) {
-		getter = bind$2( signature, ractive );
+		getter = bind$1( signature, ractive );
 		getterString = signature.toString();
 		getterUseStack = true;
 	}
@@ -9960,7 +10131,7 @@ function getComputationSignature ( ractive, key, signature ) {
 			getter = createFunctionFromString( signature.get, ractive );
 			getterString = signature.get;
 		} else if ( typeof signature.get === 'function' ) {
-			getter = bind$2( signature.get, ractive );
+			getter = bind$1( signature.get, ractive );
 			getterString = signature.get.toString();
 			getterUseStack = true;
 		} else {
@@ -9968,7 +10139,7 @@ function getComputationSignature ( ractive, key, signature ) {
 		}
 
 		if ( typeof signature.set === 'function' ) {
-			setter = bind$2( signature.set, ractive );
+			setter = bind$1( signature.set, ractive );
 			setterString = signature.set.toString();
 		}
 	}
@@ -10152,17 +10323,17 @@ function Ractive$teardown () {
 	}
 
 	this.shouldDestroy = true;
-	return teardown$2( this, function () { return this$1.fragment.rendered ? this$1.unrender() : Promise.resolve(); } );
+	return teardown$1( this, function () { return this$1.fragment.rendered ? this$1.unrender() : Promise.resolve(); } );
 }
 
-function teardown$2 ( instance, getPromise ) {
+function teardown$1 ( instance, getPromise ) {
 	instance.torndown = true;
 	instance.viewmodel.teardown();
 	instance.fragment.unbind();
-	instance._observers.slice().forEach( cancel$1 );
+	instance._observers.slice().forEach( cancel );
 
-	if ( instance.fragment.rendered && instance.el.__ractive_instances__ ) {
-		removeFromArray$1( instance.el.__ractive_instances__, instance );
+	if ( instance.el && instance.el.__ractive_instances__ ) {
+		removeFromArray( instance.el.__ractive_instances__, instance );
 	}
 
 	var promise = getPromise();
@@ -10188,8 +10359,8 @@ var Component = (function (Item$$1) {
 		if ( this.isAnchor ) {
 			this.name = options.template.n;
 
-			this.addChild = addChild$1;
-			this.removeChild = removeChild$1;
+			this.addChild = addChild;
+			this.removeChild = removeChild;
 		} else {
 			var instance = Object.create( ComponentConstructor.prototype );
 
@@ -10270,7 +10441,7 @@ var Component = (function (Item$$1) {
 
 	Component.prototype.bind = function bind$1 () {
 		if ( !this.isAnchor ) {
-			this.attributes.forEach( bind$1$1 );
+			this.attributes.forEach( bind );
 
 			initialise( this.instance, {
 				partials: this._partials
@@ -10278,7 +10449,7 @@ var Component = (function (Item$$1) {
 				cssIds: this.parentFragment.cssIds
 			});
 
-			this.eventHandlers.forEach( bind$1$1 );
+			this.eventHandlers.forEach( bind );
 
 			this.bound = true;
 		}
@@ -10291,7 +10462,7 @@ var Component = (function (Item$$1) {
 		}
 	};
 
-	Component.prototype.destroyed = function destroyed () {
+	Component.prototype.destroyed = function destroyed$$1 () {
 		if ( !this.isAnchor && this.instance.fragment ) { this.instance.fragment.destroyed(); }
 	};
 
@@ -10334,7 +10505,7 @@ var Component = (function (Item$$1) {
 		if ( this.instance ) { return this.instance.fragment.firstNode( skipParent ); }
 	};
 
-	Component.prototype.getContext = function getContext () {
+	Component.prototype.getContext = function getContext$$1 () {
 		var assigns = [], len = arguments.length;
 		while ( len-- ) assigns[ len ] = arguments[ len ];
 
@@ -10342,7 +10513,7 @@ var Component = (function (Item$$1) {
 		return getRactiveContext.apply( null, assigns );
 	};
 
-	Component.prototype.render = function render$1 ( target, occupants ) {
+	Component.prototype.render = function render$1$$1 ( target, occupants ) {
 		if ( this.isAnchor ) {
 			this.rendered = true;
 			this.target = target;
@@ -10358,16 +10529,16 @@ var Component = (function (Item$$1) {
 				}
 			}
 		} else {
-			render$2( this.instance, target, null, occupants );
+			render$1( this.instance, target, null, occupants );
 
-			this.attributes.forEach( render$1$1 );
-			this.eventHandlers.forEach( render$1$1 );
+			this.attributes.forEach( render );
+			this.eventHandlers.forEach( render );
 
 			this.rendered = true;
 		}
 	};
 
-	Component.prototype.toString = function toString () {
+	Component.prototype.toString = function toString$$1 () {
 		if ( this.instance ) { return this.instance.toHTML(); }
 	};
 
@@ -10375,9 +10546,9 @@ var Component = (function (Item$$1) {
 		if ( !this.isAnchor ) {
 			this.bound = false;
 
-			this.attributes.forEach( unbind$1$1 );
+			this.attributes.forEach( unbind );
 
-			teardown$2( this.instance, function () { return runloop.promise(); } );
+			teardown$1( this.instance, function () { return runloop.promise(); } );
 		}
 	};
 
@@ -10394,8 +10565,8 @@ var Component = (function (Item$$1) {
 		} else {
 			this.instance.unrender();
 			this.instance.el = this.instance.target = null;
-			this.attributes.forEach( unrender$1$1 );
-			this.eventHandlers.forEach( unrender$1$1 );
+			this.attributes.forEach( unrender );
+			this.eventHandlers.forEach( unrender );
 		}
 
 		this.rendered = false;
@@ -10405,15 +10576,15 @@ var Component = (function (Item$$1) {
 		this.dirty = false;
 		if ( this.instance ) {
 			this.instance.fragment.update();
-			this.attributes.forEach( update$1$1 );
-			this.eventHandlers.forEach( update$1$1 );
+			this.attributes.forEach( update );
+			this.eventHandlers.forEach( update );
 		}
 	};
 
 	return Component;
 }(Item));
 
-function addChild$1 ( meta ) {
+function addChild ( meta ) {
 	if ( this.item ) { this.removeChild( this.item ); }
 
 	var child = meta.instance;
@@ -10432,7 +10603,7 @@ function addChild$1 ( meta ) {
 	}
 }
 
-function removeChild$1 ( meta ) {
+function removeChild ( meta ) {
 	// unrender as necessary
 	if ( this.item === meta ) {
 		unrenderItem( this, meta );
@@ -10460,13 +10631,13 @@ function renderItem ( anchor, meta ) {
 	meta.instance.fragment.unbind();
 	meta.instance.fragment.bind( meta.instance.viewmodel );
 
-	anchor.attributes.forEach( bind$1$1 );
-	anchor.eventHandlers.forEach( bind$1$1 );
-	anchor.attributes.forEach( render$1$1 );
-	anchor.eventHandlers.forEach( render$1$1 );
+	anchor.attributes.forEach( bind );
+	anchor.eventHandlers.forEach( bind );
+	anchor.attributes.forEach( render );
+	anchor.eventHandlers.forEach( render );
 
 	var target = anchor.parentFragment.findParentNode();
-	render$2( meta.instance, target, target.contains( nextNode ) ? nextNode : null, anchor.occupants );
+	render$1( meta.instance, target, target.contains( nextNode ) ? nextNode : null, anchor.occupants );
 
 	if ( meta.lastBound !== anchor ) {
 		meta.lastBound = anchor;
@@ -10479,10 +10650,10 @@ function unrenderItem ( anchor, meta ) {
 	meta.shouldDestroy = true;
 	meta.instance.unrender();
 
-	anchor.eventHandlers.forEach( unrender$1$1 );
-	anchor.attributes.forEach( unrender$1$1 );
-	anchor.eventHandlers.forEach( unbind$1$1 );
-	anchor.attributes.forEach( unbind$1$1 );
+	anchor.eventHandlers.forEach( unrender );
+	anchor.attributes.forEach( unrender );
+	anchor.eventHandlers.forEach( unbind );
+	anchor.attributes.forEach( unbind );
 
 	meta.instance.el = meta.instance.anchor = null;
 	meta.parentFragment = null;
@@ -10720,11 +10891,11 @@ Binding.prototype.handleChange = function handleChange () {
 	if ( this.lastVal() === value ) { return; }
 
 	runloop.start( this.root );
-		this.attribute.locked = true;
+	this.attribute.locked = true;
 	this.model.set( value );
 	this.lastVal( true, value );
 
-		// if the value changes before observers fire, unlock to be updatable cause something weird and potentially freezy is up
+	// if the value changes before observers fire, unlock to be updatable cause something weird and potentially freezy is up
 	if ( this.model.get() !== value ) { this.attribute.locked = false; }
 	else { runloop.scheduleTask( function () { return this$1.attribute.locked = false; } ); }
 
@@ -10836,7 +11007,7 @@ BindingGroup.prototype.bind = function bind () {
 };
 
 BindingGroup.prototype.remove = function remove ( binding ) {
-	removeFromArray$1( this.bindings, binding );
+	removeFromArray( this.bindings, binding );
 	if ( !this.bindings.length ) {
 		this.unbind();
 	}
@@ -10848,9 +11019,11 @@ BindingGroup.prototype.unbind = function unbind () {
 	delete this.model[this.hash];
 };
 
-var push$2 = [].push;
+BindingGroup.prototype.rebind = Binding.prototype.rebind;
 
-function getValue$1$1() {
+var push$1 = [].push;
+
+function getValue() {
 	var this$1 = this;
 
 	var all = this.bindings.filter(function (b) { return b.node && b.node.checked; }).map(function (b) { return b.element.getAttribute( 'value' ); });
@@ -10868,7 +11041,7 @@ var CheckboxNameBinding = (function (Binding$$1) {
 		// Each input has a reference to an array containing it and its
 		// group, as two-way binding depends on being able to ascertain
 		// the status of all inputs within the group
-		this.group = getBindingGroup( 'checkboxes', this.model, getValue$1$1 );
+		this.group = getBindingGroup( 'checkboxes', this.model, getValue );
 		this.group.add( this );
 
 		if ( this.noInitialValue ) {
@@ -10882,7 +11055,7 @@ var CheckboxNameBinding = (function (Binding$$1) {
 			var bindingValue = this.element.getAttribute( 'value' );
 
 			if ( !this.arrayContains( existingValue, bindingValue ) ) {
-				push$2.call( existingValue, bindingValue ); // to avoid triggering runloop with array adaptor
+				push$1.call( existingValue, bindingValue ); // to avoid triggering runloop with array adaptor
 			}
 		}
 	}
@@ -10909,7 +11082,7 @@ var CheckboxNameBinding = (function (Binding$$1) {
 		return [];
 	};
 
-	CheckboxNameBinding.prototype.getValue = function getValue$1 () {
+	CheckboxNameBinding.prototype.getValue = function getValue () {
 		return this.group.value;
 	};
 
@@ -11322,7 +11495,7 @@ var RadioBinding = (function (Binding$$1) {
 	};
 
 	RadioBinding.prototype.unbind = function unbind () {
-		removeFromArray$1( this.siblings, this );
+		removeFromArray( this.siblings, this );
 	};
 
 	RadioBinding.prototype.unrender = function unrender () {
@@ -11333,7 +11506,7 @@ var RadioBinding = (function (Binding$$1) {
 	return RadioBinding;
 }(Binding));
 
-function getValue$2() {
+function getValue$1() {
 	var checked = this.bindings.filter( function (b) { return b.node.checked; } );
 	if ( checked.length > 0 ) {
 		return checked[0].element.getAttribute( 'value' );
@@ -11344,7 +11517,7 @@ var RadioNameBinding = (function (Binding$$1) {
 	function RadioNameBinding ( element ) {
 		Binding$$1.call( this, element, 'name' );
 
-		this.group = getBindingGroup( 'radioname', this.model, getValue$2 );
+		this.group = getBindingGroup( 'radioname', this.model, getValue$1 );
 		this.group.add( this );
 
 		if ( element.checked ) {
@@ -11365,7 +11538,8 @@ var RadioNameBinding = (function (Binding$$1) {
 
 		// update name keypath when necessary
 		this.nameAttributeBinding = {
-			handleChange: function () { return this$1.node.name = "{{" + (this$1.model.getKeypath()) + "}}"; }
+			handleChange: function () { return this$1.node.name = "{{" + (this$1.model.getKeypath()) + "}}"; },
+			rebind: noop
 		};
 
 		this.model.getKeypathModel().register( this.nameAttributeBinding );
@@ -11377,7 +11551,7 @@ var RadioNameBinding = (function (Binding$$1) {
 		}
 	};
 
-	RadioNameBinding.prototype.getValue = function getValue$1 () {
+	RadioNameBinding.prototype.getValue = function getValue () {
 		return this.element.getAttribute( 'value' );
 	};
 
@@ -11627,23 +11801,24 @@ function selectBinding ( element ) {
 	return null;
 }
 
-var DOMEvent = function DOMEvent ( name, owner ) {
+var DOMEvent = function DOMEvent ( name, owner, delegate ) {
 	if ( name.indexOf( '*' ) !== -1 ) {
 		fatal( ("Only component proxy-events may contain \"*\" wildcards, <" + (owner.name) + " on-" + name + "=\"...\"/> is not valid") );
 	}
 
 	this.name = name;
 	this.owner = owner;
+	this.delegate = delegate;
 	this.node = null;
 	this.handler = null;
 };
 
 DOMEvent.prototype.listen = function listen ( directive ) {
-		var node = this.node = this.owner.node;
+	var node = this.node = this.owner.node;
 	var name = this.name;
 
 	// this is probably a custom event fired from a decorator or manually
-		if ( !( ("on" + name) in node ) ) { return; }
+	if ( !( ("on" + name) in node ) ) { return; }
 
 	node.addEventListener( name, this.handler = function( event ) {
 		directive.fire({
@@ -11652,7 +11827,7 @@ DOMEvent.prototype.listen = function listen ( directive ) {
 			event: event,
 			name: name
 		});
-	}, false );
+	}, this.delegate );
 };
 
 DOMEvent.prototype.unlisten = function unlisten () {
@@ -11675,15 +11850,15 @@ CustomEvent.prototype.listen = function listen ( directive ) {
 			if ( event === void 0 ) event = {};
 
 		if ( event.original ) { event.event = event.original; }
-			else { event.original = event.event; }
+		else { event.original = event.event; }
 
 		event.name = this$1.name;
 		event.node = event.node || node;
 		directive.fire( event );
-		});
-	};
+	});
+};
 
-	CustomEvent.prototype.unlisten = function unlisten () {
+CustomEvent.prototype.unlisten = function unlisten () {
 	this.handler.teardown();
 };
 
@@ -11735,7 +11910,7 @@ var DelegateProxy = {
 			var bubble = true;
 
 			// starting with the origin node, walk up the DOM looking for ractive nodes with a matching event listener
-			while ( bubble && node !== end ) {
+			while ( bubble && node && node !== end ) {
 				var el = node._ractive && node._ractive.proxy;
 
 				if ( el ) {
@@ -11784,7 +11959,7 @@ var EventDirective = function EventDirective ( options ) {
 			} else {
 				if ( delegate ) {
 					if ( !delegate.delegates[n] ) {
-						var ev = new DOMEvent( n, delegate );
+						var ev = new DOMEvent( n, delegate, true );
 						delegate.delegates[n] = ev;
 						// if the element is already rendered, render the event too
 						if ( delegate.rendered ) { ev.listen( DelegateProxy ); }
@@ -11923,7 +12098,7 @@ EventDirective.prototype.render = function render () {
 EventDirective.prototype.toString = function toString () { return ''; };
 
 EventDirective.prototype.unbind = function unbind () {
-	removeFromArray$1( this.element.events, this );
+	removeFromArray( this.element.events, this );
 };
 
 EventDirective.prototype.unrender = function unrender () {
@@ -12010,7 +12185,7 @@ var Element = (function (ContainerItem$$1) {
 
 	Element.prototype.bind = function bind$1 () {
 		this.attributes.binding = true;
-		this.attributes.forEach( bind$1$1 );
+		this.attributes.forEach( bind );
 		this.attributes.binding = false;
 
 		if ( this.fragment ) { this.fragment.bind(); }
@@ -12032,8 +12207,8 @@ var Element = (function (ContainerItem$$1) {
 	Element.prototype.destroyed = function destroyed$1 () {
 		var this$1 = this;
 
-		this.attributes.forEach( destroyed$1$1 );
-		for ( var ev in this.delegates ) {
+		this.attributes.forEach( destroyed );
+		for ( var ev in this$1.delegates ) {
 			this$1.delegates[ev].unlisten();
 		}
 		if ( this.fragment ) { this.fragment.destroyed(); }
@@ -12082,9 +12257,12 @@ var Element = (function (ContainerItem$$1) {
 		var assigns = [], len = arguments.length;
 		while ( len-- ) assigns[ len ] = arguments[ len ];
 
+		if ( this.fragment ) { return (ref = this.fragment).getContext.apply( ref, assigns ); }
+
 		if ( !this.ctx ) { this.ctx = new Context( this.parentFragment, this ); }
-		assigns.unshift( this.ctx );
+		assigns.unshift( Object.create( this.ctx ) );
 		return Object.assign.apply( null, assigns );
+		var ref;
 	};
 
 	Element.prototype.recreateTwowayBinding = function recreateTwowayBinding () {
@@ -12172,9 +12350,9 @@ var Element = (function (ContainerItem$$1) {
 			}
 		}
 
-		this.attributes.forEach( render$1$1 );
+		this.attributes.forEach( render );
 		if ( this.delegates ) {
-			for ( var ev in this.delegates ) {
+			for ( var ev in this$1.delegates ) {
 				this$1.delegates[ev].listen( DelegateProxy );
 			}
 		}
@@ -12188,7 +12366,7 @@ var Element = (function (ContainerItem$$1) {
 		this.rendered = true;
 	};
 
-	Element.prototype.toString = function toString () {
+	Element.prototype.toString = function toString$$1 () {
 		var tagName = this.template.e;
 
 		var attrs = this.attributes.map( stringifyAttribute ).join( '' );
@@ -12249,14 +12427,14 @@ var Element = (function (ContainerItem$$1) {
 
 	Element.prototype.unbind = function unbind$1 () {
 		this.attributes.unbinding = true;
-		this.attributes.forEach( unbind$1$1 );
+		this.attributes.forEach( unbind );
 		this.attributes.unbinding = false;
 
 		if ( this.binding ) { this.binding.unbind(); }
 		if ( this.fragment ) { this.fragment.unbind(); }
 	};
 
-	Element.prototype.unrender = function unrender ( shouldDestroy ) {
+	Element.prototype.unrender = function unrender$$1 ( shouldDestroy ) {
 		if ( !this.rendered ) { return; }
 		this.rendered = false;
 
@@ -12292,7 +12470,7 @@ var Element = (function (ContainerItem$$1) {
 		if ( this.dirty ) {
 			this.dirty = false;
 
-			this.attributes.forEach( update$1$1 );
+			this.attributes.forEach( update );
 
 			if ( this.fragment ) { this.fragment.update(); }
 		}
@@ -12370,11 +12548,11 @@ function handleReset () {
 	var element = this._ractive.proxy;
 
 	runloop.start();
-	element.formBindings.forEach( updateModel$1 );
+	element.formBindings.forEach( updateModel );
 	runloop.end();
 }
 
-function updateModel$1 ( binding ) {
+function updateModel ( binding ) {
 	binding.model.set( binding.resetValue );
 }
 
@@ -12431,7 +12609,7 @@ var Mustache = (function (Item$$1) {
 		// yield mustaches should resolve in container context
 		var start = this.containerFragment || this.parentFragment;
 		// try to find a model for this view
-		var model = resolve$1( start, this.template );
+		var model = resolve( start, this.template );
 
 		if ( model ) {
 			var value = model.get();
@@ -12588,9 +12766,9 @@ var Input = (function (Element$$1) {
 // will be replaced with those values
 
 var specials$1 = {
-	'true': true,
-	'false': false,
-	'null': null,
+	true: true,
+	false: false,
+	null: null,
 	undefined: undefined
 };
 
@@ -12787,6 +12965,7 @@ var Mapping = (function (Item$$1) {
 
 	Mapping.prototype.unbind = function unbind () {
 		if ( this.fragment ) { this.fragment.unbind(); }
+		if ( this.model ) { this.model.unregister( this ); }
 		if ( this.boundFragment ) { this.boundFragment.unbind(); }
 
 		if ( this.element.bound ) {
@@ -12814,18 +12993,28 @@ function createMapping ( item ) {
 	var childData = viewmodel.value;
 
 	if ( template.length === 1 && template[0].t === INTERPOLATOR ) {
-		item.model = resolve$1( item.parentFragment, template[0] );
+		var model = resolve( item.parentFragment, template[0] );
+		var val = model.get( false );
 
-		if ( !item.model ) {
-			warnOnceIfDebug( ("The " + (item.name) + "='{{" + (template[0].r) + "}}' mapping is ambiguous, and may cause unexpected results. Consider initialising your data to eliminate the ambiguity"), { ractive: item.element.instance }); // TODO add docs page explaining item
-			item.parentFragment.ractive.get( item.name ); // side-effect: create mappings as necessary
-			item.model = item.parentFragment.findContext().joinKey( item.name );
+		// if the interpolator is not static
+		if ( !template[0].s ) {
+			item.model = model;
+			item.link = viewmodel.createLink( item.name, model, template[0].r );
+
+			// initialize parent side of the mapping from child data
+			if ( val === undefined && !model.isReadonly && item.name in childData ) {
+				model.set( childData[ item.name ] );
+			}
 		}
 
-		item.link = viewmodel.createLink( item.name, item.model, template[0].r );
+		// copy non-object, non-computed vals through
+		else if ( typeof val !== 'object' || template[0].x ) {
+			viewmodel.joinKey( item.name ).set( val );
+		}
 
-		if ( item.model.get() === undefined && item.name in childData ) {
-			item.model.set( childData[ item.name ] );
+		// warn about trying to copy an object
+		else {
+			warnIfDebug( ("Cannot copy non-computed object value from static mapping '" + (item.name) + "'") );
 		}
 	}
 
@@ -12940,7 +13129,7 @@ var Option = (function (Element$$1) {
 		Element$$1.prototype.unbind.call(this);
 
 		if ( this.select ) {
-			removeFromArray$1( this.select.options, this );
+			removeFromArray( this.select.options, this );
 		}
 	};
 
@@ -13079,7 +13268,7 @@ var Partial = (function (MustacheContainer$$1) {
 
 		if ( !template ) {
 			MustacheContainer$$1.prototype.bind.call(this);
-			if ( this.model && ( templateObj = this.model.get() ) && typeof templateObj === 'object' && ( typeof templateObj.template === 'string' || Array.isArray( templateObj.t ) ) ) {
+			if ( ( templateObj = this.model.get() ) && typeof templateObj === 'object' && ( typeof templateObj.template === 'string' || Array.isArray( templateObj.t ) ) ) {
 				if ( templateObj.template ) {
 					this.source = templateObj.template;
 					templateObj = parsePartial( this.template.r, templateObj.template, this.ractive );
@@ -13087,7 +13276,7 @@ var Partial = (function (MustacheContainer$$1) {
 					this.source = templateObj.t;
 				}
 				this.setTemplate( this.template.r, templateObj.t );
-			} else if ( ( !this.model || typeof this.model.get() !== 'string' ) && this.refName ) {
+			} else if ( typeof this.model.get() !== 'string' && this.refName ) {
 				this.setTemplate( this.refName, template );
 			} else {
 				this.setTemplate( this.model.get() );
@@ -13101,7 +13290,7 @@ var Partial = (function (MustacheContainer$$1) {
 
 		if ( this.template.c ) {
 			options.template = [{ t: SECTION, n: SECTION_WITH, f: options.template }];
-			for ( var k in this.template.c ) {
+			for ( var k in this$1.template.c ) {
 				options.template[0][k] = this$1.template.c[k];
 			}
 		}
@@ -13263,7 +13452,7 @@ var RepeatedFragment = function RepeatedFragment ( options ) {
 	this.isArray = false;
 };
 
-RepeatedFragment.prototype.bind = function bind ( context ) {
+RepeatedFragment.prototype.bind = function bind$$1 ( context ) {
 		var this$1 = this;
 
 	this.context = context;
@@ -13328,7 +13517,7 @@ RepeatedFragment.prototype.createIteration = function createIteration ( key, ind
 };
 
 RepeatedFragment.prototype.destroyed = function destroyed$1 () {
-	this.iterations.forEach( destroyed$1$1 );
+	this.iterations.forEach( destroyed );
 };
 
 RepeatedFragment.prototype.detach = function detach () {
@@ -13370,7 +13559,7 @@ RepeatedFragment.prototype.firstNode = function firstNode ( skipParent ) {
 	return this.iterations[0] ? this.iterations[0].firstNode( skipParent ) : null;
 };
 
-RepeatedFragment.prototype.rebinding = function rebinding ( next ) {
+RepeatedFragment.prototype.rebind = function rebind ( next ) {
 		var this$1 = this;
 
 	this.context = next;
@@ -13384,7 +13573,7 @@ RepeatedFragment.prototype.rebinding = function rebinding ( next ) {
 	});
 };
 
-RepeatedFragment.prototype.render = function render ( target, occupants ) {
+RepeatedFragment.prototype.render = function render$$1 ( target, occupants ) {
 	// TODO use docFrag.cloneNode...
 
 	var xs = this.iterations;
@@ -13424,25 +13613,25 @@ RepeatedFragment.prototype.shuffle = function shuffle ( newIndices ) {
 };
 
 RepeatedFragment.prototype.shuffled = function shuffled$1 () {
-	this.iterations.forEach( shuffled$1$1 );
+	this.iterations.forEach( shuffled );
 };
 
-RepeatedFragment.prototype.toString = function toString$1 ( escape ) {
+RepeatedFragment.prototype.toString = function toString$1$$1 ( escape ) {
 	return this.iterations ?
-		this.iterations.map( escape ? toEscapedString : toString$2 ).join( '' ) :
+		this.iterations.map( escape ? toEscapedString : toString$1 ).join( '' ) :
 		'';
 };
 
 RepeatedFragment.prototype.unbind = function unbind$1 () {
-	this.iterations.forEach( unbind$1$1 );
+	this.iterations.forEach( unbind );
 	return this;
 };
 
 RepeatedFragment.prototype.unrender = function unrender$1 ( shouldDestroy ) {
-	this.iterations.forEach( shouldDestroy ? unrenderAndDestroy : unrender$1$1 );
+	this.iterations.forEach( shouldDestroy ? unrenderAndDestroy : unrender );
 	if ( this.pendingNewIndices && this.previousIterations ) {
 		this.previousIterations.forEach( function (fragment) {
-			if ( fragment.rendered ) { shouldDestroy ? unrenderAndDestroy( fragment ) : unrender$1$1( fragment ); }
+			if ( fragment.rendered ) { shouldDestroy ? unrenderAndDestroy( fragment ) : unrender( fragment ); }
 		});
 	}
 	this.rendered = false;
@@ -13511,7 +13700,7 @@ RepeatedFragment.prototype.update = function update$1 () {
 	if ( !reset && this.isArray && this.bubbled && this.bubbled.length ) {
 		this.bubbled.forEach( function (i) { return this$1.iterations[i] && this$1.iterations[i].update(); } );
 	} else {
-		this.iterations.forEach( update$1$1 );
+		this.iterations.forEach( update );
 	}
 
 	if ( this.bubbled ) { this.bubbled.length = 0; }
@@ -13600,7 +13789,7 @@ RepeatedFragment.prototype.updatePostShuffle = function updatePostShuffle () {
 			removed[ oldIndex ] = fragment;
 		} else if ( fragment.index !== newIndex ) {
 			var model = this$1.context.joinKey( newIndex );
-			fragment.index = newIndex;
+			fragment.index = fragment.key = newIndex;
 			fragment.context = model;
 			if ( this$1.owner.template.z ) {
 				fragment.aliases = {};
@@ -13659,7 +13848,7 @@ RepeatedFragment.prototype.updatePostShuffle = function updatePostShuffle () {
 	// trigger removal on old nodes
 	Object.keys( removed ).forEach( function (k) { return removed[k].unbind().unrender( true ); } );
 
-	this.iterations.forEach( update$1$1 );
+	this.iterations.forEach( update );
 
 	this.pendingNewIndices = null;
 
@@ -13727,7 +13916,7 @@ var Section = (function (MustacheContainer$$1) {
 	Section.prototype.rebind = function rebind ( next, previous, safe ) {
 		if ( MustacheContainer$$1.prototype.rebind.call( this, next, previous, safe ) ) {
 			if ( this.fragment && this.sectionType !== SECTION_IF && this.sectionType !== SECTION_UNLESS ) {
-				this.fragment.rebinding( next );
+				this.fragment.rebind( next );
 			}
 		}
 	};
@@ -13792,7 +13981,7 @@ var Section = (function (MustacheContainer$$1) {
 			if ( this.fragment ) {
 				// check for detached fragment
 				if ( this.detached ) {
-					attach$1( this, this.fragment );
+					attach( this, this.fragment );
 					this.detached = false;
 					this.rendered = true;
 				}
@@ -13823,6 +14012,8 @@ var Section = (function (MustacheContainer$$1) {
 					this.detached = this.fragment;
 					runloop.scheduleTask( function () { return this$1.detach(); } );
 				}
+			} else if ( this.fragment ) {
+				this.fragment.unbind();
 			}
 
 			this.fragment = null;
@@ -13830,7 +14021,7 @@ var Section = (function (MustacheContainer$$1) {
 
 		if ( newFragment ) {
 			if ( this.rendered ) {
-				attach$1( this, newFragment );
+				attach( this, newFragment );
 			}
 
 			this.fragment = newFragment;
@@ -13845,7 +14036,7 @@ var Section = (function (MustacheContainer$$1) {
 	return Section;
 }(MustacheContainer));
 
-function attach$1 ( section, fragment ) {
+function attach ( section, fragment ) {
 	var anchor = section.parentFragment.findNextNode( section );
 
 	if ( anchor ) {
@@ -14184,7 +14375,7 @@ if ( !isClient ) {
 	createTransitions = null;
 } else {
 	var testStyle$1 = createElement( 'div' ).style;
-	var linear$2 = function (x) { return x; };
+	var linear$1 = function (x) { return x; };
 
 	var canUseCssTransitions = {};
 	var cannotUseCssTransitions = {};
@@ -14361,12 +14552,12 @@ if ( !isClient ) {
 
 						if ( !easing ) {
 							warnOnceIfDebug( missingPlugin( options.easing, 'easing' ) );
-							easing = linear$2;
+							easing = linear$1;
 						}
 					} else if ( typeof options.easing === 'function' ) {
 						easing = options.easing;
 					} else {
-						easing = linear$2;
+						easing = linear$1;
 					}
 
 					new Ticker({
@@ -14414,7 +14605,7 @@ function resetStyle ( node, style ) {
 }
 
 var getComputedStyle = win && win.getComputedStyle;
-var resolved$1 = Promise.resolve();
+var resolved = Promise.resolve();
 
 var names = {
 	t0: 'intro-outro',
@@ -14443,7 +14634,7 @@ Transition.prototype.animateStyle = function animateStyle ( style, value, option
 	// that way you'll never get CSS transitionend events
 	if ( !visible ) {
 		this.setStyle( style, value );
-		return resolved$1;
+		return resolved;
 	}
 
 	var to;
@@ -14703,7 +14894,7 @@ Transition.prototype.unbind = function unbind () {
 };
 
 Transition.prototype.unregisterCompleteHandler = function unregisterCompleteHandler ( fn ) {
-	removeFromArray$1( this.onComplete, fn );
+	removeFromArray( this.onComplete, fn );
 };
 
 var proto$4 = Transition.prototype;
@@ -15120,7 +15311,7 @@ var Fragment = function Fragment ( options ) {
 
 Fragment.prototype.bind = function bind$1 ( context ) {
 	this.context = context;
-	this.items.forEach( bind$1$1 );
+	this.items.forEach( bind );
 	this.bound = true;
 
 	// in rare cases, a forced resolution (or similar) will cause the
@@ -15161,7 +15352,7 @@ Fragment.prototype.createItems = function createItems () {
 };
 
 Fragment.prototype.destroyed = function destroyed$1 () {
-	this.items.forEach( destroyed$1$1 );
+	this.items.forEach( destroyed );
 };
 
 Fragment.prototype.detach = function detach () {
@@ -15269,11 +15460,11 @@ Fragment.prototype.firstNode = function firstNode ( skipParent ) {
 	return this.parent.findNextNode( this.owner );
 };
 
-Fragment.prototype.rebinding = function rebinding ( next ) {
+Fragment.prototype.rebind = function rebind ( next ) {
 	this.context = next;
 };
 
-Fragment.prototype.render = function render ( target, occupants ) {
+Fragment.prototype.render = function render$$1 ( target, occupants ) {
 	if ( this.rendered ) { throw new Error( 'Fragment is already rendered!' ); }
 	this.rendered = true;
 
@@ -15317,23 +15508,23 @@ Fragment.prototype.resetTemplate = function resetTemplate ( template ) {
 };
 
 Fragment.prototype.shuffled = function shuffled$1 () {
-	this.items.forEach( shuffled$1$1 );
+	this.items.forEach( shuffled );
 };
 
-Fragment.prototype.toString = function toString$1 ( escape ) {
-	return this.items.map( escape ? toEscapedString : toString$2 ).join( '' );
+Fragment.prototype.toString = function toString$1$$1 ( escape ) {
+	return this.items.map( escape ? toEscapedString : toString$1 ).join( '' );
 };
 
 Fragment.prototype.unbind = function unbind$1 () {
 	this.context = null;
-	this.items.forEach( unbind$1$1 );
+	this.items.forEach( unbind );
 	this.bound = false;
 
 	return this;
 };
 
 Fragment.prototype.unrender = function unrender$1 ( shouldDestroy ) {
-	this.items.forEach( shouldDestroy ? unrenderAndDestroy$1 : unrender$1$1 );
+	this.items.forEach( shouldDestroy ? unrenderAndDestroy$1 : unrender );
 	this.rendered = false;
 };
 
@@ -15342,7 +15533,7 @@ Fragment.prototype.update = function update$1 () {
 		if ( !this.updating ) {
 			this.dirty = false;
 			this.updating = true;
-			this.items.forEach( update$1$1 );
+			this.items.forEach( update );
 			this.updating = false;
 		} else if ( this.isRoot ) {
 			runloop.addFragmentToRoot( this );
@@ -15370,13 +15561,13 @@ Fragment.prototype.valueOf = function valueOf () {
 	return this.value;
 };
 
-Fragment.prototype.getContext = getContext$1;
+Fragment.prototype.getContext = getContext;
 
 function getChildQueue ( queue, ractive ) {
 	return queue[ ractive._guid ] || ( queue[ ractive._guid ] = [] );
 }
 
-function fire$1 ( hookQueue, ractive ) {
+function fire ( hookQueue, ractive ) {
 	var childQueue = getChildQueue( hookQueue.queue, ractive );
 
 	hookQueue.hook.fire( ractive );
@@ -15384,7 +15575,7 @@ function fire$1 ( hookQueue, ractive ) {
 	// queue is "live" because components can end up being
 	// added while hooks fire on parents that modify data values.
 	while ( childQueue.length ) {
-		fire$1( hookQueue, childQueue.shift() );
+		fire( hookQueue, childQueue.shift() );
 	}
 
 	delete hookQueue.queue[ ractive._guid ];
@@ -15406,7 +15597,7 @@ HookQueue.prototype.end = function end ( ractive ) {
 	// If this is *isn't* a child of a component that's in process,
 	// it should call methods or fire at this point
 	if ( !parent || !this.inProcess[ parent._guid ] ) {
-		fire$1( this, ractive );
+		fire( this, ractive );
 	}
 	// elsewise, handoff to parent to fire when ready
 	else {
@@ -15453,7 +15644,7 @@ function initialise ( ractive, userOptions, options ) {
 			var promise = ractive.render( el, ractive.append );
 
 			if ( Ractive.DEBUG_PROMISES ) {
-				promise['catch']( function (err) {
+				promise.catch( function (err) {
 					warnOnceIfDebug( 'Promise debugging is enabled, to help solve errors that happen asynchronously. Some browsers will log unhandled promise rejections, in which case you can safely disable promise debugging:\n  Ractive.DEBUG_PROMISES = false;' );
 					warnIfDebug( 'An error happened during rendering', { ractive: ractive });
 					logIfDebug( err );
@@ -15506,7 +15697,7 @@ function subscribe ( instance, options, type ) {
 var renderHook = new Hook( 'render' );
 var completeHook = new Hook( 'complete' );
 
-function render$2 ( ractive, target, anchor, occupants ) {
+function render$1 ( ractive, target, anchor, occupants ) {
 	// set a flag to let any transitions know that this instance is currently rendering
 	ractive.rendering = true;
 
@@ -15545,7 +15736,11 @@ function render$2 ( ractive, target, anchor, occupants ) {
 	runloop.end();
 	ractive.rendering = false;
 
-	return promise.then( function () { return completeHook.fire( ractive ); } );
+	return promise.then( function () {
+		if (ractive.torndown) { return; }
+
+		completeHook.fire( ractive );
+	});
 }
 
 function Ractive$render ( target, anchor ) {
@@ -15560,7 +15755,7 @@ function Ractive$render ( target, anchor ) {
 		// Teardown any existing instances *before* trying to set up the new one -
 		// avoids certain weird bugs
 		var others = target.__ractive_instances__;
-		if ( others ) { others.forEach( teardown$1$1 ); }
+		if ( others ) { others.forEach( teardown ); }
 
 		// make sure we are the only occupants
 		if ( !this.enhance ) {
@@ -15569,7 +15764,7 @@ function Ractive$render ( target, anchor ) {
 	}
 
 	var occupants = this.enhance ? toArray( target.childNodes ) : null;
-	var promise = render$2( this, target, anchor, occupants );
+	var promise = render$1( this, target, anchor, occupants );
 
 	if ( occupants ) {
 		while ( occupants.length ) { target.removeChild( occupants.pop() ); }
@@ -15669,7 +15864,7 @@ function collect( source, name, attr, dest ) {
 	});
 }
 
-function forceResetTemplate$1 ( partial ) {
+function forceResetTemplate ( partial ) {
 	partial.forceResetTemplate();
 }
 
@@ -15680,7 +15875,7 @@ var resetPartial = function ( name, partial ) {
 	var promise = runloop.start( this, true );
 
 	this.partials[ name ] = partial;
-	collection.forEach( forceResetTemplate$1 );
+	collection.forEach( forceResetTemplate );
 
 	runloop.end();
 
@@ -15736,26 +15931,26 @@ function Ractive$resetTemplate ( template ) {
 	return promise;
 }
 
-var reverse$1 = makeArrayMethod( 'reverse' ).path;
+var reverse = makeArrayMethod( 'reverse' ).path;
 
 function Ractive$set ( keypath, value, options ) {
 	var ractive = this;
 
 	var opts = typeof keypath === 'object' ? value : options;
 
-	return set$1( ractive, build( ractive, keypath, value ), opts );
+	return set( ractive, build( ractive, keypath, value ), opts );
 }
 
-var shift$1 = makeArrayMethod( 'shift' ).path;
+var shift = makeArrayMethod( 'shift' ).path;
 
-var sort$1 = makeArrayMethod( 'sort' ).path;
+var sort = makeArrayMethod( 'sort' ).path;
 
-var splice$1 = makeArrayMethod( 'splice' ).path;
+var splice = makeArrayMethod( 'splice' ).path;
 
 function Ractive$subtract ( keypath, d, options ) {
 	var num = typeof d === 'number' ? -d : -1;
 	var opts = typeof d === 'object' ? d : options;
-	return add$1( this, keypath, num, opts );
+	return add( this, keypath, num, opts );
 }
 
 function Ractive$toggle ( keypath, options ) {
@@ -15763,7 +15958,7 @@ function Ractive$toggle ( keypath, options ) {
 		throw new TypeError( badArguments );
 	}
 
-	return set$1( this, gather( this, keypath ).map( function (m) { return [ m, !m.get() ]; } ), options );
+	return set( this, gather( this, keypath ).map( function (m) { return [ m, !m.get() ]; } ), options );
 }
 
 function Ractive$toCSS() {
@@ -15817,7 +16012,7 @@ function Ractive$transition ( name, node, params ) {
 	return promise;
 }
 
-function unlink$1( here ) {
+function unlink( here ) {
 	var promise = runloop.start();
 	this.viewmodel.joinAll( splitKeypath( here ), { lastLink: false } ).unlink();
 	runloop.end();
@@ -15841,7 +16036,7 @@ function Ractive$unrender () {
 	this.fragment.unrender( shouldDestroy );
 	if ( shouldDestroy ) { this.destroyed = true; }
 
-	removeFromArray$1( this.el.__ractive_instances__, this );
+	removeFromArray( this.el.__ractive_instances__, this );
 
 	unrenderHook$1.fire( this );
 
@@ -15851,7 +16046,7 @@ function Ractive$unrender () {
 	return promise;
 }
 
-var unshift$1 = makeArrayMethod( 'unshift' ).path;
+var unshift = makeArrayMethod( 'unshift' ).path;
 
 function Ractive$updateModel ( keypath, cascade ) {
 	var promise = runloop.start( this, true );
@@ -15883,24 +16078,24 @@ var RactiveProto = {
 	get: Ractive$get,
 	getNodeInfo: getNodeInfo,
 	insert: Ractive$insert,
-	link: link$1,
-	observe: observe$1,
-	observeOnce: observeOnce$1,
+	link: link,
+	observe: observe,
+	observeOnce: observeOnce,
 	off: Ractive$off,
 	on: Ractive$on,
 	once: Ractive$once,
-	pop: pop$1,
-	push: push$1,
-	readLink: readLink$1,
+	pop: pop,
+	push: push,
+	readLink: readLink,
 	render: Ractive$render,
 	reset: Ractive$reset,
 	resetPartial: resetPartial,
 	resetTemplate: Ractive$resetTemplate,
-	reverse: reverse$1,
+	reverse: reverse,
 	set: Ractive$set,
-	shift: shift$1,
-	sort: sort$1,
-	splice: splice$1,
+	shift: shift,
+	sort: sort,
+	splice: splice,
 	subtract: Ractive$subtract,
 	teardown: Ractive$teardown,
 	toggle: Ractive$toggle,
@@ -15910,16 +16105,16 @@ var RactiveProto = {
 	toHtml: Ractive$toHTML,
 	toText: toText,
 	transition: Ractive$transition,
-	unlink: unlink$1,
+	unlink: unlink,
 	unrender: Ractive$unrender,
-	unshift: unshift$1,
+	unshift: unshift,
 	update: Ractive$update,
 	updateModel: Ractive$updateModel
 };
 
 var callsSuper = /super\s\(|\.call\s*\(\s*this/;
 
-function extend$1 () {
+function extend () {
 	var options = [], len = arguments.length;
 	while ( len-- ) options[ len ] = arguments[ len ];
 
@@ -15975,7 +16170,7 @@ function extendOne ( Parent, options, Target ) {
 		defaults: { value: proto },
 
 		// extendable
-		extend: { value: extend$1, writable: true, configurable: true },
+		extend: { value: extend, writable: true, configurable: true },
 		extendClass: { value: extendWith, writable: true, configurable: true },
 
 		// Parent - for IE8, can't use Object.getPrototypeOf
@@ -16039,13 +16234,9 @@ if ( win && !win.Ractive ) {
 	var opts = '';
 	var script = document.currentScript || document.querySelector( 'script[data-ractive-options]' );
 
-	if ( script ) {
-		opts = script.getAttribute( 'data-ractive-options' ) || '';
-	}
+	if ( script ) { opts = script.getAttribute( 'data-ractive-options' ) || ''; }
 
-	if ( ~opts.indexOf( 'ForceGlobal' ) ) {
-		win.Ractive = Ractive;
-	}
+	if ( ~opts.indexOf( 'ForceGlobal' ) ) { win.Ractive = Ractive; }
 }
 
 Object.assign( Ractive.prototype, RactiveProto, defaults );
@@ -16053,6 +16244,10 @@ Ractive.prototype.constructor = Ractive;
 
 // alias prototype as `defaults`
 Ractive.defaults = Ractive.prototype;
+
+// share defaults with the parser
+shared.defaults = Ractive.defaults;
+shared.Ractive = Ractive;
 
 // static properties
 Object.defineProperties( Ractive, {
@@ -16062,12 +16257,12 @@ Object.defineProperties( Ractive, {
 	DEBUG_PROMISES: { writable: true, value: true },
 
 	// static methods:
-	extend:         { value: extend$1 },
+	extend:         { value: extend },
 	extendWith:     { value: extendWith },
 	escapeKey:      { value: escapeKey },
 	getNodeInfo:    { value: staticInfo },
 	joinKeys:       { value: joinKeys },
-	parse:          { value: parse$1$1 },
+	parse:          { value: parse },
 	splitKeypath:   { value: splitKeypath$1 },
 	unescapeKey:    { value: unescapeKey },
 	getCSS:         { value: getCSS },
@@ -16077,7 +16272,7 @@ Object.defineProperties( Ractive, {
 	svg:            { value: svg },
 
 	// version
-	VERSION:        { value: '0.9.0-edge-8507b452e719412bdb79ebef5404078e6f9881e8' },
+	VERSION:        { value: '0.9.0-edge' },
 
 	// plugins
 	adaptors:       { writable: true, value: {} },
