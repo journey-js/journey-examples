@@ -7,7 +7,8 @@ import menu from "./menu/menu.js";
 import "lib/bootstrap.js";
 import "./animationMonitor.js";
 
-let contextPath = "/dist";
+//let contextPath = "/dist";
+let contextPath = "/journey-examples/index.html";
 //let contextPath = "";
 
 menu.init( { target: "#menu", fallbackMenu: "#menu-home" } );
