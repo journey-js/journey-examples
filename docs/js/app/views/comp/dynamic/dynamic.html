@@ -1,0 +1,86 @@
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;">Basic <span class="highlightLetter">Component</span></h1>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <p>In this demo, we show how to create a basic component. While components are really a Ractive feature, 
+                we will be showcasing it here as well.</p>
+
+            <p>In this demo we create a very simple <span class="fun">component</span>:
+                a <span class="var">&lt;div></span> tag with a <span class="var">label</span> and a
+                <span class="met">click</span> action that <span class="met">alerts</span>
+                the user.
+            </p>
+            <p>Below is the component in action!</p>
+
+            <#simple message='Click to activate!'/>
+            
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <p>Below is the code to create the component:
+            </p>
+
+            <pre><code  class="line-numbers language-js">function createComponent() {
+            
+			 var comp = ractive.extend({
+                template: '&lt;div on-click="activate()"> \{{message}} &lt;/div>',
+                activate: function() {
+                    alert("Active!");
+                },
+                data: {
+                    // A default message if none is provided
+                    message: 'No message specified, using the default'
+                }
+            });
+};</code></pre>
+            
+            <p>Looking at the code above, you'll note that a Ractive <span class="fun">component</span>
+                is just a normal Ractive instance. <span class="ln">Line 4</span>
+                shows the <span class="var">template</span>, <span class="ln">line 5</span>
+                a <span class="fun">method</span> to invoke, and <span class="ln">line 8</span> a 
+                <span class="var">data</span> object.
+            </p>
+            
+            <p>What turns a ractive instance into a <span class="fun">component</span>
+            is when it referenced inside another ractive instance, as show below:</p>
+            
+                        <pre><code  class="line-numbers language-js">function createView() {
+    var comp = createComponent():
+    var view = new template({
+        components: {
+            simple: comp
+        }
+    });
+};
+</code></pre>
+            
+            <p><span class="ln">Line 4</span> registers the ractive
+            components, as key/value pairs.</p>
+            <p><span class="ln">Line 5</span> we register a component called
+                <span class="var">simple</span> which references the <span class="fun">comp</span>
+                instance. <span class="var">simple</span> becomes a new <span class="var">tag</span>
+                that we can reference in our template:
+            </p>
+            
+            <pre><code  class="line-numbers language-markup">&lt;simple message='Click to activate!'/>
+</code></pre>
+            <p><span class="ln">Line 1</span> shows how to specify the component
+            in our html markup. The name of the tag is the same used when
+            registering our component.
+            </p>
+            <p>We can set the component <span class="var">message</span> as an
+            attribute.</p>            
+
+        </div>
+    </div>
+</div>

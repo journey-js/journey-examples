@@ -1,0 +1,43 @@
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;">Redirect <span class="highlightLetter">Demo</span></h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <h2>Redirecting to another view</h2>
+
+            <p>Sometimes you want to redirect to a different view, if certain validations are not in place, or certain permissions are missing.</p>
+
+            <p>When creating a view with <span class="met">Ctroller.onInit</span>, it is possible to navigate to a different view, through
+                <span class="var">kudu.go(...)</span>, and <span class="met">return null</span>. By <span class="met">returning null</span>
+                from <span class="met">Controller.onInit</span>, kudu will stop the initialization process of that view.                
+            </p>
+
+            <p>For example:</p>
+
+            <div class="content">     
+                <pre><code  class="line-numbers language-js">that.onInit = function(options) {
+
+    // Check if typeId parameter is present. This view requires a typeId to function
+    if (options.typeId == null) {
+
+        // redirect to a different view to pick a type
+        kudu.go( {ctrl: CarTypeController} )
+        return null;
+    }
+
+    // typeId parameter is present so we create the view for this controller and return it
+    var view = createView();
+    return view;
+    
+} </code></pre>
+            </div>
+        </div>
+    </div>
+
+</div>

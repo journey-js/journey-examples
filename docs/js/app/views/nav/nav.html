@@ -1,0 +1,53 @@
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;">Navigation <span class="highlightLetter">Demos</span></h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <h2>Navigate Programatically</h2>
+            <div class="set1-color1 searchBox searchBoxCenter" id="trackClaimBox"> 
+
+                <div class="content">     
+                    <pre><code  class="line-numbers language-js">var kudu = require("kudu");
+var myCtrl = require("myctrl");
+
+kudu.go({
+    ctrl: myCtrl,
+    routeParams: {'id': 1, 'name': 'Bob'},
+    args: {'myargs': ['one', 'two', 'three']}
+});
+                        </code></pre>
+                </div>
+                <button type="button" class="search btn btn-home"  on-click="@.gotoNewView()"><i class="fa fa-search"></i> Go</button>
+
+            </div>            
+                <br>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            
+            <h2>Navigate Declaratively</h2>
+
+            <div class="set1-color2 searchBox searchBoxCenter" id="trackClaimBox"> 
+
+
+                <div class="home-text" ></div>
+
+                <div class="content">     
+                    <pre><code  class="line-numbers language-markup">&lt;!-- To navigate declaratively, set the path you want to navigate to as the href url hash -->
+&lt;a href="/navTarget">Go&lt;/a></code></pre>
+                </div>
+                <a class="search btn btn-home" href="/navTarget" style="text-decoration: underline"><i class="fa fa-search"></i> Go</a>
+
+            </div>            
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,66 @@
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;">Controller <span class="highlightLetter">Events</span></h1>
+        </div>
+
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            Controllers provide a number of lifecycle hooks for you to take action in. To add a hook, simply declare the function on your
+            controller: <span class="fun">controller.onInit</span> as shown below.
+
+            <pre><code  class="line-numbers language-js">function myController() {
+
+		var that = {};
+
+		that.onInit = function (options) {
+        console.log("onInit called", options);
+        return new template();
+    };
+
+    that.onRender = function(options) {
+        console.log("onRender called", options);
+    }
+
+    that.onComplete = function(options) {
+        console.log("onComplete called", options);
+    }
+
+    that.onRemove = function(options) {
+        console.log("onRemove called", options);
+    }
+} </code></pre>
+
+        </div>
+    </div>
+    
+      <div class="row">
+        <div class="col-md-12 ">
+            <p>Here is the list of controller lifecycle events available and the order in which they are invoked:</p>
+            <ul>
+                <li><span class="met">onInit</span></li>
+                <li><span class="met">onRender</span></li>
+                <li><span class="met">onComplete</span></li>
+                <li><span class="met">onRemove</span></li>
+                <li><span class="met">onUnrender</span></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12 ">
+
+            <p style="margin-top: 20px">
+                <strong>Note:</strong> open the browser console and click
+                the <span class='var'>Reload view</span> button below, to see the order of events called.
+            </p>
+            <p style="margin-top: 1 0px">
+
+                <button class="btn btn-success" on-click="reloadView()">Reload view</button>
+        </div>
+    </div>
+</div>

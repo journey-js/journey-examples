@@ -1,0 +1,66 @@
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;">Basic <span class="highlightLetter">Ajax</span></h1>
+        </div>
+    </div>
+    
+     <div class="row">
+
+        <div class="col-md-12">
+            <p>In this demo, we show how to perform an Ajax call to fetch data for the view.</p>
+            <p>Below is the response returned from the Ajax request:</p>
+            
+            <pre><code  class="line-numbers language-js">{{response}}</code></pre>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12">
+            <p>We want to make an Ajax request <span class="var">before</span> we render the view. So, instead of returning a view from the
+                <span class="met">onInit</span> method, we return a <span class="met">Promise</span> which <span class="var">resolves</span>
+                to the view we want to render. By returning a <span class="met">Promise</span>, we can wait for the Ajax request to complete,
+                and pass the response to the view to render. If the ajax call fails, we can <span class="var">reject</span> the promise,
+                and the view will not be rendered.
+            </p>
+            
+            <p>
+                Below is the code:
+            </p>
+            
+            <pre><code  class="line-numbers language-js">	that.onInit = function (options) {
+
+			var promise = new Promise(function (resolve, reject) {
+
+				$.getJSON("/data").then(function (data) {
+					var view = createView(data);
+					resolve(view);
+				}, function () {
+					reject("Could not load data for BasicAjax");
+				});
+			});
+
+			return promise;
+		};
+}); </code></pre>
+            
+             <p>In <span class="ln">line 3</span> we create a ES6 Promise, which receives the <span class="var">resolve</span> and 
+                <span class="var">reject</span> callbacks.</p>
+            <p>In <span class="ln">line 5</span>, we use jQuery to fetch a <span class="var">JSON</span> file from the server. Once
+                the Ajax request is completed, it passes in the response, <span class="var">data</span>.</p>
+            <p><span class="ln">Line 6</span> creates the view and passes the data to render.</p>
+            <p>Finally in <span class="ln">line 7</span> the promise is <span class="var">resolved</span>, passing the view as argument.</p>
+            <p>If the Ajax call failed for some reason, <span class="ln">line 9</span> <span class="var">rejects</span> the promise, 
+                and the view is not rendered, in other words, we stay at the current view.</p>
+            
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-2">
+            <button class="btn btn-success" on-click="reload()">Reload View</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,68 @@
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-12">
+            <h1 style="padding-top:30px; padding-bottom:0px;">Global <span class="highlightLetter">Events</span></h1>
+        </div>
+
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            In this example we show how to subscribe to Kudu lifecycle events. Lifecycle events uses the <span class="var">"lc."</span> prefix,
+            as shown below on <span class="ln">line 4</span>.
+            <pre><code  class="line-numbers language-js">var kudu = require("kudu");
+
+kudu.on("lc.init", function(options) {
+    console.log("view has been initialized", options);
+});
+
+kudu.on("lc.render", function(options) {
+    console.log("view has been rendered");
+});
+
+kudu.on("lc.fail", function(options) {
+    alert("Sorry, an error occurred: ", options.error[0]);
+});
+
+</code></pre>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 ">
+            <p>Below is the list of global events available and the order in which they are triggered:</p>
+            <ul>
+                <li><span class="met">beforeInit</span></li>
+                <li><span class="met">init</span></li>
+                <li><span class="met">render</span></li>
+                <li><span class="met">complete</span></li>
+                <li><span class="met">remove</span></li>
+                <li><span class="met">beforeUnrender</span></li>
+                <li><span class="met">unrender</span>
+                    <ul>
+                        <li><span class="met">fail</span> - <span class="met">fail</span> is not part of the order above and can 
+                            occur during any event</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 ">
+
+            <p style="margin-top: 20px">
+                <strong>Note:</strong> use the buttons below to subscribe and unsubscribe to Kudu global events. Once subscribed, open the browser console and click
+                the <em class='var'>Reload view</em> button below, to see the order of events triggered.
+            </p>
+            <p style="margin-top: 1 0px">
+
+                <button class="btn btn-primary" on-click="addListeners()">Subscribe to global events</button>
+                <button class="btn btn-success" on-click="reloadView()">Reload view</button>
+                <button class="btn btn-danger pull-right" on-click="removeListeners()">Unsubscribe from global events</button>
+        </div>
+    </div>
+</div>

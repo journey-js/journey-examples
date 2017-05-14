@@ -1,0 +1,159 @@
+.searchBox {
+	
+    /*margin:5px;*/
+    padding: 20px;
+    margin-bottom:20px;
+    
+    /*background-color: #aaa;*/
+
+    /*border: 1px solid #444;*/
+    /*border-radius: 4px 4px 4px 4px;*/
+    -webkit-transition: background-color 0.2s;
+    /*-moz-transition: background-color 0.2s;*/
+    -o-transition: background-color 0.2s;
+    transition: background-color 0.2s;
+    
+	-webkit-transition: all 300ms ease;
+	-moz-transition: all 300ms ease;
+	-ms-transition: all 300ms ease;
+	-o-transition: all 300ms ease;
+	transition: all 300ms ease;	    
+	
+	
+	
+	border: 1px solid #009DDB;
+	
+}
+
+
+@media (min-width: 800px) {
+	.searchBoxLeft {
+		margin-left: auto;
+	}
+}
+@media (max-width: 800px) {
+	.searchBox {
+		margin: 10px auto;
+	}
+}
+
+
+.set1-color1 {
+	background-color: #009688;
+}
+
+.set1-color2 {
+	background-color: #009688;
+}
+
+.set1-color3 {
+	background-color: #39B6BF;
+}
+
+.set1-color4 {
+	background-color: #1375B2;
+}
+
+.searchBox .content {
+    color:#fff;
+    margin-bottom: 10px;
+}
+.searchBox:hover .content {
+    color:#666;
+}
+
+
+.searchBox .home-icon {
+	color: #fff;
+    transition: color 0.2s;
+}
+
+.searchBox:hover {
+	background-color:#f8f8f8;
+}
+
+label.checkbox {
+	margin-top:20px;
+	margin-bottom:20px;
+}
+
+label.radio {
+	margin-bottom:20px ;
+}
+
+
+.searchBox:hover .home-icon {
+    color: #009DDB;
+}
+
+.searchBox:hover .home-text  {
+    color: #333;
+}
+
+.searchBox .home-text {
+    margin-top: 20px;
+	color: #fff;
+	font-family:'Segoe UI Semilight', 'Segoe UI', 'Open Sans', Verdana, Arial, Helvetica, sans-serif;
+	/*font-weight: 300;*/
+	font-size: 16px;
+	letter-spacing: 0.02em;
+	line-height: 20px;		
+	vertical-align:middle;
+	display:inline-block;
+	margin-bottom: 10px
+}
+
+.searchBox:hover {
+    
+}
+
+.searchBox i.home-icon {
+    display: inline-block;
+        -webkit-transition-duration: 0.3s;
+    -moz-transition-duration: 0.3s;
+    -o-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+
+    -webkit-transition-property: -webkit-transform,color;
+    -moz-transition-property: -moz-transform, color;
+    -o-transition-property: -o-transform,color;
+    transition-property: transform,color;
+}
+
+.searchBox:hover i.home-icon{
+    /*
+    -webkit-transform:rotate(45deg);
+    -moz-transform:rotate(45deg); 
+    -o-transform:rotate(45deg);
+    transform:rotate(45deg);
+    */
+}
+
+
+.searchBoxLarge {
+	font-family:'Segoe UI Semilight','Segoe UI', 'Open Sans', Verdana, Arial, Helvetica, sans-serif;
+	font-weight: 300;
+	font-size: 32px;
+	letter-spacing: 0.02em;
+	color:#fff;	
+	margin:25px 0px;
+	line-height: 30px;
+	
+    -webkit-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+    -o-transition: all 0.5s;
+    transition: all 0.5s;	
+}
+
+.searchBox:hover .searchBoxLarge {
+    color: #009DDB;
+}
+.btn-home {
+    color: #333;
+}
+.searchBox:hover .btn-home {    
+    background-color: #009DDB;
+    border-color: #009DDB;
+    color: #FFFFFF;
+    
+}

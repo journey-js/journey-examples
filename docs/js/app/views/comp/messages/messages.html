@@ -1,0 +1,7 @@
+{{#each errors}}
+<!--                        <div class="error" intro-outro="velocity:{opacity:[ 1, 0 ]},{duration:500}">-->
+<div style="opacity:0" class="error" intro="velocity:{opacity:[ 1, 0 ]},{duration:200}" outro="velocity:{opacity:[ 0, 1 ]},{duration:200}">
+    <!--                    <div class="error" intro-outro="fade">-->
+    {{.}}
+</div>
+{{/each}}
