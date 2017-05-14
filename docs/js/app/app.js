@@ -26119,8 +26119,8 @@ journey.on( "routeAbuseEnd", function ( ) {
 	console.log( "** Renabling animations" );
 } );
 
-var contextPath = "/dist";
-//let contextPath = "";
+//let contextPath = "/dist";
+var contextPath = "";
 
 menu.init( { target: "#menu", fallbackMenu: "#menu-home" } );
 
