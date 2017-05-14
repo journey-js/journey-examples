@@ -26120,7 +26120,7 @@ journey.on( "routeAbuseEnd", function ( ) {
 } );
 
 //let contextPath = "/dist";
-var contextPath = "/journey-examples";
+var contextPath = "/journey-examples/index.html";
 //let contextPath = "";
 
 menu.init( { target: "#menu", fallbackMenu: "#menu-home" } );
