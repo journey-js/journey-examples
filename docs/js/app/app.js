@@ -26120,8 +26120,8 @@ journey.on( "routeAbuseEnd", function ( ) {
 } );
 
 //let contextPath = "/dist";
-var contextPath = "/journey-examples/index.html";
-//let contextPath = "";
+//let contextPath = "/journey-examples/";
+var contextPath = "";
 
 menu.init( { target: "#menu", fallbackMenu: "#menu-home" } );
 
@@ -26140,7 +26140,7 @@ journey.start( {
 	base: contextPath,
 	defaultRoute: '/home',
 	useOnHashChange: false,
-	useHash: false,
+	useHash: true,
 	hash: '#!'
 } );
 
