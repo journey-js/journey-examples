@@ -16,8 +16,8 @@ const pkg = require( './package.json' );
 let starting = true;
 
 const root = "/dist/";
-const useContextPath = true;
-//const useContextPath = false;
+//const useContextPath = true;
+const useContextPath = false;
 
 transpileJS();
 

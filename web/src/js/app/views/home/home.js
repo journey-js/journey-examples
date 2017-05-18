@@ -5,7 +5,6 @@ import Ractive from "lib/ractive.js";
 var home = {
 
 	enter: function ( route, prevRoute, options ) {
-		console.log("HOME enter:", arguments);
 		/*%injectPath%*/
 		route.view = new Ractive( {
 			el: options.target,

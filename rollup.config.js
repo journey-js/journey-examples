@@ -1,6 +1,8 @@
 var buble = require( 'rollup-plugin-buble' );
-var string = require( 'rollup-plugin-string' );
-var injectPath = require( './rollup-injectPath' );
+//var importText = require( 'rollup-plugin-string' );
+//var string = require( './string' );
+var replacePathComment = require( './rollup-plugin-replacetPath' );
+var templateCompiler = require( './rollup-plugin-rc' );
 var includePaths = require( 'rollup-plugin-includepaths' );
 
 const pkg = require( './package.json' );
@@ -8,7 +10,6 @@ const pkg = require( './package.json' );
 let includePathOptions = {
 	include: { },
 	paths: [ '../journey/src/js', './web/src/js' ],
-	//paths: [],
 	external: [ ],
 	extensions: [ '.js', '.json', '.html' ]
 };
@@ -16,31 +17,42 @@ let includePathOptions = {
 module.exports = {
 	entry: 'web/src/js/app/start.js',
 	plugins: [
+//		ractive( {
+//			include: '**/home.html'
+//		} ),
+		templateCompiler( {
+			include: [ '**/*.html' ],
+			compile: false,
+			includeText: [ '**/*text.html' ]
+		} ),
+//
+//		importText( {
+//			// Required to be specified
+//			include: '**/*.text.html',
+//
+//			// Undefined by default
+//			exclude: [ '**/index.html', '**/home.html' ]
+//		} ),
+
 		buble( {
 			exclude: [ '**/*.html' ],
 			transforms: {
 				dangerousForOf: true
 			}
 		} ),
-		
-		injectPath({
-			include: '**/*.js'			
-		}),
 
-		string( {
-			// Required to be specified
-			include: '**/*.html',
-
-			// Undefined by default
-			exclude: [ '**/index.html' ]
+		replacePathComment( {
+			include: '**/*.js'
 		} ),
+
+//		parseRactive({
+//			include: '**/home.html'
+//		}),
 
 		includePaths( includePathOptions )
 	],
 	moduleName: 'journey',
-	globals: {
-		'jquery.js': '$'
-	},
+
 	targets: [
 		{
 			dest: pkg.main,
