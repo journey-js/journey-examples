@@ -5,7 +5,7 @@ import template from "./nav.html";
 var nav = {
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 		
 		route.view = new Ractive( {
 			el: options.target,

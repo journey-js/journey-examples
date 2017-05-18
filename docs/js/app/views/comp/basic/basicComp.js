@@ -5,7 +5,7 @@ import template from "./basicComp.html";
 var basicComp = {
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 		route.view = createView( options );
 	},
 

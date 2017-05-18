@@ -6,7 +6,7 @@ import fade from "lib/fade.js";
 var basicTransition = {
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 		route.view = new Ractive( {
 			el: options.target,
 			template: template, loadView: function () {

@@ -4,7 +4,7 @@ import template from "./methods.html";
 
 var methods = {	
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 		route.view = createView( options.target );
 	},
 

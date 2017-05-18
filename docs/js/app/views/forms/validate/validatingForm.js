@@ -8,7 +8,7 @@ let parsley;
 var validatingForm = {
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 		route.view = new Ractive( {
 			el: options.target,
 			template: template,

@@ -10,7 +10,7 @@ let view;
 var lifecycleEvents = {
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 
 		// example of a Ractive instance events (oninit and onrender)
 		view = route.view = new Ractive( {

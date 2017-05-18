@@ -6,7 +6,7 @@ import gridComponent from "./grid.js";
 var compPubSub = {
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 		route.view = createView( options );
 	},
 

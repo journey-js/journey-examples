@@ -5,7 +5,7 @@ import Ractive from "lib/ractive";
 var navTargetParams = {
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 
 		route.view = new Ractive( {
 			el: options.target,

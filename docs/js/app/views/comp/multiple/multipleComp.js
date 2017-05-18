@@ -5,7 +5,7 @@ import template from "./multipleComp.html";
 var multipleComp = {
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 
 		route.view = createView( options );
 	},

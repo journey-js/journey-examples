@@ -7,8 +7,9 @@ import menu from "./menu/menu.js";
 import "lib/bootstrap.js";
 import "./animationMonitor.js";
 
-let contextPath = "/dist";
-//let contextPath = "";
+//let contextPath = "/dist";
+//let contextPath = "/journey-examples/";
+let contextPath = "";
 
 menu.init( { target: "#menu", fallbackMenu: "#menu-home" } );
 
@@ -31,6 +32,6 @@ journey.start( {
 	base: contextPath,
 	defaultRoute: '/home',
 	useOnHashChange: false,
-	useHash: false,
-	hash: '#!'
+	useHash: true,
+	//hash: '#!'
 } );

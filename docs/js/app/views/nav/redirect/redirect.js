@@ -5,7 +5,7 @@ import template from "./redirect.html";
 var redirect = {
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 		
 		if ( route.query.typeId == null ) {
 			journey.goto( "/redirectTarget" );

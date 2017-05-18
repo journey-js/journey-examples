@@ -5,7 +5,7 @@ import template from "./basicForm.html";
 var basicForm = {
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 		route.view = new Ractive( {
 
 			el: options.target,

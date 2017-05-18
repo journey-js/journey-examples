@@ -68,10 +68,6 @@
     transition: color 0.2s;
 }
 
-.searchBox:hover {
-	background-color:#f8f8f8;
-}
-
 label.checkbox {
 	margin-top:20px;
 	margin-bottom:20px;
@@ -151,9 +147,27 @@ label.radio {
 .btn-home {
     color: #333;
 }
-.searchBox:hover .btn-home {    
-    background-color: #009DDB;
+
+.searchBox button {
+    background-color: #333;
+}
+
+.searchBox a, .searchBox a:visited {
+    background-color: #333;
+    color: #eee;
     border-color: #009DDB;
-    color: #FFFFFF;
+}
+
+.searchBox:hover a {
+    text-decoration: underline;
+    background-color: transparent;
+    border-color: transparent;
+    color: #eee;
+}
+
+.searchBox:hover button {
+    background-color: #eee;
+    border-color: #009DDB;
+    color: #333;
     
 }

@@ -6,7 +6,7 @@ import helloPartial from "./partial.html";
 var basicPartial = {
 	
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 		route.view = new Ractive( {
 			el: options.target,
 			template: template,

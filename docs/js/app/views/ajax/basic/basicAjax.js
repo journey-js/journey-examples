@@ -19,7 +19,7 @@ var basicAjax = {
 	},
 
 	enter: function ( route, prevRoute, options ) {
-		
+		/*%injectPath%*/
 		config = options;
 
 		route.view = createView( route.data );

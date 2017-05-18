@@ -10,7 +10,7 @@ var upload = {
 
 	enter: function ( route, prevRoute, options ) {
 		config = options;
-		
+		/*%injectPath%*/
 
 		route.view = createView( route.data );
 	},
