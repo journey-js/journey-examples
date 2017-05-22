@@ -1,0 +1,31 @@
+<div class="container" fade-in={duration:1500}>
+    <div class="row">
+
+        <div class="col-md-12">
+
+            <h1 style="padding-top:30px; padding-bottom:0px;">Sortable<span class="highlightLetter">Decorator</span></h1>
+
+            <div class='left'>
+                <h2>Try reordering items...</h2>
+                <ul class='reorderable browsers'>
+                    {{#list}}
+                    <li as-sortable style='background-image: url(icons/{{icon}});'>
+                        <span>{{name}}</span>
+                    </li>
+                    {{/list}}
+                </ul>
+            </div>
+            <div class='right'>
+                <h2>...it mirrors automatically</h2>
+                <ul class='browsers'>
+                    {{#list}}
+                    <li style='background-image: url(icons/{{icon}});'>
+                        <span>{{name}}</span>
+                    </li>
+                    {{/list}}
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>

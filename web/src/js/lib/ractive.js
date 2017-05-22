@@ -1,7 +1,7 @@
 /*
 	Ractive.js v0.9.0-edge
 	Build: unknown
-	Date: Fri May 12 2017 23:15:19 GMT+0200 (South Africa Standard Time)
+	Date: Fri May 19 2017 11:21:22 GMT+0200 (South Africa Standard Time)
 	Website: http://ractivejs.org
 	License: MIT
 */
@@ -684,7 +684,11 @@ var runloop = {
 	},
 
 	addObserver: function addObserver ( observer, defer ) {
-		addToArray( defer ? batch.deferredObservers : batch.immediateObservers, observer );
+		if ( !batch ) {
+			observer.dispatch();
+		} else {
+			addToArray( defer ? batch.deferredObservers : batch.immediateObservers, observer );
+		}
 	},
 
 	registerTransition: function registerTransition ( transition ) {
@@ -808,664 +812,6 @@ function unescapeKey ( key ) {
 	}
 
 	return key;
-}
-
-var keep = false;
-
-function set ( ractive, pairs, options ) {
-	var k = keep;
-
-	var deep = options && options.deep;
-	var shuffle = options && options.shuffle;
-	var promise = runloop.start( ractive, true );
-	if ( options && 'keep' in options ) { keep = options.keep; }
-
-	var i = pairs.length;
-	while ( i-- ) {
-		var model = pairs[i][0];
-		var value = pairs[i][1];
-		var keypath = pairs[i][2];
-
-		if ( !model ) {
-			runloop.end();
-			throw new Error( ("Failed to set invalid keypath '" + keypath + "'") );
-		}
-
-		if ( deep ) { deepSet( model, value ); }
-		else if ( shuffle ) {
-			var array = value;
-			var target = model.get();
-			// shuffle target array with itself
-			if ( !array ) { array = target; }
-
-			if ( !Array.isArray( target ) || !Array.isArray( array ) ) {
-				throw new Error( 'You cannot merge an array with a non-array' );
-			}
-
-			var comparator = getComparator( shuffle );
-			model.merge( array, comparator );
-		} else { model.set( value ); }
-	}
-
-	runloop.end();
-
-	keep = k;
-
-	return promise;
-}
-
-var star = /\*/;
-function gather ( ractive, keypath, base ) {
-	if ( !base && keypath[0] === '.' ) {
-		warnIfDebug( "Attempted to set a relative keypath from a non-relative context. You can use a getNodeInfo or event object to set relative keypaths." );
-		return [];
-	}
-
-	var model = base || ractive.viewmodel;
-	if ( star.test( keypath ) ) {
-		return model.findMatches( splitKeypath( keypath ) );
-	} else {
-		return [ model.joinAll( splitKeypath( keypath ) ) ];
-	}
-}
-
-function build ( ractive, keypath, value ) {
-	var sets = [];
-
-	// set multiple keypaths in one go
-	if ( isObject( keypath ) ) {
-		var loop = function ( k ) {
-			if ( keypath.hasOwnProperty( k ) ) {
-				sets.push.apply( sets, gather( ractive, k ).map( function (m) { return [ m, keypath[k], k ]; } ) );
-			}
-		};
-
-		for ( var k in keypath ) loop( k );
-
-	}
-	// set a single keypath
-	else {
-		sets.push.apply( sets, gather( ractive, keypath ).map( function (m) { return [ m, value, keypath ]; } ) );
-	}
-
-	return sets;
-}
-
-var deepOpts = { virtual: false };
-function deepSet( model, value ) {
-	var dest = model.get( false, deepOpts );
-
-	// if dest doesn't exist, just set it
-	if ( dest == null || typeof value !== 'object' ) { return model.set( value ); }
-	if ( typeof dest !== 'object' ) { return model.set( value ); }
-
-	for ( var k in value ) {
-		if ( value.hasOwnProperty( k ) ) {
-			deepSet( model.joinKey( k ), value[k] );
-		}
-	}
-}
-
-var comparators = {};
-function getComparator ( option ) {
-	if ( option === true ) { return null; } // use existing arrays
-	if ( typeof option === 'function' ) { return option; }
-
-	if ( typeof option === 'string' ) {
-		return comparators[ option ] || ( comparators[ option ] = function (thing) { return thing[ option ]; } );
-	}
-
-	throw new Error( 'If supplied, options.compare must be a string, function, or true' ); // TODO link to docs
-}
-
-var errorMessage = 'Cannot add to a non-numeric value';
-
-function add ( ractive, keypath, d ) {
-	if ( typeof keypath !== 'string' || !isNumeric( d ) ) {
-		throw new Error( 'Bad arguments' );
-	}
-
-	var sets = build( ractive, keypath, d );
-
-	return set( ractive, sets.map( function (pair) {
-		var model = pair[0];
-		var add = pair[1];
-		var value = model.get();
-		if ( !isNumeric( add ) || !isNumeric( value ) ) { throw new Error( errorMessage ); }
-		return [ model, value + add ];
-	}));
-}
-
-function Ractive$add ( keypath, d, options ) {
-	var num = typeof d === 'number' ? d : 1;
-	var opts = typeof d === 'object' ? d : options;
-	return add( this, keypath, num, opts );
-}
-
-var noAnimation = Promise.resolve();
-Object.defineProperty( noAnimation, 'stop', { value: noop });
-
-var linear = easing.linear;
-
-function getOptions ( options, instance ) {
-	options = options || {};
-
-	var easing$$1;
-	if ( options.easing ) {
-		easing$$1 = typeof options.easing === 'function' ?
-			options.easing :
-			instance.easing[ options.easing ];
-	}
-
-	return {
-		easing: easing$$1 || linear,
-		duration: 'duration' in options ? options.duration : 400,
-		complete: options.complete || noop,
-		step: options.step || noop
-	};
-}
-
-function animate ( ractive, model, to, options ) {
-	options = getOptions( options, ractive );
-	var from = model.get();
-
-	// don't bother animating values that stay the same
-	if ( isEqual( from, to ) ) {
-		options.complete( options.to );
-		return noAnimation; // TODO should this have .then and .catch methods?
-	}
-
-	var interpolator = interpolate( from, to, ractive, options.interpolator );
-
-	// if we can't interpolate the value, set it immediately
-	if ( !interpolator ) {
-		runloop.start();
-		model.set( to );
-		runloop.end();
-
-		return noAnimation;
-	}
-
-	return model.animate( from, to, options, interpolator );
-}
-
-function Ractive$animate ( keypath, to, options ) {
-	if ( typeof keypath === 'object' ) {
-		var keys = Object.keys( keypath );
-
-		throw new Error( ("ractive.animate(...) no longer supports objects. Instead of ractive.animate({\n  " + (keys.map( function (key) { return ("'" + key + "': " + (keypath[ key ])); } ).join( '\n  ' )) + "\n}, {...}), do\n\n" + (keys.map( function (key) { return ("ractive.animate('" + key + "', " + (keypath[ key ]) + ", {...});"); } ).join( '\n' )) + "\n") );
-	}
-
-
-	return animate( this, this.viewmodel.joinAll( splitKeypath( keypath ) ), to, options );
-}
-
-function enqueue ( ractive, event ) {
-	if ( ractive.event ) {
-		ractive._eventQueue.push( ractive.event );
-	}
-
-	ractive.event = event;
-}
-
-function dequeue ( ractive ) {
-	if ( ractive._eventQueue.length ) {
-		ractive.event = ractive._eventQueue.pop();
-	} else {
-		ractive.event = null;
-	}
-}
-
-var initStars = {};
-var bubbleStars = {};
-
-// cartesian product of name parts and stars
-// adjusted appropriately for special cases
-function variants ( name, initial ) {
-	var map = initial ? initStars : bubbleStars;
-	if ( map[ name ] ) { return map[ name ]; }
-
-	var parts = name.split( '.' );
-	var result = [];
-	var base = false;
-
-	// initial events the implicit namespace of 'this'
-	if ( initial ) {
-		parts.unshift( 'this' );
-		base = true;
-	}
-
-	// use max - 1 bits as a bitmap to pick a part or a *
-	// need to skip the full star case if the namespace is synthetic
-	var max = Math.pow( 2, parts.length ) - ( initial ? 1 : 0 );
-	for ( var i = 0; i < max; i++ ) {
-		var join = [];
-		for ( var j = 0; j < parts.length; j++ ) {
-			join.push( 1 & ( i >> j ) ? '*' : parts[j] );
-		}
-		result.unshift( join.join( '.' ) );
-	}
-
-	if ( base ) {
-		// include non-this-namespaced versions
-		if ( parts.length > 2 ) {
-			result.push.apply( result, variants( name, false ) );
-		} else {
-			result.push( '*' );
-			result.push( name );
-		}
-	}
-
-	map[ name ] = result;
-	return result;
-}
-
-function fireEvent ( ractive, eventName, context, args ) {
-	if ( args === void 0 ) args = [];
-
-	if ( !eventName ) { return; }
-
-	context.name = eventName;
-	args.unshift( context );
-
-	var eventNames = ractive._nsSubs ? variants( eventName, true ) : [ '*', eventName ];
-
-	return fireEventAs( ractive, eventNames, context, args, true );
-}
-
-function fireEventAs  ( ractive, eventNames, context, args, initialFire ) {
-	if ( initialFire === void 0 ) initialFire = false;
-
-	var bubble = true;
-
-	if ( initialFire || ractive._nsSubs ) {
-		enqueue( ractive, context );
-
-		var i = eventNames.length;
-		while ( i-- ) {
-			if ( eventNames[ i ] in ractive._subs ) {
-				bubble = notifySubscribers( ractive, ractive._subs[ eventNames[ i ] ], context, args ) && bubble;
-			}
-		}
-
-		dequeue( ractive );
-	}
-
-	if ( ractive.parent && bubble ) {
-		if ( initialFire && ractive.component ) {
-			var fullName = ractive.component.name + '.' + eventNames[ eventNames.length - 1 ];
-			eventNames = variants( fullName, false );
-
-			if ( context && !context.component ) {
-				context.component = ractive;
-			}
-		}
-
-		bubble = fireEventAs( ractive.parent, eventNames, context, args );
-	}
-
-	return bubble;
-}
-
-function notifySubscribers ( ractive, subscribers, context, args ) {
-	var originalEvent = null;
-	var stopEvent = false;
-
-	// subscribers can be modified inflight, e.g. "once" functionality
-	// so we need to copy to make sure everyone gets called
-	subscribers = subscribers.slice();
-
-	for ( var i = 0, len = subscribers.length; i < len; i += 1 ) {
-		if ( !subscribers[ i ].off && subscribers[ i ].handler.apply( ractive, args ) === false ) {
-			stopEvent = true;
-		}
-	}
-
-	if ( context && stopEvent && ( originalEvent = context.event ) ) {
-		originalEvent.preventDefault && originalEvent.preventDefault();
-		originalEvent.stopPropagation && originalEvent.stopPropagation();
-	}
-
-	return !stopEvent;
-}
-
-var extern = {};
-
-function getRactiveContext ( ractive ) {
-	var assigns = [], len = arguments.length - 1;
-	while ( len-- > 0 ) assigns[ len ] = arguments[ len + 1 ];
-
-	var fragment = ractive.fragment || ractive._fakeFragment || ( ractive._fakeFragment = new FakeFragment( ractive ) );
-	return fragment.getContext.apply( fragment, assigns );
-}
-
-function getContext () {
-	var assigns = [], len = arguments.length;
-	while ( len-- ) assigns[ len ] = arguments[ len ];
-
-	if ( !this.ctx ) { this.ctx = new extern.Context( this ); }
-	assigns.unshift( Object.create( this.ctx ) );
-	return Object.assign.apply( null, assigns );
-}
-
-var FakeFragment = function FakeFragment ( ractive ) {
-	this.ractive = ractive;
-};
-
-FakeFragment.prototype.findContext = function findContext () { return this.ractive.viewmodel; };
-var proto = FakeFragment.prototype;
-proto.getContext = getContext;
-proto.find = proto.findComponent = proto.findAll = proto.findAllComponents = noop;
-
-var Hook = function Hook ( event ) {
-	this.event = event;
-	this.method = 'on' + event;
-};
-
-Hook.prototype.fire = function fire ( ractive, arg ) {
-	var context = getRactiveContext( ractive );
-
-	if ( ractive[ this.method ] ) {
-		arg ? ractive[ this.method ]( context, arg ) : ractive[ this.method ]( context );
-	}
-
-	fireEvent( ractive, this.event, context, arg ? [ arg, ractive ] : [ ractive ] );
-};
-
-function findAnchors ( fragment, name ) {
-	if ( name === void 0 ) name = null;
-
-	var res = [];
-
-	findAnchorsIn( fragment, name, res );
-
-	return res;
-}
-
-function findAnchorsIn ( item, name, result ) {
-	if ( item.isAnchor ) {
-		if ( !name || item.name === name ) {
-			result.push( item );
-		}
-	} else if ( item.items ) {
-		item.items.forEach( function (i) { return findAnchorsIn( i, name, result ); } );
-	} else if ( item.iterations ) {
-		item.iterations.forEach( function (i) { return findAnchorsIn( i, name, result ); } );
-	} else if ( item.fragment && !item.component ) {
-		findAnchorsIn( item.fragment, name, result );
-	}
-}
-
-function updateAnchors ( instance, name ) {
-	if ( name === void 0 ) name = null;
-
-	var anchors = findAnchors( instance.fragment, name );
-	var idxs = {};
-	var children = instance._children.byName;
-
-	anchors.forEach( function (a) {
-		var name = a.name;
-		if ( !( name in idxs ) ) { idxs[name] = 0; }
-		var idx = idxs[name];
-		var child = ( children[name] || [] )[idx];
-
-		if ( child && child.lastBound !== a ) {
-			if ( child.lastBound ) { child.lastBound.removeChild( child ); }
-			a.addChild( child );
-		}
-
-		idxs[name]++;
-	});
-}
-
-function unrenderChild ( meta ) {
-	if ( meta.instance.fragment.rendered ) {
-		meta.shouldDestroy = true;
-		meta.instance.unrender();
-	}
-	meta.instance.el = null;
-}
-
-var attachHook = new Hook( 'attachchild' );
-
-function attachChild ( child, options ) {
-	if ( options === void 0 ) options = {};
-
-	var children = this._children;
-
-	if ( child.parent && child.parent !== this ) { throw new Error( ("Instance " + (child._guid) + " is already attached to a different instance " + (child.parent._guid) + ". Please detach it from the other instance using detachChild first.") ); }
-	else if ( child.parent ) { throw new Error( ("Instance " + (child._guid) + " is already attached to this instance.") ); }
-
-	var meta = {
-		instance: child,
-		ractive: this,
-		name: options.name || child.constructor.name || 'Ractive',
-		target: options.target || false,
-		bubble: bubble,
-		findNextNode: findNextNode
-	};
-	meta.nameOption = options.name;
-
-	// child is managing itself
-	if ( !meta.target ) {
-		meta.parentFragment = this.fragment;
-		meta.external = true;
-	} else {
-		var list;
-		if ( !( list = children.byName[ meta.target ] ) ) {
-			list = [];
-			this.set( ("@this.children.byName." + (meta.target)), list );
-		}
-		var idx = options.prepend ? 0 : options.insertAt !== undefined ? options.insertAt : list.length;
-		list.splice( idx, 0, meta );
-	}
-
-	child.set({
-		'@this.parent': this,
-		'@this.root': this.root
-	});
-	child.component = meta;
-	children.push( meta );
-
-	attachHook.fire( child );
-
-	var promise = runloop.start( child, true );
-
-	if ( meta.target ) {
-		unrenderChild( meta );
-		this.set( ("@this.children.byName." + (meta.target)), null, { shuffle: true } );
-		updateAnchors( this, meta.target );
-	} else {
-		if ( !child.isolated ) { child.viewmodel.attached( this.fragment ); }
-	}
-
-	runloop.end();
-
-	promise.ractive = child;
-	return promise.then( function () { return child; } );
-}
-
-function bubble () { runloop.addFragment( this.instance.fragment ); }
-
-function findNextNode () {
-	if ( this.anchor ) { return this.anchor.findNextNode(); }
-}
-
-var detachHook = new Hook( 'detach' );
-
-function Ractive$detach () {
-	if ( this.isDetached ) {
-		return this.el;
-	}
-
-	if ( this.el ) {
-		removeFromArray( this.el.__ractive_instances__, this );
-	}
-
-	this.el = this.fragment.detach();
-	this.isDetached = true;
-
-	detachHook.fire( this );
-	return this.el;
-}
-
-var detachHook$1 = new Hook( 'detachchild' );
-
-function detachChild ( child ) {
-	var children = this._children;
-	var meta, index;
-
-	var i = children.length;
-	while ( i-- ) {
-		if ( children[i].instance === child ) {
-			index = i;
-			meta = children[i];
-			break;
-		}
-	}
-
-	if ( !meta || child.parent !== this ) { throw new Error( ("Instance " + (child._guid) + " is not attached to this instance.") ); }
-
-	var promise = runloop.start( child, true );
-
-	if ( meta.anchor ) { meta.anchor.removeChild( meta ); }
-	if ( !child.isolated ) { child.viewmodel.detached(); }
-
-	runloop.end();
-
-	children.splice( index, 1 );
-	if ( meta.target ) {
-		var list = children.byName[ meta.target ];
-		list.splice( list.indexOf( meta ), 1 );
-		this.set( ("@this.children.byName." + (meta.target)), null, { shuffle: true } );
-		updateAnchors( this, meta.target );
-	}
-	child.set({
-		'@this.parent': undefined,
-		'@this.root': child
-	});
-	child.component = null;
-
-	detachHook$1.fire( child );
-
-	promise.ractive = child;
-	return promise.then( function () { return child; } );
-}
-
-function Ractive$find ( selector, options ) {
-	var this$1 = this;
-	if ( options === void 0 ) options = {};
-
-	if ( !this.el ) { throw new Error( ("Cannot call ractive.find('" + selector + "') unless instance is rendered to the DOM") ); }
-
-	var node = this.fragment.find( selector, options );
-	if ( node ) { return node; }
-
-	if ( options.remote ) {
-		for ( var i = 0; i < this._children.length; i++ ) {
-			if ( !this$1._children[i].instance.fragment.rendered ) { continue; }
-			node = this$1._children[i].instance.find( selector, options );
-			if ( node ) { return node; }
-		}
-	}
-}
-
-function Ractive$findAll ( selector, options ) {
-	if ( options === void 0 ) options = {};
-
-	if ( !this.el ) { throw new Error( ("Cannot call ractive.findAll('" + selector + "', ...) unless instance is rendered to the DOM") ); }
-
-	if ( !Array.isArray( options.result ) ) { options.result = []; }
-
-	this.fragment.findAll( selector, options );
-
-	if ( options.remote ) {
-		// seach non-fragment children
-		this._children.forEach( function (c) {
-			if ( !c.target && c.instance.fragment && c.instance.fragment.rendered ) {
-				c.instance.findAll( selector, options );
-			}
-		});
-	}
-
-	return options.result;
-}
-
-function Ractive$findAllComponents ( selector, options ) {
-	if ( !options && typeof selector === 'object' ) {
-		options = selector;
-		selector = '';
-	}
-
-	options = options || {};
-
-	if ( !Array.isArray( options.result ) ) { options.result = []; }
-
-	this.fragment.findAllComponents( selector, options );
-
-	if ( options.remote ) {
-		// search non-fragment children
-		this._children.forEach( function (c) {
-			if ( !c.target && c.instance.fragment && c.instance.fragment.rendered ) {
-				if ( !selector || c.name === selector ) {
-					options.result.push( c.instance );
-				}
-
-				c.instance.findAllComponents( selector, options );
-			}
-		});
-	}
-
-	return options.result;
-}
-
-function Ractive$findComponent ( selector, options ) {
-	var this$1 = this;
-	if ( options === void 0 ) options = {};
-
-	if ( typeof selector === 'object' ) {
-		options = selector;
-		selector = '';
-	}
-
-	var child = this.fragment.findComponent( selector, options );
-	if ( child ) { return child; }
-
-	if ( options.remote ) {
-		if ( !selector && this._children.length ) { return this._children[0].instance; }
-		for ( var i = 0; i < this._children.length; i++ ) {
-			// skip children that are or should be in an anchor
-			if ( this$1._children[i].target ) { continue; }
-			if ( this$1._children[i].name === selector ) { return this$1._children[i].instance; }
-			child = this$1._children[i].instance.findComponent( selector, options );
-			if ( child ) { return child; }
-		}
-	}
-}
-
-function Ractive$findContainer ( selector ) {
-	if ( this.container ) {
-		if ( this.container.component && this.container.component.name === selector ) {
-			return this.container;
-		} else {
-			return this.container.findContainer( selector );
-		}
-	}
-
-	return null;
-}
-
-function Ractive$findParent ( selector ) {
-
-	if ( this.parent ) {
-		if ( this.parent.component && this.parent.component.name === selector ) {
-			return this.parent;
-		} else {
-			return this.parent.findParent ( selector );
-		}
-	}
-
-	return null;
 }
 
 var stack = [];
@@ -2861,7 +2207,7 @@ function resolveReference ( fragment, ref ) {
 	}
 
 	// walk up the fragment hierarchy looking for a matching ref, alias, or key in a context
-	var crossedComponentBoundary;
+	var createMapping = false;
 	var shouldWarn = fragment.ractive.warnAboutAmbiguity;
 
 	while ( fragment ) {
@@ -2891,9 +2237,9 @@ function resolveReference ( fragment, ref ) {
 		// check fragment context to see if it has the key we need
 		if ( fragment.context && fragment.context.has( base ) ) {
 			// this is an implicit mapping
-			if ( crossedComponentBoundary ) {
+			if ( createMapping ) {
 				if ( shouldWarn ) { warnIfDebug( ("'" + ref + "' resolved but is ambiguous and will create a mapping to a parent component.") ); }
-				return context.root.createLink( base, fragment.context.joinKey( base ), base, { implicit: true } ).joinAll( keys );
+				return context.root.createLink( base, fragment.context.joinKey( base ), base, { implicit: true }).joinAll( keys );
 			}
 
 			if ( shouldWarn ) { warnIfDebug( ("'" + ref + "' resolved but is ambiguous.") ); }
@@ -2903,7 +2249,7 @@ function resolveReference ( fragment, ref ) {
 		if ( ( fragment.componentParent || ( !fragment.parent && fragment.ractive.component ) ) && !fragment.ractive.isolated ) {
 			// ascend through component boundary
 			fragment = fragment.componentParent || fragment.ractive.component.parentFragment;
-			crossedComponentBoundary = true;
+			createMapping = true;
 		} else {
 			fragment = fragment.parent;
 		}
@@ -2934,6 +2280,675 @@ var ContextModel = function ContextModel ( context ) {
 };
 
 ContextModel.prototype.get = function get () { return this.context; };
+
+var extern = {};
+
+function getRactiveContext ( ractive ) {
+	var assigns = [], len = arguments.length - 1;
+	while ( len-- > 0 ) assigns[ len ] = arguments[ len + 1 ];
+
+	var fragment = ractive.fragment || ractive._fakeFragment || ( ractive._fakeFragment = new FakeFragment( ractive ) );
+	return fragment.getContext.apply( fragment, assigns );
+}
+
+function getContext () {
+	var assigns = [], len = arguments.length;
+	while ( len-- ) assigns[ len ] = arguments[ len ];
+
+	if ( !this.ctx ) { this.ctx = new extern.Context( this ); }
+	assigns.unshift( Object.create( this.ctx ) );
+	return Object.assign.apply( null, assigns );
+}
+
+var FakeFragment = function FakeFragment ( ractive ) {
+	this.ractive = ractive;
+};
+
+FakeFragment.prototype.findContext = function findContext () { return this.ractive.viewmodel; };
+var proto = FakeFragment.prototype;
+proto.getContext = getContext;
+proto.find = proto.findComponent = proto.findAll = proto.findAllComponents = noop;
+
+var keep = false;
+
+function set ( ractive, pairs, options ) {
+	var k = keep;
+
+	var deep = options && options.deep;
+	var shuffle = options && options.shuffle;
+	var promise = runloop.start( ractive, true );
+	if ( options && 'keep' in options ) { keep = options.keep; }
+
+	var i = pairs.length;
+	while ( i-- ) {
+		var model = pairs[i][0];
+		var value = pairs[i][1];
+		var keypath = pairs[i][2];
+
+		if ( !model ) {
+			runloop.end();
+			throw new Error( ("Failed to set invalid keypath '" + keypath + "'") );
+		}
+
+		if ( deep ) { deepSet( model, value ); }
+		else if ( shuffle ) {
+			var array = value;
+			var target = model.get();
+			// shuffle target array with itself
+			if ( !array ) { array = target; }
+
+			if ( !Array.isArray( target ) || !Array.isArray( array ) ) {
+				throw new Error( 'You cannot merge an array with a non-array' );
+			}
+
+			var comparator = getComparator( shuffle );
+			model.merge( array, comparator );
+		} else { model.set( value ); }
+	}
+
+	runloop.end();
+
+	keep = k;
+
+	return promise;
+}
+
+var star = /\*/;
+function gather ( ractive, keypath, base, isolated ) {
+	if ( !base && ( keypath[0] === '.' || keypath[1] === '^' ) ) {
+		warnIfDebug( "Attempted to set a relative keypath from a non-relative context. You can use a context object to set relative keypaths." );
+		return [];
+	}
+
+	var keys = splitKeypath( keypath );
+	var model = base || ractive.viewmodel;
+
+	if ( star.test( keypath ) ) {
+		return model.findMatches( keys );
+	} else {
+		if ( model === ractive.viewmodel ) {
+			// allow implicit mappings
+			if ( ractive.component && !ractive.isolated && !model.has( keys[0] ) && keypath[0] !== '@' && keypath[0] && !isolated ) {
+				return [ resolveReference( ractive.fragment || new FakeFragment( ractive ), keypath ) ];
+			} else {
+				return [ model.joinAll( keys ) ];
+			}
+		} else {
+			return [ model.joinAll( keys ) ];
+		}
+	}
+}
+
+function build ( ractive, keypath, value, isolated ) {
+	var sets = [];
+
+	// set multiple keypaths in one go
+	if ( isObject( keypath ) ) {
+		var loop = function ( k ) {
+			if ( keypath.hasOwnProperty( k ) ) {
+				sets.push.apply( sets, gather( ractive, k, null, isolated ).map( function (m) { return [ m, keypath[k], k ]; } ) );
+			}
+		};
+
+		for ( var k in keypath ) loop( k );
+
+	}
+	// set a single keypath
+	else {
+		sets.push.apply( sets, gather( ractive, keypath, null, isolated ).map( function (m) { return [ m, value, keypath ]; } ) );
+	}
+
+	return sets;
+}
+
+var deepOpts = { virtual: false };
+function deepSet( model, value ) {
+	var dest = model.get( false, deepOpts );
+
+	// if dest doesn't exist, just set it
+	if ( dest == null || typeof value !== 'object' ) { return model.set( value ); }
+	if ( typeof dest !== 'object' ) { return model.set( value ); }
+
+	for ( var k in value ) {
+		if ( value.hasOwnProperty( k ) ) {
+			deepSet( model.joinKey( k ), value[k] );
+		}
+	}
+}
+
+var comparators = {};
+function getComparator ( option ) {
+	if ( option === true ) { return null; } // use existing arrays
+	if ( typeof option === 'function' ) { return option; }
+
+	if ( typeof option === 'string' ) {
+		return comparators[ option ] || ( comparators[ option ] = function (thing) { return thing[ option ]; } );
+	}
+
+	throw new Error( 'If supplied, options.compare must be a string, function, or true' ); // TODO link to docs
+}
+
+var errorMessage = 'Cannot add to a non-numeric value';
+
+function add ( ractive, keypath, d, options ) {
+	if ( typeof keypath !== 'string' || !isNumeric( d ) ) {
+		throw new Error( 'Bad arguments' );
+	}
+
+	var sets = build( ractive, keypath, d, options && options.isolated );
+
+	return set( ractive, sets.map( function (pair) {
+		var model = pair[0];
+		var add = pair[1];
+		var value = model.get();
+		if ( !isNumeric( add ) || !isNumeric( value ) ) { throw new Error( errorMessage ); }
+		return [ model, value + add ];
+	}));
+}
+
+function Ractive$add ( keypath, d, options ) {
+	var num = typeof d === 'number' ? d : 1;
+	var opts = typeof d === 'object' ? d : options;
+	return add( this, keypath, num, opts );
+}
+
+var noAnimation = Promise.resolve();
+Object.defineProperty( noAnimation, 'stop', { value: noop });
+
+var linear = easing.linear;
+
+function getOptions ( options, instance ) {
+	options = options || {};
+
+	var easing$$1;
+	if ( options.easing ) {
+		easing$$1 = typeof options.easing === 'function' ?
+			options.easing :
+			instance.easing[ options.easing ];
+	}
+
+	return {
+		easing: easing$$1 || linear,
+		duration: 'duration' in options ? options.duration : 400,
+		complete: options.complete || noop,
+		step: options.step || noop
+	};
+}
+
+function animate ( ractive, model, to, options ) {
+	options = getOptions( options, ractive );
+	var from = model.get();
+
+	// don't bother animating values that stay the same
+	if ( isEqual( from, to ) ) {
+		options.complete( options.to );
+		return noAnimation; // TODO should this have .then and .catch methods?
+	}
+
+	var interpolator = interpolate( from, to, ractive, options.interpolator );
+
+	// if we can't interpolate the value, set it immediately
+	if ( !interpolator ) {
+		runloop.start();
+		model.set( to );
+		runloop.end();
+
+		return noAnimation;
+	}
+
+	return model.animate( from, to, options, interpolator );
+}
+
+function Ractive$animate ( keypath, to, options ) {
+	if ( typeof keypath === 'object' ) {
+		var keys = Object.keys( keypath );
+
+		throw new Error( ("ractive.animate(...) no longer supports objects. Instead of ractive.animate({\n  " + (keys.map( function (key) { return ("'" + key + "': " + (keypath[ key ])); } ).join( '\n  ' )) + "\n}, {...}), do\n\n" + (keys.map( function (key) { return ("ractive.animate('" + key + "', " + (keypath[ key ]) + ", {...});"); } ).join( '\n' )) + "\n") );
+	}
+
+
+	return animate( this, this.viewmodel.joinAll( splitKeypath( keypath ) ), to, options );
+}
+
+function enqueue ( ractive, event ) {
+	if ( ractive.event ) {
+		ractive._eventQueue.push( ractive.event );
+	}
+
+	ractive.event = event;
+}
+
+function dequeue ( ractive ) {
+	if ( ractive._eventQueue.length ) {
+		ractive.event = ractive._eventQueue.pop();
+	} else {
+		ractive.event = null;
+	}
+}
+
+var initStars = {};
+var bubbleStars = {};
+
+// cartesian product of name parts and stars
+// adjusted appropriately for special cases
+function variants ( name, initial ) {
+	var map = initial ? initStars : bubbleStars;
+	if ( map[ name ] ) { return map[ name ]; }
+
+	var parts = name.split( '.' );
+	var result = [];
+	var base = false;
+
+	// initial events the implicit namespace of 'this'
+	if ( initial ) {
+		parts.unshift( 'this' );
+		base = true;
+	}
+
+	// use max - 1 bits as a bitmap to pick a part or a *
+	// need to skip the full star case if the namespace is synthetic
+	var max = Math.pow( 2, parts.length ) - ( initial ? 1 : 0 );
+	for ( var i = 0; i < max; i++ ) {
+		var join = [];
+		for ( var j = 0; j < parts.length; j++ ) {
+			join.push( 1 & ( i >> j ) ? '*' : parts[j] );
+		}
+		result.unshift( join.join( '.' ) );
+	}
+
+	if ( base ) {
+		// include non-this-namespaced versions
+		if ( parts.length > 2 ) {
+			result.push.apply( result, variants( name, false ) );
+		} else {
+			result.push( '*' );
+			result.push( name );
+		}
+	}
+
+	map[ name ] = result;
+	return result;
+}
+
+function fireEvent ( ractive, eventName, context, args ) {
+	if ( args === void 0 ) args = [];
+
+	if ( !eventName ) { return; }
+
+	context.name = eventName;
+	args.unshift( context );
+
+	var eventNames = ractive._nsSubs ? variants( eventName, true ) : [ '*', eventName ];
+
+	return fireEventAs( ractive, eventNames, context, args, true );
+}
+
+function fireEventAs  ( ractive, eventNames, context, args, initialFire ) {
+	if ( initialFire === void 0 ) initialFire = false;
+
+	var bubble = true;
+
+	if ( initialFire || ractive._nsSubs ) {
+		enqueue( ractive, context );
+
+		var i = eventNames.length;
+		while ( i-- ) {
+			if ( eventNames[ i ] in ractive._subs ) {
+				bubble = notifySubscribers( ractive, ractive._subs[ eventNames[ i ] ], context, args ) && bubble;
+			}
+		}
+
+		dequeue( ractive );
+	}
+
+	if ( ractive.parent && bubble ) {
+		if ( initialFire && ractive.component ) {
+			var fullName = ractive.component.name + '.' + eventNames[ eventNames.length - 1 ];
+			eventNames = variants( fullName, false );
+
+			if ( context && !context.component ) {
+				context.component = ractive;
+			}
+		}
+
+		bubble = fireEventAs( ractive.parent, eventNames, context, args );
+	}
+
+	return bubble;
+}
+
+function notifySubscribers ( ractive, subscribers, context, args ) {
+	var originalEvent = null;
+	var stopEvent = false;
+
+	// subscribers can be modified inflight, e.g. "once" functionality
+	// so we need to copy to make sure everyone gets called
+	subscribers = subscribers.slice();
+
+	for ( var i = 0, len = subscribers.length; i < len; i += 1 ) {
+		if ( !subscribers[ i ].off && subscribers[ i ].handler.apply( ractive, args ) === false ) {
+			stopEvent = true;
+		}
+	}
+
+	if ( context && stopEvent && ( originalEvent = context.event ) ) {
+		originalEvent.preventDefault && originalEvent.preventDefault();
+		originalEvent.stopPropagation && originalEvent.stopPropagation();
+	}
+
+	return !stopEvent;
+}
+
+var Hook = function Hook ( event ) {
+	this.event = event;
+	this.method = 'on' + event;
+};
+
+Hook.prototype.fire = function fire ( ractive, arg ) {
+	var context = getRactiveContext( ractive );
+
+	if ( ractive[ this.method ] ) {
+		arg ? ractive[ this.method ]( context, arg ) : ractive[ this.method ]( context );
+	}
+
+	fireEvent( ractive, this.event, context, arg ? [ arg, ractive ] : [ ractive ] );
+};
+
+function findAnchors ( fragment, name ) {
+	if ( name === void 0 ) name = null;
+
+	var res = [];
+
+	findAnchorsIn( fragment, name, res );
+
+	return res;
+}
+
+function findAnchorsIn ( item, name, result ) {
+	if ( item.isAnchor ) {
+		if ( !name || item.name === name ) {
+			result.push( item );
+		}
+	} else if ( item.items ) {
+		item.items.forEach( function (i) { return findAnchorsIn( i, name, result ); } );
+	} else if ( item.iterations ) {
+		item.iterations.forEach( function (i) { return findAnchorsIn( i, name, result ); } );
+	} else if ( item.fragment && !item.component ) {
+		findAnchorsIn( item.fragment, name, result );
+	}
+}
+
+function updateAnchors ( instance, name ) {
+	if ( name === void 0 ) name = null;
+
+	var anchors = findAnchors( instance.fragment, name );
+	var idxs = {};
+	var children = instance._children.byName;
+
+	anchors.forEach( function (a) {
+		var name = a.name;
+		if ( !( name in idxs ) ) { idxs[name] = 0; }
+		var idx = idxs[name];
+		var child = ( children[name] || [] )[idx];
+
+		if ( child && child.lastBound !== a ) {
+			if ( child.lastBound ) { child.lastBound.removeChild( child ); }
+			a.addChild( child );
+		}
+
+		idxs[name]++;
+	});
+}
+
+function unrenderChild ( meta ) {
+	if ( meta.instance.fragment.rendered ) {
+		meta.shouldDestroy = true;
+		meta.instance.unrender();
+	}
+	meta.instance.el = null;
+}
+
+var attachHook = new Hook( 'attachchild' );
+
+function attachChild ( child, options ) {
+	if ( options === void 0 ) options = {};
+
+	var children = this._children;
+
+	if ( child.parent && child.parent !== this ) { throw new Error( ("Instance " + (child._guid) + " is already attached to a different instance " + (child.parent._guid) + ". Please detach it from the other instance using detachChild first.") ); }
+	else if ( child.parent ) { throw new Error( ("Instance " + (child._guid) + " is already attached to this instance.") ); }
+
+	var meta = {
+		instance: child,
+		ractive: this,
+		name: options.name || child.constructor.name || 'Ractive',
+		target: options.target || false,
+		bubble: bubble,
+		findNextNode: findNextNode
+	};
+	meta.nameOption = options.name;
+
+	// child is managing itself
+	if ( !meta.target ) {
+		meta.parentFragment = this.fragment;
+		meta.external = true;
+	} else {
+		var list;
+		if ( !( list = children.byName[ meta.target ] ) ) {
+			list = [];
+			this.set( ("@this.children.byName." + (meta.target)), list );
+		}
+		var idx = options.prepend ? 0 : options.insertAt !== undefined ? options.insertAt : list.length;
+		list.splice( idx, 0, meta );
+	}
+
+	child.set({
+		'@this.parent': this,
+		'@this.root': this.root
+	});
+	child.component = meta;
+	children.push( meta );
+
+	attachHook.fire( child );
+
+	var promise = runloop.start( child, true );
+
+	if ( meta.target ) {
+		unrenderChild( meta );
+		this.set( ("@this.children.byName." + (meta.target)), null, { shuffle: true } );
+		updateAnchors( this, meta.target );
+	} else {
+		if ( !child.isolated ) { child.viewmodel.attached( this.fragment ); }
+	}
+
+	runloop.end();
+
+	promise.ractive = child;
+	return promise.then( function () { return child; } );
+}
+
+function bubble () { runloop.addFragment( this.instance.fragment ); }
+
+function findNextNode () {
+	if ( this.anchor ) { return this.anchor.findNextNode(); }
+}
+
+var detachHook = new Hook( 'detach' );
+
+function Ractive$detach () {
+	if ( this.isDetached ) {
+		return this.el;
+	}
+
+	if ( this.el ) {
+		removeFromArray( this.el.__ractive_instances__, this );
+	}
+
+	this.el = this.fragment.detach();
+	this.isDetached = true;
+
+	detachHook.fire( this );
+	return this.el;
+}
+
+var detachHook$1 = new Hook( 'detachchild' );
+
+function detachChild ( child ) {
+	var children = this._children;
+	var meta, index;
+
+	var i = children.length;
+	while ( i-- ) {
+		if ( children[i].instance === child ) {
+			index = i;
+			meta = children[i];
+			break;
+		}
+	}
+
+	if ( !meta || child.parent !== this ) { throw new Error( ("Instance " + (child._guid) + " is not attached to this instance.") ); }
+
+	var promise = runloop.start( child, true );
+
+	if ( meta.anchor ) { meta.anchor.removeChild( meta ); }
+	if ( !child.isolated ) { child.viewmodel.detached(); }
+
+	runloop.end();
+
+	children.splice( index, 1 );
+	if ( meta.target ) {
+		var list = children.byName[ meta.target ];
+		list.splice( list.indexOf( meta ), 1 );
+		this.set( ("@this.children.byName." + (meta.target)), null, { shuffle: true } );
+		updateAnchors( this, meta.target );
+	}
+	child.set({
+		'@this.parent': undefined,
+		'@this.root': child
+	});
+	child.component = null;
+
+	detachHook$1.fire( child );
+
+	promise.ractive = child;
+	return promise.then( function () { return child; } );
+}
+
+function Ractive$find ( selector, options ) {
+	var this$1 = this;
+	if ( options === void 0 ) options = {};
+
+	if ( !this.el ) { throw new Error( ("Cannot call ractive.find('" + selector + "') unless instance is rendered to the DOM") ); }
+
+	var node = this.fragment.find( selector, options );
+	if ( node ) { return node; }
+
+	if ( options.remote ) {
+		for ( var i = 0; i < this._children.length; i++ ) {
+			if ( !this$1._children[i].instance.fragment.rendered ) { continue; }
+			node = this$1._children[i].instance.find( selector, options );
+			if ( node ) { return node; }
+		}
+	}
+}
+
+function Ractive$findAll ( selector, options ) {
+	if ( options === void 0 ) options = {};
+
+	if ( !this.el ) { throw new Error( ("Cannot call ractive.findAll('" + selector + "', ...) unless instance is rendered to the DOM") ); }
+
+	if ( !Array.isArray( options.result ) ) { options.result = []; }
+
+	this.fragment.findAll( selector, options );
+
+	if ( options.remote ) {
+		// seach non-fragment children
+		this._children.forEach( function (c) {
+			if ( !c.target && c.instance.fragment && c.instance.fragment.rendered ) {
+				c.instance.findAll( selector, options );
+			}
+		});
+	}
+
+	return options.result;
+}
+
+function Ractive$findAllComponents ( selector, options ) {
+	if ( !options && typeof selector === 'object' ) {
+		options = selector;
+		selector = '';
+	}
+
+	options = options || {};
+
+	if ( !Array.isArray( options.result ) ) { options.result = []; }
+
+	this.fragment.findAllComponents( selector, options );
+
+	if ( options.remote ) {
+		// search non-fragment children
+		this._children.forEach( function (c) {
+			if ( !c.target && c.instance.fragment && c.instance.fragment.rendered ) {
+				if ( !selector || c.name === selector ) {
+					options.result.push( c.instance );
+				}
+
+				c.instance.findAllComponents( selector, options );
+			}
+		});
+	}
+
+	return options.result;
+}
+
+function Ractive$findComponent ( selector, options ) {
+	var this$1 = this;
+	if ( options === void 0 ) options = {};
+
+	if ( typeof selector === 'object' ) {
+		options = selector;
+		selector = '';
+	}
+
+	var child = this.fragment.findComponent( selector, options );
+	if ( child ) { return child; }
+
+	if ( options.remote ) {
+		if ( !selector && this._children.length ) { return this._children[0].instance; }
+		for ( var i = 0; i < this._children.length; i++ ) {
+			// skip children that are or should be in an anchor
+			if ( this$1._children[i].target ) { continue; }
+			if ( this$1._children[i].name === selector ) { return this$1._children[i].instance; }
+			child = this$1._children[i].instance.findComponent( selector, options );
+			if ( child ) { return child; }
+		}
+	}
+}
+
+function Ractive$findContainer ( selector ) {
+	if ( this.container ) {
+		if ( this.container.component && this.container.component.name === selector ) {
+			return this.container;
+		} else {
+			return this.container.findContainer( selector );
+		}
+	}
+
+	return null;
+}
+
+function Ractive$findParent ( selector ) {
+
+	if ( this.parent ) {
+		if ( this.parent.component && this.parent.component.name === selector ) {
+			return this.parent;
+		} else {
+			return this.parent.findParent ( selector );
+		}
+	}
+
+	return null;
+}
 
 // This function takes an array, the name of a mutator method, and the
 // arguments to call that mutator method with, and returns an array that
@@ -3234,6 +3249,7 @@ var ContextData = (function (Model$$1) {
 var Context = function Context ( fragment, element ) {
 	this.fragment = fragment;
 	this.element = element || findElement( fragment );
+	this.node = this.element && this.element.node;
 	this.ractive = fragment.ractive;
 	this.root = this;
 };
@@ -3511,11 +3527,7 @@ function Ractive$get ( keypath, opts ) {
 		// if this is an inline component, we may need to create
 		// an implicit mapping
 		if ( this.component && !this.isolated ) {
-			model = resolveReference( this.component.parentFragment, key );
-
-			if ( model ) {
-				this.viewmodel.map( key, model, { implicit: true } );
-			}
+			model = resolveReference( this.fragment || new FakeFragment( this ), key );
 		}
 	}
 
@@ -3525,7 +3537,7 @@ function Ractive$get ( keypath, opts ) {
 
 var query = doc && doc.querySelector;
 
-var staticInfo = function( node ) {
+function getContext$2 ( node ) {
 	if ( typeof node === 'string' && query ) {
 		node = query.call( document, node );
 	}
@@ -3538,14 +3550,27 @@ var staticInfo = function( node ) {
 			return getRactiveContext( instances[0] );
 		}
 	}
-};
+}
 
-function getNodeInfo( node, options ) {
+function getNodeInfo$1 ( node ) {
+	warnOnceIfDebug( "getNodeInfo has been renamed to getContext, and the getNodeInfo alias will be removed in a future release." );
+	return getContext$2 ( node );
+}
+
+function getContext$1 ( node, options ) {
 	if ( typeof node === 'string' ) {
 		node = this.find( node, options );
 	}
 
-	return staticInfo( node );
+	return getContext$2( node );
+}
+
+function getNodeInfo$$1 ( node, options ) {
+	if ( typeof node === 'string' ) {
+		node = this.find( node, options );
+	}
+
+	return getNodeInfo$1( node );
 }
 
 var html   = 'http://www.w3.org/1999/xhtml';
@@ -3750,13 +3775,8 @@ function fireInsertHook( ractive ) {
 }
 
 function link( there, here, options ) {
-	if ( here === there || (there + '.').indexOf( here + '.' ) === 0 || (here + '.').indexOf( there + '.' ) === 0 ) {
-		throw new Error( 'A keypath cannot be linked to itself.' );
-	}
-
-	var promise = runloop.start();
 	var model;
-	var target = ( options && options.ractive ) || this;
+	var target = ( options && ( options.ractive || options.instance ) ) || this;
 
 	// may need to allow a mapping to resolve implicitly
 	var sourcePath = splitKeypath( there );
@@ -3765,11 +3785,28 @@ function link( there, here, options ) {
 		model = model.joinAll( sourcePath.slice( 1 ) );
 	}
 
-	this.viewmodel.joinAll( splitKeypath( here ), { lastLink: false } ).link( model || target.viewmodel.joinAll( sourcePath ), there );
+	var src = model || target.viewmodel.joinAll( sourcePath );
+	var dest = this.viewmodel.joinAll( splitKeypath( here ), { lastLink: false });
+
+	if ( isUpstream( src, dest ) || isUpstream( dest, src ) ) {
+		throw new Error( 'A keypath cannot be linked to itself.' );
+	}
+
+	var promise = runloop.start();
+
+	dest.link( src, there );
 
 	runloop.end();
 
 	return promise;
+}
+
+function isUpstream ( check, start ) {
+	var model = start;
+	while ( model ) {
+		if ( model === check ) { return true; }
+		model = model.target || model.parent;
+	}
 }
 
 var Observer = function Observer ( ractive, model, callback, options ) {
@@ -5055,7 +5092,7 @@ function validateCode ( code ) {
 	}
 
 	// code points 128-159 are dealt with leniently by browsers, but they're incorrect. We need
-	// to correct the mistake or we'll end up with missing â‚¬ signs and so on
+	// to correct the mistake or we'll end up with missing € signs and so on
 	if ( code <= 159 ) {
 		return controlCharacters[ code - 128 ];
 	}
@@ -9701,7 +9738,7 @@ var Attribute = (function (Item$$1) {
 			return;
 		}
 
-		// Special case â€“ bound radio `name` attributes
+		// Special case – bound radio `name` attributes
 		if ( this.name === 'name' && this.element.name === 'input' && this.interpolator && this.element.getAttribute( 'type' ) === 'radio' ) {
 			return ("name=\"{{" + (this.interpolator.model.getKeypath()) + "}}\"");
 		}
@@ -10031,12 +10068,6 @@ var RootModel = (function (Model$$1) {
 
 		return this.computations.hasOwnProperty( key ) ? this.computations[ key ] :
 		       Model$$1.prototype.joinKey.call( this, key, opts );
-	};
-
-	// TODO: this should go away
-	RootModel.prototype.map = function map ( localKey, origin, options ) {
-		var local = this.joinKey( localKey );
-		local.link( origin, localKey, options );
 	};
 
 	RootModel.prototype.set = function set ( value ) {
@@ -12192,6 +12223,7 @@ var Element = (function (ContainerItem$$1) {
 
 		// create two-way binding if necessary
 		if ( !this.binding ) { this.recreateTwowayBinding(); }
+		else { this.binding.bind(); }
 	};
 
 	Element.prototype.createTwowayBinding = function createTwowayBinding () {
@@ -14158,8 +14190,11 @@ var Select = (function (Element$$1) {
 		return selectValue == optionValue;
 	};
 	Select.prototype.update = function update () {
+		var dirty = this.dirty;
 		Element$$1.prototype.update.call(this);
-		this.sync();
+		if ( dirty ) {
+			this.sync();
+		}
 	};
 
 	return Select;
@@ -15737,9 +15772,9 @@ function render$1 ( ractive, target, anchor, occupants ) {
 	ractive.rendering = false;
 
 	return promise.then( function () {
-		if (ractive.torndown) { return; }
-
-		completeHook.fire( ractive );
+		if (!ractive.torndown) {
+			completeHook.fire( ractive );
+		}
 	});
 }
 
@@ -15938,7 +15973,7 @@ function Ractive$set ( keypath, value, options ) {
 
 	var opts = typeof keypath === 'object' ? value : options;
 
-	return set( ractive, build( ractive, keypath, value ), opts );
+	return set( ractive, build( ractive, keypath, value, opts && opts.isolated ), opts );
 }
 
 var shift = makeArrayMethod( 'shift' ).path;
@@ -15958,7 +15993,7 @@ function Ractive$toggle ( keypath, options ) {
 		throw new TypeError( badArguments );
 	}
 
-	return set( this, gather( this, keypath ).map( function (m) { return [ m, !m.get() ]; } ), options );
+	return set( this, gather( this, keypath, null, options && options.isolated ).map( function (m) { return [ m, !m.get() ]; } ), options );
 }
 
 function Ractive$toCSS() {
@@ -16076,7 +16111,8 @@ var RactiveProto = {
 	findParent: Ractive$findParent,
 	fire: Ractive$fire,
 	get: Ractive$get,
-	getNodeInfo: getNodeInfo,
+	getContext: getContext$1,
+	getNodeInfo: getNodeInfo$$1,
 	insert: Ractive$insert,
 	link: link,
 	observe: observe,
@@ -16260,7 +16296,8 @@ Object.defineProperties( Ractive, {
 	extend:         { value: extend },
 	extendWith:     { value: extendWith },
 	escapeKey:      { value: escapeKey },
-	getNodeInfo:    { value: staticInfo },
+	getContext:     { value: getContext$2 },
+	getNodeInfo:    { value: getNodeInfo$1 },
 	joinKeys:       { value: joinKeys },
 	parse:          { value: parse },
 	splitKeypath:   { value: splitKeypath$1 },
@@ -16286,3 +16323,4 @@ Object.defineProperties( Ractive, {
 });
 
 export default Ractive;
+//# sourceMappingURL=ractive.mjs.map

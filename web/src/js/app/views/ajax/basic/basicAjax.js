@@ -1,5 +1,5 @@
 import journey from "lib/journey/journey.js";
-import Ractive from "lib/ractive.js";
+import Ractive from "Ractive.js";
 import template from "./basicAjax.html";
 
 let config;
@@ -38,7 +38,7 @@ function createView( json ) {
 		data: { response: json },
 		template: template,
 		reload: function ( ) {
-			journey.go( "/basicAjax", {forceReload: true} );
+			journey.goto( "/basicAjax", {forceReload: true} );
 		}
 	} );
 

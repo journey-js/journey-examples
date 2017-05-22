@@ -9,7 +9,7 @@ const pkg = require( './package.json' );
 
 let includePathOptions = {
 	include: { },
-	paths: [ '../journey/src/js', './web/src/js' ],
+	paths: [ '../journey/src/js', './web/src/js', '../../ractive/src' ],
 	external: [ ],
 	extensions: [ '.js', '.json', '.html' ]
 };

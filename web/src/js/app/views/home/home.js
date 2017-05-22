@@ -1,6 +1,6 @@
 import journey from "lib/journey/journey.js";
 import template from "./home.html";
-import Ractive from "lib/ractive.js";
+import Ractive from "Ractive.js";
 
 var home = {
 
@@ -11,7 +11,7 @@ var home = {
 			template: template,
 
 			start: function () {
-				journey.goto( "#basic?b=2#a=b", { x: "1234" } );
+				journey.goto( "#basic?b=2#a=b" );
 			}
 		} );
 

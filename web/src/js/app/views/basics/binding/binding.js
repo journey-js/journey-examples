@@ -1,4 +1,4 @@
-import Ractive from  "lib/ractive.js";
+import Ractive from "Ractive.js";
 import template from  "./binding.html";
 
 var binding = {

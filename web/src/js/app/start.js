@@ -1,5 +1,5 @@
 import journey from 'lib/journey/journey.js';
-import Ractive from 'lib/ractive.js';
+import Ractive from "Ractive.js";
 import fade from "lib/fade.js";
 import 'lib/prism.js';
 import "./config/routes.js";

@@ -1,6 +1,6 @@
 import journey from "lib/journey/journey";
 import template from "./navTarget.html";
-import Ractive from "lib/ractive";
+import Ractive from "Ractive.js";
 
 var navTarget = {
 	

@@ -1,0 +1,55 @@
+.left, .right {
+    width: 50%;
+    float: left;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.left {
+    padding: 0 1em 0 0;
+}
+.right {
+    padding: 0 0 0 1em;
+}
+.browsers {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.browsers li {
+    position: relative;
+    padding: 0.5em 0.5em 0.5em 2.8em;
+    background-color: #eee;
+    margin: 0 0 0.2em 0;
+    line-height: 1;
+    background: 0.2em 50% no-repeat;
+    background-size: auto 80%;
+    border: 1px solid #eee;
+    border-radius: 0.2em;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.reorderable li {
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+    cursor: grab;
+    background-color: #bbb;
+}
+li.droptarget {
+    border: 1px dashed rgb(200,200,100);
+    background: rgb(240,240,200);
+    background-image: none !important;
+    color: transparent;
+}
+.browsers span {
+    font-size: 1.4em;
+}
+
+.browsers span {
+    color: #353535;
+}
+
+.right li {
+    background-color: #fff;
+}

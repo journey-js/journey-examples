@@ -1,5 +1,5 @@
 import journey from "lib/journey/journey";
-import Ractive from "lib/ractive";
+import Ractive from "Ractive.js";
 import template from "./redirectTarget.html";
 
 var redirectTarget = {

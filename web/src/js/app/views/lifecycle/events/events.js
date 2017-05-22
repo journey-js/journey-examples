@@ -1,6 +1,6 @@
 import journey from "lib/journey/journey.js";
 import events from "lib/journey/utils/events";
-import Ractive from "lib/ractive.js";
+import Ractive from "Ractive.js";
 import template from "./events.html";
 
 let isListening = false;
@@ -19,10 +19,6 @@ var lifecycleEvents = {
 			journey: journey,
 
 			data: { isListening: isListening },
-
-			reloadView: function () {
-				journey.goto( "/events", { forceReload: true } );
-			},
 
 			updateView: function () {
 				var random = Math.random() * 1000;
@@ -50,8 +46,9 @@ var lifecycleEvents = {
 		// Noop method for demo purposes
 	},
 
-	update: function ( route, prevRoute, options ) {
+	update: function ( route, options ) {
 		// Noop method for demo purposes
+		console.log("View updated with :", route.query);
 	}
 };
 

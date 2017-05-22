@@ -1,6 +1,7 @@
 import journey from "lib/journey/journey";
-import Ractive from "lib/ractive";
+import Ractive from "Ractive.js";
 import template from "./nav.html";
+import session from "./session.js";
 
 var nav = {
 
@@ -13,7 +14,8 @@ var nav = {
 			gotoNewView: function () {
 
 				var args = { 'myArray': [ 'one', 'two', 'three' ] };
-				journey.goto( "/navTargetParams/1?name=Bob", { args: args } );
+				session.navArgs =  args;
+				journey.goto( "/navTargetParams/1?name=Bob" );
 			}
 		} );
 
