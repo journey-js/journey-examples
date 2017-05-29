@@ -19,8 +19,8 @@ import basicComp from "../views/comp/basic/basicComp.js";
 import multipleComp from "../views/comp/multiple/multipleComp.js";
 import pubSubComp from "../views/comp/pubsub/compPubSub.js";
 import basicTransition from "../views/transition/basic/basicTransition.js";
+import sortable from "../views/decorator/sortable.js";
 
-home.path = "js/app/views/home/home";
 journey.add("/home", home);
 journey.add("/basic", basic);
 journey.add("/methods", methods);
@@ -43,6 +43,7 @@ journey.add("/multipleComp", multipleComp);
 journey.add("/pubSubComp", pubSubComp);
 journey.add("/pubSubComp", pubSubComp);
 journey.add("/basicTransition", basicTransition);
+journey.add("/sortable", sortable);
 
 
 ///export default routes;

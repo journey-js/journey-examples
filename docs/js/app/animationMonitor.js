@@ -1,4 +1,4 @@
-import Ractive from  "lib/ractive";
+import Ractive from "Ractive.js";
 import journey from "lib/journey/journey";
 
 journey.on( "routeAbuseStart", function ( ) {

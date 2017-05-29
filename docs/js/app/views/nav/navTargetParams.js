@@ -1,6 +1,7 @@
 import journey from "lib/journey/journey";
 import template from "./navTargetParams.html";
-import Ractive from "lib/ractive";
+import Ractive from "Ractive.js";
+import session from "./session.js";
 
 var navTargetParams = {
 
@@ -12,7 +13,7 @@ var navTargetParams = {
 			template: template,
 			data: {
 				params: route.params,
-				args: options.args,
+				args: session.navArgs,
 				query: route.query
 			},
 			start: function ( ) {

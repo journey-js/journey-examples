@@ -1,7 +1,7 @@
 import journey from "lib/journey/journey.js";
 import "lib/pace.js";
 import template from "./menu.html";
-import Ractive from "lib/ractive.js";
+import Ractive from "Ractive.js";
 import sidePanel from "../panel/side-panel/sidePanel.js";
 import menuSlider from "./menuSlider.js";
 

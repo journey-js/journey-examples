@@ -1,20 +1,17 @@
 import journey from "lib/journey/journey.js";
 import template from "./home.html";
-import test from "./me.text.html";
-import Ractive from "lib/ractive.js";
+import Ractive from "Ractive.js";
 
 var home = {
 
 	enter: function ( route, prevRoute, options ) {
-		console.log("ME:", test);
-		console.log("HOME enter:", arguments);
 		/*%injectPath%*/
 		route.view = new Ractive( {
 			el: options.target,
 			template: template,
 
 			start: function () {
-				journey.goto( "#basic?b=2#a=b", { x: "1234" } );
+				journey.goto( "#basic?b=2#a=b" );
 			}
 		} );
 
