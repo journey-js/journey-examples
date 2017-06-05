@@ -13,19 +13,10 @@ var validatingForm = {
 			el: options.target,
 			template: template,
 			
-			oncomplete: function() {
-				console.log("FORM: oncomplete!")
+			onrender: function() {
 				setupParsley();
 			},
 			
-			onteardown: function() {
-				console.log("FORM: onteardown!")
-			},
-			
-			ondestruct: function() {
-				console.log("FORM: ondestruct!")
-			},
-
 			submit: function () {
 				var valid = parsley.validate();
 				return false;
