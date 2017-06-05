@@ -33,6 +33,6 @@ journey.start( {
 	base: contextPath,
 	defaultRoute: '/home',
 	useOnHashChange: false,
-	useHash: false,
+	useHash: true,
 	hash: '#!'
 } );
