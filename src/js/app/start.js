@@ -9,8 +9,8 @@ import "lib/bootstrap.js";
 import "./animationMonitor.js";
 
 //let contextPath = "/build";
-//let contextPath = "/journey-examples/";
-let contextPath = "";
+let contextPath = "/journey-examples/";
+//let contextPath = "";
 
 menu.init( { target: "#menu", fallbackMenu: "#menu-home" } );
 
