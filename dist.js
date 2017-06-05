@@ -1,19 +1,17 @@
 var rollup = require( 'rollup' );
 var buble = require( 'rollup-plugin-buble' );
-var string = require( 'rollup-plugin-string' );
 var rollupConfig = require( './rollup.config.js' );
 const pkg = require( './package.json' );
 var path = require( 'path' );
 var uglify = require( 'rollup-plugin-uglify' );
-var ractive = require( './rollup-plugin-ractive-compiler' );
 var CleanCSS = require( 'clean-css' );
 var fs = require( 'fs-extra' );
 var glob = require( 'glob' );
 var replaceInFile = require( 'replace-in-file' );
 var versioning = require( "node-version-assets" );
 
-let docsFolder = "docs";
-let srcFolder = "src";
+const docsFolder = "docs";
+const srcFolder = "src";
 
 function start( ) {
 
@@ -23,7 +21,7 @@ function start( ) {
 
 	compileJS( ).
 			then( compileCss ).
-			then( cdnHtml ).
+			then( uncommentCDN ).
 			then( versionAssets ).
 			catch( ( e ) => {
 				console.log( e );
@@ -56,7 +54,7 @@ function findPlugin( name ) {
 function compileJS( ) {
 	let p = new Promise( function ( resolve, reject ) {
 
-		let ractiveCompiler = findPlugin( "ractiveCompiler" );
+		let ractiveCompiler = findPlugin( "ractive-compiler" );
 		ractiveCompiler.compile = true;
 		rollupConfig.plugins.push( uglify( ) );
 
@@ -97,7 +95,7 @@ function compileCss( ) {
 	return Promise.resolve();
 }
 
-function cdnHtml( ) {
+function uncommentCDN( ) {
 	let pathToHtml = path.join( docsFolder, "index.html" );
 
 	let options = {

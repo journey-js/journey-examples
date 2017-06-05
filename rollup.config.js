@@ -1,6 +1,7 @@
 var buble = require( 'rollup-plugin-buble' );
 var replacePathComment = require( './rollup-plugin-replacetPath' );
-var templateCompiler = require( './rollup-plugin-ractive-compiler' );
+var ractiveCompiler = require( 'rollup-plugin-ractive-compiler' );
+var stringToModule = require( 'rollup-plugin-string' );
 var includePaths = require( 'rollup-plugin-includepaths' );
 
 const pkg = require( './package.json' );
@@ -16,11 +17,15 @@ module.exports = {
 	entry: 'src/js/app/start.js',
 	plugins: [
 
-		templateCompiler( {
+		ractiveCompiler( {
 			include: [ '**/*.html' ],
+
 			compile: false,
-			includeText: [ '**/*text.html' ]
 		} ),
+		
+		stringToModule({
+			include: '**/*.text.html'
+		}),
 
 		buble( {
 			exclude: [ '**/*.html' ],

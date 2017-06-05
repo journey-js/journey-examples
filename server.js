@@ -1,86 +1,19 @@
 var express = require( 'express' );
-let fsPath = require( 'path' );
 var open = require( 'open' );
-var chokidar = require( 'chokidar' );
+let fsPath = require( 'path' );
 var fs = require( 'fs-extra' );
-var cmd = require( 'node-cmd' );
-const execSync = require( 'child_process' ).execSync;
-const exec = require( 'child_process' ).exec;
-var rollup = require( 'rollup' );
-var buble = require( 'rollup-plugin-buble' );
-var string = require( 'rollup-plugin-string' );
-var watch = require( 'rollup-watch' );
-var rollupConfig = require( './rollup.config.js' );
-const pkg = require( './package.json' );
 
-let starting = true;
+module.exports = {};
 
-const contextPath = 'build';
-const useContextPath = false;
+let contextPath = 'build';
+let useContextPath = false;
+let buildFolder;
+let srcFolder;
 
-const buildFolder = 'build';
-const srcFolder = 'src';
-
-watchAssets();
-
-transpileJS();
-
-function transpileJS() {
-
-	watch( rollup, rollupConfig )
-			.on( 'event', e => {
-
-				if ( e.code === 'ERROR' ) {
-					console.log( e );
-				}
-
-				if ( e.code == 'BUILD_END' ) {
-					if ( starting ) {
-						setupServer();
-						starting = false; // We don't want setupServer to be called every time a rollup completes a build ie everytime a file is changed.
-					}
-				}
-			} )
-}
-
-function setupServer() {
-	startServer();
-	// Only start server once
-}
-
-function watchAssets() {
-
-	chokidar.watch( srcFolder + '/**/*', { ignored: [ '' ] } ).on( 'all', ( event, path ) => {
-
-		if ( ! fs.lstatSync( path ).isDirectory() ) {
-
-			writeToDest( path );
-		}
-	} );
-}
-
-function writeToDest( path ) {
-
-	let srcStr = fsPath.normalize( srcFolder );
-	let buildStr = fsPath.normalize( buildFolder );
-	let buildPath = path.replace( srcStr, buildStr );
-
-	let buildDir = fsPath.dirname( buildPath );
-
-	// Ensure the build folder exists
-	fs.ensureDirSync( buildDir );
-
-	var content = fs.readFileSync( path, 'binary' );
-	content = removeInjectPathComment( content );
-	fs.writeFileSync( buildPath, content, 'binary' );
-}
-
-function removeInjectPathComment( content ) {
-	content = content.replace( '/*%injectPath%*/', '' ); // remove the indexPath comment
-	return content;
-}
-
-function startServer() {
+module.exports.start = function(options) {
+	buildFolder = options.buildFolder;
+	srcFolder = options.srcFolder;
+	contextPath = options.contextPath || 'build';
 
 	var app = express();
 
@@ -92,7 +25,7 @@ function startServer() {
 		}
 
 		setTimeout( function () {
-			res.sendFile( __dirname + '/src' + '/data/hello.json' );
+			res.sendFile( __dirname + '/' + srcFolder + '/data/hello.json' );
 		}, sleep );
 	} );
 
@@ -149,3 +82,5 @@ function startServer() {
 		open( 'http://localhost:9988/' );
 	}
 }
+
+//module.exports.start( { buildFolder: 'docs', srcFolder: 'src', contextPath: 'docs'});

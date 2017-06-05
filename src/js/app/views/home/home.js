@@ -14,13 +14,16 @@ var home = {
 				journey.goto( "#basic?b=2#a=b" );
 			}
 		} );
-
+	},
+	
+	beforeleave: function ( route, nextRoute, options ) {
+		//return Promise.reject("home reject");
 	},
 
-	leave: function ( route, nextRoute ) {
+	leave: function ( route, nextRoute, options ) {
+		//return Promise.reject("home reject");
 		route.view.teardown();
 	}
-
 };
 
 export default home;

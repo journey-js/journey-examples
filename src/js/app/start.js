@@ -1,4 +1,5 @@
 import journey from 'lib/journey/journey.js';
+import events from "lib/journey/utils/events";
 import Ractive from "Ractive.js";
 import fade from "lib/fade.js";
 import 'lib/prism.js';
@@ -21,7 +22,7 @@ Ractive.transitions = {
 	fade
 };
 
-journey.on( "entered", function ( options ) {
+journey.on( events.ENTERED, function ( options ) {
 	Prism.highlightAll();
 } );
 
