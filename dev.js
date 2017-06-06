@@ -6,14 +6,20 @@ var watch = require( 'rollup-watch' );
 var rollupConfig = require( './rollup.config.js' );
 let server = require( './server' );
 
-let starting = true;
+// Flag to ensure we only start server once
+let serverRunning = false;
 
+// Set source/build folders
 const buildFolder = 'build';
 const srcFolder = 'src';
 
-watchAssets();
-
-compileJS();
+// start() drives the logic
+function start() {
+	
+	watchAssets();
+	
+	compileJS();
+}
 
 // Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
 function compileJS() {
@@ -37,18 +43,21 @@ function compileJS() {
 	} );
 }
 
+// Start Express server so we can view our application in the browser
 function startServer() {
 	// This function will be called every time Rollup completes a build (ie everytime a file change)
 	// so we add a check to only start the server once
-	if ( starting ) {
-		server.start( {
-			buildFolder: buildFolder,
-			srcFolder: srcFolder
-		} );
-		starting = false; // We don't want setupServer to be called every time a rollup completes a build ie everytime a file is changed.
-	}
+	if ( serverRunning ) return;	
+	
+	server.start( {
+		buildFolder: buildFolder,
+		srcFolder: srcFolder
+	} );
+	serverRunning = true;
 }
 
+// Setup a watcher on our 'src' so that modified files are
+// copied tro the build folder
 function watchAssets() {
 
 	chokidar.watch( srcFolder + '/**/*' ).on( 'all', ( event, path ) => {
@@ -61,6 +70,7 @@ function watchAssets() {
 	} );
 }
 
+// Copy the changed file to the build folder
 function writeToDest( path ) {
 
 	// Set buildPath by replacing 'src' str with 'build' str
@@ -79,3 +89,6 @@ function removeInjectPathComment( content ) {
 	content = content.replace( '/*%injectPath%*/', '' ); // remove the indexPath comment
 	return content;
 }
+
+// Start the development environment
+start( );
