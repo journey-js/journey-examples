@@ -13,20 +13,22 @@ var versioning = require( 'node-version-assets' );
 const distFolder = 'docs';
 const srcFolder = 'src';
 
+// Start the distribution
+start( );
+
 // start() drives all the logic
 function start( ) {
 
-    clean();
+    clean()
+		.then( copyAssets )
+		.then(compileJS)
+		.then( compileCss )
+		.then( uncommentCDN )
+		.then( versionAssets )
 
-    copyAssets();
-
-    compileJS( ).    
-        then( compileCss ).
-        then( uncommentCDN ).
-        then( versionAssets ).
-        catch( ( e ) => {
-            console.log( e );
-        } );
+		.catch( ( e ) => {
+			console.log( e );
+		} );
 }
 
 // Remove the previous distribution folder
@@ -35,17 +37,57 @@ function clean() {
 
     // Ensure the build folder exists
     fs.ensureDirSync( distFolder );
+	 return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 
 // Copy all the assets to the distribution folder
 function copyAssets( ) {
     fs.copySync( srcFolder, distFolder );
+	 return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
+
+// Compile, bundle and uglify the JS to the distribution folder
+// Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
+function compileJS( ) {
+    let p = new Promise( function ( resolve, reject ) {
+
+        // Note that findRollupPlugin looks up a Rollup plugin with the same name in order
+        // for us to further configure the plugin before running the production build.
+        let ractiveCompiler = findRollupPlugin( "ractive-compiler" );
+
+        ractiveCompiler.compile = true; // We want to precompile Ractive templates
+
+        rollupConfig.plugins.push( uglify( ) ); // Add uglify plugin to minimize JS
+
+        rollup.rollup( rollupConfig )
+            .then( function ( bundle ) {
+                // Generate bundle + sourcemap
+
+                bundle.write( {
+                    dest: distFolder + '/js/app/app.js', // Output file
+                    format: rollupConfig.targets[0].format, // output format IIFE, CJS etc.
+                    sourceMap: true // Yes we want a sourcemap
+
+                } ).then( function ( ) {
+                    // JS compilation step completed, so we continue to the next section.
+                    resolve();
+
+                } ).catch( function ( e ) {
+                    reject( e );
+                } );
+
+            } ).catch( function ( e ) {
+                reject( e );
+            } );
+    } );
+
+        return p;
+    }
 
 // When building for production we want to change some of the plugin options, eg. precompile
 // templates, uglify etc. This function allow us to return plugins based on their names, so
 // we can futher configure them before running rollup
-function findPlugin( name ) {
+function findRollupPlugin( name ) {
 
     for ( let i = 0; i < rollupConfig.plugins.length; i ++ ) {
 
@@ -58,41 +100,8 @@ function findPlugin( name ) {
 	}
 }
 
-// Compile, bundle and uglify the JS to the distribution folder
-function compileJS( ) {
-
-	let p = new Promise( function ( resolve, reject ) {
-
-        let ractiveCompiler = findPlugin( 'ractive-compiler' );
-        ractiveCompiler.compile = true;
-        rollupConfig.plugins.push( uglify( ) );
-
-        rollup.rollup( rollupConfig ).then( function ( bundle ) {
-
-            // Generate bundle + sourcemap
-            bundle.write( {
-
-                dest: distFolder + '/js/app/app.js',
-                format: rollupConfig.targets[0].format,
-                sourceMap: true
-
-            } ).then( function ( ) {
-                resolve();
-
-            } ).catch( function ( e ) {
-                reject( e );
-            } );
-
-        } ).catch( function ( e ) {
-            reject( e );
-        } );
-    } );
-
-    return p;
-}
-
 // Bundle and uglify the CSS to the dsitrbution folder
-function compileCss( ) {    
+function compileCss( ) {
 	let source = path.join( srcFolder, 'css', 'site.css' );
 	let result = new CleanCSS( { rebaseTo: path.join( srcFolder, 'css' ) } ).minify( [ source ] );
 
@@ -135,6 +144,7 @@ function uncommentCDN( ) {
 
     } catch ( error ) {
         console.error( 'Error occurred while updating CDN path for ', pathToHtml, error );
+		return Promise.reject( error );
     }
 
     return Promise.resolve();
@@ -159,6 +169,3 @@ function versionAssets( ) {
 
     return promise;
 }
-
-// Start the distribution
-start( );
