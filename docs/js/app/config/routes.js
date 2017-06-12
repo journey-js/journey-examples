@@ -44,6 +44,3 @@ journey.add("/pubSubComp", pubSubComp);
 journey.add("/pubSubComp", pubSubComp);
 journey.add("/basicTransition", basicTransition);
 journey.add("/sortable", sortable);
-
-
-///export default routes;

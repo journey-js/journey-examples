@@ -3,24 +3,28 @@ var replacePathComment = require( './rollup-plugin-replacetPath' );
 var ractiveCompiler = require( 'rollup-plugin-ractive-compiler' );
 var stringToModule = require( 'rollup-plugin-string' );
 var includePaths = require( 'rollup-plugin-includepaths' );
-
 const pkg = require( './package.json' );
 
 let includePathOptions = {
-	include: { },
-	paths: [ '../journey/src/js', './src/js', '../../ractive/src' ],
-	external: [ ],
-	extensions: [ '.js', '.json', '.html' ]
+	paths: [ '../journey/src/js', './src/js' ]
 };
 
 module.exports = {
 	entry: 'src/js/app/start.js',
+
+	// Ractive.js is loaded as an external library through index.html <script> tag. However
+    // we want to import Ractive in our modules with: import Ractive fcrom 'Ractibe.js'.
+    // So we inform Rollup that the 'Ractive.js' import is for an external library
+	 external: [
+		'Ractive.js'
+	],
+
 	plugins: [
 
 		ractiveCompiler( {
 			include: [ '**/*.html' ],
 
-			compile: false,
+			compile: false
 		} ),
 		
 		stringToModule({
@@ -45,6 +49,7 @@ module.exports = {
 	targets: [
 		{
 			dest: pkg.main,
+			banner: '/* journey-examples version ' + pkg.version + ' */',
 			format: 'iife',
 			sourceMap: true
 		}

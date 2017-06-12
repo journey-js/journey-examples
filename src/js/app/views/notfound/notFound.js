@@ -1,4 +1,4 @@
-import template from  "./not-found";
+import template from  "./notFound.html";
 import Ractive from "Ractive.js";
 
 var notFound = {

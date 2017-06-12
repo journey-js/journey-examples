@@ -1,10 +1,21 @@
 /*
-	Ractive.js v0.9.0-edge
-	Build: unknown
-	Date: Fri May 19 2017 11:21:22 GMT+0200 (South Africa Standard Time)
+	Ractive.js v0.9.0
+	Build: e2505c5cb8d78ee9e760ea6f91b74ccfb3e8424b
+	Date: Fri May 26 2017 21:43:30 GMT+0000 (UTC)
 	Website: http://ractivejs.org
 	License: MIT
 */
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(function() {
+		var current = global.Ractive;
+		var exports = factory();
+		global.Ractive = exports;
+		exports.noConflict = function() { global.Ractive = current; return exports; };
+	})();
+}(this, (function () { 'use strict';
+
 var defaults = {
 	// render placement:
 	el:                     void 0,
@@ -138,13 +149,13 @@ var welcome;
 
 if ( hasConsole ) {
 	var welcomeIntro = [
-		"%cRactive.js %c0.9.0-edge %cin debug mode, %cmore...",
+		"%cRactive.js %c0.9.0 %cin debug mode, %cmore...",
 		'color: rgb(114, 157, 52); font-weight: normal;',
 		'color: rgb(85, 85, 85); font-weight: normal;',
 		'color: rgb(85, 85, 85); font-weight: normal;',
 		'color: rgb(82, 140, 224); font-weight: normal; text-decoration: underline;'
 	];
-	var welcomeMessage = "You're running Ractive 0.9.0-edge in debug mode - messages will be printed to the console to help you fix problems and optimise your application.\n\nTo disable debug mode, add this line at the start of your app:\n  Ractive.DEBUG = false;\n\nTo disable debug mode when your app is minified, add this snippet:\n  Ractive.DEBUG = /unminified/.test(function(){/*unminified*/});\n\nGet help and support:\n  http://docs.ractivejs.org\n  http://stackoverflow.com/questions/tagged/ractivejs\n  http://groups.google.com/forum/#!forum/ractive-js\n  http://twitter.com/ractivejs\n\nFound a bug? Raise an issue:\n  https://github.com/ractivejs/ractive/issues\n\n";
+	var welcomeMessage = "You're running Ractive 0.9.0 in debug mode - messages will be printed to the console to help you fix problems and optimise your application.\n\nTo disable debug mode, add this line at the start of your app:\n  Ractive.DEBUG = false;\n\nTo disable debug mode when your app is minified, add this snippet:\n  Ractive.DEBUG = /unminified/.test(function(){/*unminified*/});\n\nGet help and support:\n  http://docs.ractivejs.org\n  http://stackoverflow.com/questions/tagged/ractivejs\n  http://groups.google.com/forum/#!forum/ractive-js\n  http://twitter.com/ractivejs\n\nFound a bug? Raise an issue:\n  https://github.com/ractivejs/ractive/issues\n\n";
 
 	welcome = function () {
 		if ( Ractive.WELCOME_MESSAGE === false ) {
@@ -3342,8 +3353,10 @@ Context.prototype.raise = function raise ( name, event ) {
 		for ( var i = 0; i < events.length; i++ ) {
 			var ev = events[i];
 			if ( ~ev.template.n.indexOf( name ) ) {
-				ev.fire( ev.element.getContext( event ), args );
-				return;
+				var ctx = !event || !( 'original' in event ) ?
+					ev.element.getContext( event || {}, { original: {} } ) :
+					ev.element.getContext( event || {} );
+				return ev.fire( ctx, args );
 			}
 		}
 
@@ -6393,12 +6406,8 @@ function readAttributeOrDirective ( parser ) {
 		attribute.t = ATTRIBUTE;
 		readArguments( parser, attribute, false, true );
 
-		if ( !attribute.f ) {
-			if ( !bind ) {
-				attribute.f = [{ t: INTERPOLATOR, x: { r: [], s: 'true' } }];
-			} else {
-				attribute.f = [{ t: INTERPOLATOR, r: match[3] }];
-			}
+		if ( !attribute.f && bind ) {
+			attribute.f = [{ t: INTERPOLATOR, r: match[3] }];
 		}
 	}
 
@@ -8144,16 +8153,19 @@ var registryNames = [
 	'transitions'
 ];
 
+var registriesOnDefaults = [
+	'computed'
+];
+
 var Registry = function Registry ( name, useDefaults ) {
 	this.name = name;
 	this.useDefaults = useDefaults;
 };
 
 Registry.prototype.extend = function extend ( Parent, proto, options ) {
-	this.configure(
-		this.useDefaults ? Parent.defaults : Parent,
-		this.useDefaults ? proto : proto.constructor,
-		options );
+	var parent = this.useDefaults ? Parent.defaults : Parent;
+	var target = this.useDefaults ? proto : proto.constructor;
+	this.configure( parent, target, options );
 };
 
 Registry.prototype.init = function init () {
@@ -8193,7 +8205,10 @@ Registry.prototype.reset = function reset ( ractive ) {
 	return changed;
 };
 
-var registries = registryNames.map( function (name) { return new Registry( name, name === 'computed' ); } );
+var registries = registryNames.map( function (name) {
+	var putInDefaults = registriesOnDefaults.indexOf(name) > -1;
+	return new Registry( name, putInDefaults );
+});
 
 function wrap ( parent, name, method ) {
 	if ( !/_super/.test( method ) ) { return method; }
@@ -8288,18 +8303,8 @@ var order = [].concat(
 
 var config = {
 	extend: function ( Parent, proto, options ) { return configure( 'extend', Parent, proto, options ); },
-
 	init: function ( Parent, ractive, options ) { return configure( 'init', Parent, ractive, options ); },
-
-	reset: function (ractive) {
-		return order.filter( function (c) {
-			return c.reset && c.reset( ractive );
-		}).map( function (c) { return c.name; } );
-	},
-
-	// this defines the order. TODO this isn't used anywhere in the codebase,
-	// only in the test suite - should get rid of it
-	order: order
+	reset: function (ractive) { return order.filter( function (c) { return c.reset && c.reset( ractive ); } ).map( function (c) { return c.name; } ); }
 };
 
 function configure ( method, Parent, target, options ) {
@@ -8812,6 +8817,11 @@ var ReferenceExpressionChild = (function (Model$$1) {
 
 			parent = parent.parent;
 		}
+	};
+
+	ReferenceExpressionChild.prototype.get = function get ( shouldCapture, opts ) {
+		this.value = this.retrieve();
+		return Model$$1.prototype.get.call( this, shouldCapture, opts );
 	};
 
 	ReferenceExpressionChild.prototype.joinKey = function joinKey ( key ) {
@@ -9638,6 +9648,8 @@ var Attribute = (function (Item$$1) {
 			this.value = options.template.f;
 			if ( this.value === 0 ) {
 				this.value = '';
+			} else if ( this.value === undefined ) {
+				this.value = true;
 			}
 		} else {
 			this.fragment = new Fragment({
@@ -15772,9 +15784,9 @@ function render$1 ( ractive, target, anchor, occupants ) {
 	ractive.rendering = false;
 
 	return promise.then( function () {
-		if (!ractive.torndown) {
-			completeHook.fire( ractive );
-		}
+		if (ractive.torndown) { return; }
+
+		completeHook.fire( ractive );
 	});
 }
 
@@ -16258,6 +16270,10 @@ function splitKeypath$1 ( keypath ) {
 	return splitKeypath( keypath ).map( unescapeKey );
 }
 
+function findPlugin(name, type, instance) {
+	return findInViewHierarchy(type, instance, name);
+}
+
 function Ractive ( options ) {
 	if ( !( this instanceof Ractive ) ) { return new Ractive( options ); }
 
@@ -16289,38 +16305,43 @@ shared.Ractive = Ractive;
 Object.defineProperties( Ractive, {
 
 	// debug flag
-	DEBUG:          { writable: true, value: true },
-	DEBUG_PROMISES: { writable: true, value: true },
+	DEBUG:            { writable: true, value: true },
+	DEBUG_PROMISES:   { writable: true, value: true },
 
 	// static methods:
-	extend:         { value: extend },
-	extendWith:     { value: extendWith },
-	escapeKey:      { value: escapeKey },
-	getContext:     { value: getContext$2 },
-	getNodeInfo:    { value: getNodeInfo$1 },
-	joinKeys:       { value: joinKeys },
-	parse:          { value: parse },
-	splitKeypath:   { value: splitKeypath$1 },
-	unescapeKey:    { value: unescapeKey },
-	getCSS:         { value: getCSS },
+	extend:           { value: extend },
+	extendWith:       { value: extendWith },
+	escapeKey:        { value: escapeKey },
+	getContext:       { value: getContext$2 },
+	getNodeInfo:      { value: getNodeInfo$1 },
+	joinKeys:         { value: joinKeys },
+	parse:            { value: parse },
+	splitKeypath:     { value: splitKeypath$1 },
+	unescapeKey:      { value: unescapeKey },
+	getCSS:           { value: getCSS },
+	normaliseKeypath: { value: normalise },
+	findPlugin:       { value: findPlugin },
+	evalObjectString: { value: parseJSON },
 
 	// support
-	enhance:        { writable: true, value: false },
-	svg:            { value: svg },
+	enhance:          { writable: true, value: false },
+	svg:              { value: svg },
 
 	// version
-	VERSION:        { value: '0.9.0-edge' },
+	VERSION:          { value: '0.9.0' },
 
 	// plugins
-	adaptors:       { writable: true, value: {} },
-	components:     { writable: true, value: {} },
-	decorators:     { writable: true, value: {} },
-	easing:         { writable: true, value: easing },
-	events:         { writable: true, value: {} },
-	interpolators:  { writable: true, value: interpolators },
-	partials:       { writable: true, value: {} },
-	transitions:    { writable: true, value: {} }
+	adaptors:         { writable: true, value: {} },
+	components:       { writable: true, value: {} },
+	decorators:       { writable: true, value: {} },
+	easing:           { writable: true, value: easing },
+	events:           { writable: true, value: {} },
+	interpolators:    { writable: true, value: interpolators },
+	partials:         { writable: true, value: {} },
+	transitions:      { writable: true, value: {} }
 });
 
-export default Ractive;
-//# sourceMappingURL=ractive.mjs.map
+return Ractive;
+
+})));
+//# sourceMappingURL=ractive.js.map

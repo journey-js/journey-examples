@@ -14,10 +14,6 @@ let contextPath = "/journey-examples/";
 
 menu.init( { target: "#menu", fallbackMenu: "#menu-home" } );
 
-if (location.pathname == "/" || location.pathname == contextPath || location.pathname == "") {
-	//history.replaceState(null, null, "/home"); // change url to /home as a default
-}
-
 Ractive.transitions = {
 	fade
 };

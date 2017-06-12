@@ -4,29 +4,32 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
         <title>Journey demos</title>
         <link rel="stylesheet" type="text/css" href="css/site.css" />
-    
+
     </head>
     <body>
-        
+
         <div id="menu">
             <nav class="navbar navbar-default">
             </nav>
         </div>
-       
+
         <div id="container"></div>
         <div id="side-panel"></div>
-    </body>
-    
-    <!-- don't defer jquery, causes issues with the menu for some reason. -->
-    <!-- start DEV imports -->
-    <script src="js/lib/jquery-3.2.0.js"></script>
-    <!-- end DEV imports -->
-    
-    <!-- start PROD imports
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-end PROD imports -->
 
-    <script src="js/app/app.js" defer nomodule></script>
-<!--    <script src="js/app/app2.js" type="module"></script>-->
+        <!-- don't defer jquery, causes issues with the menu for some reason. -->
+        <!-- start DEV imports -->
+        <script src="js/lib/jquery-3.2.0.js"></script>
+        <script src="js/lib/polyfills.js"></script>
+        <script src="js/lib/ractive.js"></script>
+        <!-- end DEV imports -->
+
+        <!-- start PROD imports
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/polyfills.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/runtime.min.js"></script>
+    end PROD imports -->
+
+        <script src="js/app/app.js" defer nomodule></script>
+    </body>
 </html>
 
