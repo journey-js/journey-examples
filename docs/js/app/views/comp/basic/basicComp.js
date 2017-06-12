@@ -22,8 +22,8 @@ function createView( options ) {
 
 		activate () {
 			// We reference the parent ractive instance through "comp.parent" and set the parent data variables, hidden and feedback
-			this.root.set( "hidden", false );
-			this.root.set( "feedback", "Component clicked!" );
+			this.parent.set( "hidden", false );
+			this.parent.set( "feedback", "Component clicked!" );
 		}
 	} );
 
