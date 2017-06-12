@@ -1,6 +1,8 @@
 import journey from "lib/journey/journey.js";
 import Ractive from "Ractive.js";
 import template from "./multipleComp.html";
+import compATemplate from "./compA.html";
+import compBTemplate from "./compB.html";
 
 var multipleComp = {
 
@@ -18,11 +20,11 @@ var multipleComp = {
 function createView( options ) {
 
 	var compA = new Ractive( {
-		template: '<div class="comp">I am component A</div>'
+		template: compATemplate
 	} );
 
 	var compB = new Ractive( {
-		template: '<div class="comp compB">I am component B</div>'
+		template: compBTemplate
 	} );
 
 	let components = {

@@ -1,6 +1,7 @@
 import journey from "lib/journey/journey.js";
 import Ractive from "Ractive.js";
 import template from "./basicComp.html";
+import compTemplate from "./comp.html";
 
 var basicComp = {
 
@@ -17,7 +18,7 @@ var basicComp = {
 function createView( options ) {
 
 	var component = Ractive.extend( {
-		template: '<div on-click="@.activate()" class="comp" style="cursor: pointer">{{message}}</div>',
+		template: compTemplate,
 
 		activate () {
 			// We reference the parent ractive instance through "comp.parent" and set the parent data variables, hidden and feedback

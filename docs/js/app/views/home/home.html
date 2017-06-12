@@ -1,26 +1,74 @@
 <div class="container" fade-in={duration:1500}>
     <div class="row">
-  
+
         <div class="col-md-12">
-            
             <h1 style="padding-top:30px; padding-bottom:0px;"><span id="home-welcome" class="animated bounceInLeft">Welcome to Journey</span> <span id="home-demo" class="animated highlightLetter invisible">Demos</span></h1>
 
-            <div class="animated bounceInUp" id="home-content">
-                <p>Journey is a Javascript Router sporting the following features</p>
-                <ul>
-                    <li>
-                        
-                    </li>
-                </ul>
-                    Documentation is available
-                    <a href="https://github.com/journey-js/journey" class="link" target="_blank">here</a>.
-                <p>Kudu combines the best of breed libraries (
-                    <a href='http://ractivejs.org' target='_blank' class='link'>Ractive</a>,
-                    <a href='http://requirejs.org/' target='_blank' class='link'>RequireJS</a>) 
-                    to create a productive environment for writing single-page applications.</p>
-                <button type="button" class="search btn btn-success"  on-click="@this.start()"><i class="icon-search"></i> Let's start</button>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="searchBox set1-color2 searchBoxLeft animated bounceInLeft home-box-top-left"  on-click='journey.goto("/basic")'>
+                <div class="searchBoxIcon"><i class="fa fa-user fa-5x"></i>
+                </div>
+                <div class="searchBoxLarge">Basic</div>
+                <div class="home-text headingSmaller">A basic view.</div>
             </div>
         </div>
 
+        <div class="col-md-6">
+            <div class="searchBox set1-color3 animated bounceInRight home-box-top-right" on-click='journey.goto("/validatingForm")'>
+                <div class="searchBoxIcon"><i class="fa fa-users fa-5x"></i>
+                </div>
+                <div class="searchBoxLarge">Form</div>
+                <div class="home-text headingSmaller">Basic form with validation.</div>
+            </div>
+        </div>
     </div>
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="searchBox set1-color1 searchBoxLeft animated bounceInLeft home-box-bottom-left" on-click='journey.goto("/nav")'>
+                <div class="searchBoxIcon"><i class="fa fa-paint-brush fa-5x"></i>
+                </div>
+                <div class="searchBoxLarge"> Navigation</div>
+                <div class="home-text headingSmaller">Navigate between routes.</div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+
+            <div class="searchBox set1-color4 animated bounceInRight home-box-bottom-right" on-click='journey.goto("/basicAjax")'>
+                <div class="searchBoxIcon"><i class="fa fa-picture-o fa-5x"></i>
+                </div>
+                <div class="searchBoxLarge">Ajax</div>
+                <div class="home-text headingSmaller">Fetch data asynchronously.</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">  
+        <div class="col-md-12"></div>
+
+        <div class="animated bounceInUp" id="home-content">
+            <p>Journey is a Javascript Router sporting the following features</p>
+            <ul>
+                <li>
+
+                </li>
+            </ul>
+            Documentation is available
+            <a href="https://github.com/journey-js/journey" class="link" target="_blank">here</a>.
+            <p>Kudu combines the best of breed libraries (
+                <a href='http://ractivejs.org' target='_blank' class='link'>Ractive</a>,
+                <a href='http://requirejs.org/' target='_blank' class='link'>RequireJS</a>) 
+                to create a productive environment for writing single-page applications.</p>
+            <button type="button" class="search btn btn-success"  on-click="@this.start()"><i class="icon-search"></i> Let's start</button>
+        </div>
+    </div>
+
 </div>

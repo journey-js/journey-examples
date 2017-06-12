@@ -12,6 +12,16 @@ var home = {
 
 			start: function () {
 				journey.goto( "#basic?b=2#a=b" );
+			},
+			
+			oninit: function() {
+				this.set('journey', journey);
+			},
+			
+			onrender: function() {
+				setTimeout(function() {
+				$('#home-demo').removeClass('invisible').addClass("rollIn");
+			}, 500);
 			}
 		} );
 	},
