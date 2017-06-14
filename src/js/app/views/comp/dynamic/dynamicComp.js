@@ -1,10 +1,10 @@
 import journey from "lib/journey/journey.js";
 import Ractive from "Ractive.js";
-import template from "./multipleComp.html";
+import template from "./dynamicComp.html";
 import compATemplate from "./compA.html";
 import compBTemplate from "./compB.html";
 
-var multipleComp = {
+var dynamicComp = {
 
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
@@ -49,4 +49,4 @@ function createView( options ) {
 	return view;
 }
 
-export default multipleComp;
+export default dynamicComp;

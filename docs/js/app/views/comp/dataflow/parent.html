@@ -2,7 +2,7 @@
     <div class="row">
 
         <div class="col-md-12">
-            <h1 style="padding-top:30px; padding-bottom:0px;">Publish/Subscribe for <span class="highlightLetter">Components</span></h1>
+            <h1 style="padding-top:30px; padding-bottom:0px;">Components <span class="highlightLetter">Data Flow</span></h1>
         </div>
     </div>
 
@@ -23,7 +23,7 @@
 
             <p>Let's see the component in action. Open your browser console to see the events fired from the [component] and received by the [parent] view:</p>
 
-            <grid on-public.addRow="@.handleAdd($0)"/>
+            <child on-rowAdded="@.handleAdd($0)" rows="{{rows}}"/>
             
             
             <p>Let's look at some code.</p>
@@ -143,7 +143,7 @@
         },
 
         handleAdd: function (row) {
-            // handleAddRow is called from the template as: on-public.add="handleAdd($1)
+            // handleRowAdded is called from the template as: on-public.add="handleRowAdded($1)
             // $1 is a mapping to the first argument that the grid component 'public.add' event passed along
             // Other arguments would be mapped as $2, $3 or all with (...arguments)
 

@@ -3,15 +3,18 @@ import Ractive from "Ractive.js";
 import template from "./validatingForm.html";
 import "lib/parsley.js";
 
+let view;
+
 let parsley;
 
 var validatingForm = {
 
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
-		route.view = new Ractive( {
+		view  = new Ractive( {
 			el: options.target,
 			template: template,
+			data: { validationFail: false, validationSuccess: false, doSlide: true },
 
 			onrender: function () {
 				setupParsley();
@@ -22,8 +25,11 @@ var validatingForm = {
 				return false;
 			},
 			resetData: function () {
-				$( '.bs-callout-info' ).addClass( 'hidden' );
-				$( '.bs-callout-warning' ).addClass( 'hidden' );
+				//$( '.bs-callout-info' ).addClass( 'hidden' );
+				//$( '.bs-callout-warning' ).addClass( 'hidden' );
+				view.set('doSlide', true)
+				view.set('validationFail', false);
+				view.set('validationSuccess', false);
 			}
 		} );
 
@@ -31,7 +37,7 @@ var validatingForm = {
 	},
 
 	leave: function ( route, nextRoute, options ) {
-		route.view.teardown();
+		view.teardown();
 	}
 };
 
@@ -57,6 +63,7 @@ function setupParsley( ) {
 		// If you want all fields automatically tracked for errors after form submission, uncomment line below
 		//setFieldsInvalid(form);
 		showFormValidationFeedback( form );
+		view.set('doSlide', false);
 	} );
 	parsley.on( 'field:validated', function ( field ) {
 		showFormValidationFeedback( field.parent );
@@ -72,8 +79,11 @@ function setFieldsInvalid( form ) {
 
 function showFormValidationFeedback( form ) {
 	var ok = form.isValid( );
-	$( '.bs-callout-info' ).toggleClass( 'hidden', ! ok );
-	$( '.bs-callout-warning' ).toggleClass( 'hidden', ok );
+
+	view.set('validationFail', !ok);
+	view.set('validationSuccess', ok);
+	//$( '.bs-callout-info' ).toggleClass( 'hidden', ! ok );
+	//$( '.bs-callout-warning' ).toggleClass( 'hidden', ok );
 }
 
 export default validatingForm;
