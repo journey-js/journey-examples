@@ -1,9 +1,9 @@
 import journey from "lib/journey/journey";
-import template from "./navTargetParams.html";
+import template from "./product.html";
 import Ractive from "Ractive.js";
 import session from "./session.js";
 
-var navTargetParams = {
+var product = {
 
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
@@ -13,28 +13,20 @@ var navTargetParams = {
 			template: template,
 			data: {
 				params: route.params,
-				args: session.navArgs,
+				data: session.data,
 				query: route.query
 			},
 			start: function ( ) {
 				journey.goto( "/basic", { x: "1234" } );
 			}
 		} );
+		
+		// clear the session data, we already retrieved it
+		session.data = '';
 	},
 	leave: function ( route, nextRoute ) {
 		route.view.teardown( );
 	}
 };
 
-function createView( params, args ) {
-
-	var view = new template( {
-		data: {
-			args: args,
-			params: params
-		}
-	} );
-	return view;
-}
-
-export default navTargetParams;
+export default product;

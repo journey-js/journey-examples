@@ -1,4 +1,4 @@
-<div class="container nav">
+<div class="container nav" fade-in={duration:200}>
     <div class="row">
 
         <div class="col-md-12">
@@ -6,45 +6,93 @@
         </div>
     </div>
 
+	<div class="row">
+        <div class="col-md-12">
+			<p>Journey supports two ways to navigate between routes:</p>
+
+			<ul>
+				<li>
+					<em>programmatically</em> with <span class="fun">journey.goto( '/product' )</span>
+				</li>
+
+				<li>
+					<em>declaratively</em> through links <span class="fun">&lt;a href="/person"&gt;</span>
+				</li>
+			</ul>
+		</div>
+	</div>
+
     <div class="row">
         <div class="col-md-12">
 
-            <h2>Navigate Programatically</h2>
+            <h3>Navigate Programatically</h3>
+
             <div class="set1-color1 searchBox searchBoxCenter" id="trackClaimBox">
 
-                <div class="content">     
-                    <pre><code  class="line-numbers language-js">var kudu = require("kudu");
-var myCtrl = require("myctrl");
+                <div class="content">
+                    <pre><code  class="line-numbers language-js">import journey from 'lib/journey';
+import product from 'app/views/product/product.js';
 
-kudu.go({
-    ctrl: myCtrl,
-    routeParams: {'id': 1, 'name': 'Bob'},
-    args: {'myargs': ['one', 'two', 'three']}
-});
+// We add a route for product that accepts an 'id' parameter
+journey.add('/product/:id', product);
+
+var id = 2; // We goto product passing the 'id'
+journey.goto( '/product/' + id);
                         </code></pre>
                 </div>
-                <button type="button" class="btn" on-click="@this.gotoNewView()"><i class="fa fa-search"></i> Go</button>
+                <button type="button" class="btn" on-click="@.gotoProduct()"><i class="fa fa-search"></i> Goto Product</button>
+            </div>
+			<br>
 
-            </div>            
-                <br>
+			<h3>Navigate Programatically with data</h3>
+			
+			Journey does not support passing <span class="fun">data</span> through routes.
+			
+			However with <span class="fun">ES6 Modules</span> you can easily store data in a module, say 
+			<span class="ln">session.js</span>, and retrieve the data from the <span class="ln">session</span>
+			in the <em>target</em> route.
+			
+			 <div class="set1-color1 searchBox searchBoxCenter" id="trackClaimBox">
+
+                <div class="content">
+                    <pre><code  class="line-numbers language-js">import journey from 'lib/journey';
+import productSearch from 'app/views/product/productSearch.js';
+import session from 'app/util/session.js';
+
+var products = getProductsFromServer();
+
+// Store products in session
+session.products products;
+
+journey.goto( '/productsearch');
+
+// In productsearch.js
+import session from 'app/util/session.js';
+
+// Retrieve products from session
+var products = session.products;
+                        </code></pre>
+                </div>
+                <button type="button" class="btn" on-click="@.gotoProductWithData( 1 )"><i class="fa fa-search"></i> Goto Product with data</button>
+
+            </div>
         </div>
     </div>
 
     <div class="row">
         <div class="col-md-12">
-            
-            <h2>Navigate Declaratively</h2>
+
+            <h3>Navigate Declaratively</h3>
 
             <div class="set1-color2 searchBox searchBoxCenter" id="trackClaimBox"> 
 
-
                 <div class="home-text" ></div>
 
-                <div class="content">     
-                    <pre><code  class="line-numbers language-markup">&lt;!-- To navigate declaratively, set the path you want to navigate to as the href url hash -->
-&lt;a href="/navTarget">Go&lt;/a></code></pre>
+                <div class="content">
+                    <pre><code  class="line-numbers language-markup">&lt;!-- To navigate declaratively, we set the path we want to navigate to as the href url hash -->
+&lt;a href="/person">Go&lt;/a></code></pre>
                 </div>
-                <a class="search btn" href="/navTarget"><i class="fa fa-search"></i> Go</a>
+                <a class="search btn" href="/person"><i class="fa fa-search"></i> Goto Person</a>
 
             </div>            
         </div>

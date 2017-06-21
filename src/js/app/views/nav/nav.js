@@ -7,15 +7,20 @@ var nav = {
 
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
-		
+
 		route.view = new Ractive( {
 			el: options.target,
 			template: template,
-			gotoNewView: function () {
 
-				var args = { 'myArray': [ 'one', 'two', 'three' ] };
-				session.navArgs =  args;
-				journey.goto( "/navTargetParams/1?name=Bob" );
+			gotoProduct: function ( ) {
+				journey.goto( '/product/2' );
+			},
+
+			gotoProductWithData: function ( index ) {
+
+				var data = { 'producsts': [ 'bed', 'chair', 'couch' ] };
+				session.data = data;
+				journey.goto( '/product/2?index=' + index );
 			}
 		} );
 
@@ -25,26 +30,5 @@ var nav = {
 		route.view.teardown();
 	}
 };
-
-function createView() {
-
-	var view = new template( {
-		data: {
-			example1: "js/app/views/nav/nav1-example.js",
-			example2: ""
-		},
-		gotoTargetWithParams: function ( routeName ) {
-			// Navigate to the route specified
-			var params = { 'id': 1, 'name': 'Bob' };
-			var args = { 'myargs': [ 'one', 'two', 'three' ] };
-			kudu.go( { ctrl: navTargetWithParams, routeParams: params, args: args } );
-
-			// Cancel the click event by returning false, otherwise the link function would execute ie. follow the link href
-			return false;
-		}
-	} );
-
-	return view;
-}
 
 export default nav;

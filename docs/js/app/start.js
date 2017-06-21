@@ -32,7 +32,6 @@ journey.start( {
 	fallback: '/notFound',
 	base: contextPath,
 	defaultRoute: '/home',
-	useOnHashChange: false,
-	useHash: true,
-	hash: '#!'
+	//useHash: false,
+	//hash: '#!'
 } );

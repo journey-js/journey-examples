@@ -1,0 +1,76 @@
+<div class="container" fade-in={duration:200}>
+
+    <div class="row">
+        
+
+        <div class="col-md-12">
+            <h1 class="view-h1">Basic <span class="highlightLetter">Route</span></h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <p>This example shows how to implement a basic Journey <span class="fun">route.</span></p>
+
+            <p><span class="fun">Routes</span> in Journey are plain Javascript objects that must implement the <span class="met">enter</span> method.  When we
+                navigate to a route the <span class="met">enter</span> is called which is where we will create our views. We can also implement a
+                <span class="met">leave</span> method which is called when we navigate to a new route. <span class="met">leave</span> is ideal for remove the
+                view from the dom.
+            </p>
+            <p>In these examples we use ES6 Modules and split our views and templates into separate modules. We use a Node and
+                <a href="https://rollupjs.org/" target="_blank">Rollup</a> to 
+                <a href="https://github.com/journey-js/journey/blob/master/dev-setup.md" target="_blank">develop</a>
+                and <a href="https://github.com/journey-js/journey/blob/master/dist-setup.md">distribute</a> these examples.
+            </p>
+            
+            <p>
+                Let's look at our first Journey <span class="fun">route.</span> below, <em>basic.js</em>:
+            </p>
+
+            <pre><code  class="line-numbers language-js">import Ractive from "lib/Ractive.js";
+import template from "./basic.html";
+
+var basic = {
+
+	enter: function ( route, prevRoute, options ) {
+
+		// We create our view (using Ractive) and assign it to a property on the route object
+		route.view = new Ractive( {
+
+			// options.target is the default target configured in start.js
+			el: options.target,
+
+			// we use the html template imported above
+			template: template
+		} );
+	},
+
+	leave: function ( route, nextRoute, options ) {
+		// When we leave the route we teardown the view.
+		// teardown() is a Ractive method to remove and destroy the view
+		return route.view.teardown();
+	}
+};
+
+export default basic;
+</code></pre>
+
+            <p>In <span class="ln">line 1 and 2</span>, we import Ractive and our view template.
+            </p>
+            <p><span class="ln">Line 4</span> is our route object <em>basic</em>.
+            </p>
+
+            <p>In <span class="ln">line 6</span> we implement the  <span class="fun">enter</span> method and <span class="ln">line 9</span> we create our view
+				with <em>Ractive</em>.                
+				<span class="ln">line 19</span> implements the <span class="fun">leave</span> method where the view is destroyed.
+            </p>
+
+            <p>And that is a basic Journey <span class="met">route</span>. You can test loading the route below.
+            </p>
+
+            <button type="button" class="btn btn-success"  on-click="reloadRoute()">Reload Route</button> ( click the button to reload this route!)
+
+        </div>
+
+    </div>
+</div>

@@ -1,8 +1,8 @@
 import journey from "lib/journey/journey";
 import Ractive from "Ractive.js";
-import template from "./redirectTarget.html";
+import template from "./invalid.html";
 
-var redirectTarget = {
+var invalid = {
 	
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
@@ -18,4 +18,4 @@ var redirectTarget = {
 	}
 };
 
-export default redirectTarget
+export default invalid

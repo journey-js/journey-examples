@@ -112,7 +112,7 @@ h3{
     margin: 0;
 }
 .header a, .header a:visited, .header a:active {
-    color: #fff;
+    color: #66d9ef;
     font-weight: normal;
 }
 
@@ -261,19 +261,19 @@ pre.programlisting {
 }
 
 a {
-    color: #fff;
-    text-decoration: none;
+    color: #66d9ef;
+    text-decoration: underline;
 }
 
 a:active {
-    color: #fff;
+    color: #66d9ef;
 }
 a:hover {
-    color: #fff;
+    color: #66d9ef;
     text-decoration: underline;
 }
 a:visited {
-    color: #fff;
+    color: #66d9ef;
 }
 
 .download-content {
@@ -954,4 +954,16 @@ input:-webkit-autofill {
     font-size: 18px;
     font-weight: 100;
     text-align:center;
+}
+.view-h1 {
+    padding-top:30px;
+    padding-bottom:0px;
+}
+
+input {
+    color: #333;
+}
+
+h3, .h3 {
+    font-weight: 400;
 }

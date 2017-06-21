@@ -6,9 +6,16 @@ var redirect = {
 
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
-		
+
 		if ( route.query.typeId == null ) {
-			journey.goto( "/redirectTarget" );
+
+			// if typeId is missing from query parameters, route users to the '/invalid' page.
+			// It we don't want the URL to change to '/invalid', we can pass the 'invisible' property to goto()
+			// Navigating to a new route during the enter phase of another route, would cause Journey to emit
+			// 'routeAbuseStart' event because it detects the user is changing routes too quickly. However in this
+			// case the user is not abusing routes, she is simply redirecting. By passing the property 'redirect'
+			// Journey is notified this is a redirect and should not raise the 'routeAbuseStart' event.
+			journey.goto( "/invalid", { redirect: true, invisible: true });
 			return;
 
 		} else {

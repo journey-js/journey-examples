@@ -11,6 +11,10 @@ var home = {
 		route.view = new Ractive( {
 			el: options.target,
 			template: template,
+
+			t: function() {
+				journey.goto("/basic?a=1");
+			},
 					
 			onrender: function() {
 				// We want a funky intro for our text, so after 500ms we display the node with id='home-demo'

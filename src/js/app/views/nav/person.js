@@ -1,8 +1,8 @@
 import journey from "lib/journey/journey";
-import template from "./navTarget.html";
+import template from "./person.html";
 import Ractive from "Ractive.js";
 
-var navTarget = {
+var person = {
 	
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
@@ -19,6 +19,6 @@ var navTarget = {
 	}
 };
 
-export default navTarget
+export default person
 
 

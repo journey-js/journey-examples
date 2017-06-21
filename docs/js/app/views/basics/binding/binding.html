@@ -1,61 +1,61 @@
-<div class="container" fade-in={duration:1500}>
-    <div class="row">
-
-        <div class="col-md-12">
-            <h1 style="padding-top:30px; padding-bottom:0px;">Binding <span class="highlightLetter"></span></h1>
-        </div>
-
-    </div>
+<div class="container" fade-in={duration:200}>
 
     <div class="row">
         <div class="col-md-12">
-
-            <span class="ln">binding.html</span>
-            <pre><code  class="line-numbers language-js">&lt;input value="\{{name}}">
-&lt;div>Hello \{{name}}&lt;/div>
-&lt;button on-click="resetData()">Set to original value&lt;/button> </code></pre>
-
-            <p><span class="ln">Line 1</span> adds a two-way binding to the input value to the <span class="var">name</span> variable through the <span class="var">\{{name}}</span>
-                mustache.</p>
-            <p><span class="ln">Line 2</span> adds a one-way binding to the &lt;div&gt; element through the <span class="var">\{{name}}</span>
-                mustache.</p>
-            <p><span class="ln">Line 3</span> adds a an <span class="met">on-click</span> listener to the button which calls the method <span class="met">resetData()</span>.
-                The resetData() method uses the Ractive.set() method to reset the <span class="var">name</span> variable, see <span class="ln">line 8</span> below.
-            </p>
-
-
-            <span class="ln">binding.js</span>
-            <pre><code  class="line-numbers language-js">	function createView() {
-
-			var view = new template({
-				
-				data: {"name": "World!"},
-				
-				resetData: function() {
-					this.set("name", "World!");
-				}
-			});
-			return view;
-		}
-}); </code></pre>
-
+            <h1 class="view-h1">Two way <span class="highlightLetter">Binding</span></h1>
         </div>
     </div>
 
     <div class="row">
         <div class="col-md-12">
-            <form class="form-inline">
-
-
-                <div class="form-group col-md-12" style="margin-top: 20px">
-                    <label>Enter name</label>
-                    <input style="color:#000" value="{{name}}">
-                    <div>Hello <strong>{{name}}</strong></div>
-                </div>
-                <div class="form-group col-md-3" style="margin-top: 20px">
-                    <button type="button" class="btn btn-success"  on-click="@.resetData()">Set programmatically to original value</button>
-                </div>
-            </form>
+			<p>
+				A simple <span class="fun">two-way binding</span> demo.
+			</p>
         </div>
     </div>
+
+    <div class="row">
+        <div class="col-md-12">
+
+			<label>Enter name</label>
+
+			<input value="{{name}}">
+
+			<div>Hello <strong>{{name}}</strong></div>
+
+			<p>
+				<button type="button" class="btn btn-success"  on-click="@.resetData()">Reset</button>
+			</p>
+
+        </div>
+    </div>
+
+	<div class="row">
+        <div class="col-md-12">
+		<hr/>
+			<em class="ln">binding.html</em>:
+            <pre><code class="line-numbers language-markup"><script type="text/plain"> <input value="\{{name}}"> <!-- use a mustache to bind the <input> to the 'name' data property --></script>
+</code></pre>
+		</div>
+	</div>
+	
+	<div class="row">
+        <div class="col-md-12">
+			<em class="ln">binding.js</em>:
+            <pre><code class="line-numbers language-js">var view = new Ractive( {
+	el: target,
+	template: template,
+
+	data: { "name": "World!" },
+	
+	resetData: function ( ) {
+		this.set( "name", "World!" );
+	}
+} );
+</code></pre>
+		</div>
+	</div>
+
+
+
 </div>
