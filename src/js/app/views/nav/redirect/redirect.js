@@ -15,7 +15,7 @@ var redirect = {
 			// 'routeAbuseStart' event because it detects the user is changing routes too quickly. However in this
 			// case the user is not abusing routes, she is simply redirecting. By passing the property 'redirect'
 			// Journey is notified this is a redirect and should not raise the 'routeAbuseStart' event.
-			journey.goto( "/invalid", { redirect: true, invisible: true });
+			journey.goto( "/invalid", { redirect: false, invisible: true });
 			return;
 
 		} else {

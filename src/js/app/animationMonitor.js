@@ -5,7 +5,7 @@ journey.on( "routeAbuseStart", function ( options ) {
 	console.log( "** Disabling animation", options );
 	Ractive.defaults.transitionsEnabled = false;
 } );
-journey.on( "routeAbuseEnd", function ( options ) {
+journey.on( "routeAbuseStop", function ( options ) {
 	Ractive.defaults.transitionsEnabled = true;
 	console.log( "** Renabling animations", options );
 } );

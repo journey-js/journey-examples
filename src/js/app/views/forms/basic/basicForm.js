@@ -16,13 +16,13 @@ var basicForm = {
 				check: true
 			},
 
-			submit: function () {
-				$( '.bs-callout-info' ).removeClass( 'hidden' );
+			submit: function () {				
+				this.set("submitted", true);
 				return false;
 			},
 
 			resetData: function () {
-				$( '.bs-callout-info' ).addClass( 'hidden' );
+				this.set("submitted", false);
 			}
 		} );
 	},
