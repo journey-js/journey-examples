@@ -6,11 +6,18 @@
         </div>
     </div>
 
+	<div class="row">
+        <div class="col-md-12">
+            <p class="home-intro">A basic form with two-way binding that displays the entered content when submitted.</p>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-12">
-            <div class="bs-callout bs-callout-info hidden">
+            <div class="bs-callout bs-callout-info" class-hidden="!submitted">
                 <h4>Success!</h4>
-                <p>Form submitted!</p>
+                <p>Form submitted with the following values:</p>
+				<pre> {{values}} </pre>
             </div>
         </div>
     </div>
@@ -23,24 +30,23 @@
 
                 <form autocomplete="off" novalidate>
                     <div class="form-group label-floating">
-                        <label for="exampleInputEmail1" class="control-label">Email address</label>
-                        <input type="email" class="form-control" id="exampleInputEmail1">
+                        <label for="exampleInputEmail" class="control-label">Email address</label>
+                        <input type="email" class="form-control" id="exampleInputEmail" value="{{form.email}}">
                     </div>
                     <div class="form-group label-floating">
-                        <label for="exampleInputPassword1" class="control-label">Password</label>
-                        <input type="password" class="form-control" id="exampleInputPassword1">
+                        <label for="exampleInputPassword" class="control-label">Password</label>
+                        <input type="password" class="form-control" id="exampleInputPassword" value="{{form.password}}">
                     </div>
 
-                   <div class="form-group">
-                    <label for="exampleInputFile">File input</label>
-                    <input type="file" id="exampleInputFile">
-                    <p class="help-block">Example block-level help text here.</p>
-                </div>
-                
+					<div class="form-group">
+						<label for="exampleInputFile">File input</label>
+						<input type="file" id="exampleInputFile" value="{{form.file}}">
+					</div>
+
 
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="check" checked="{{check}}"> Check me out</label>
+                            <input type="checkbox" name="contactMe" checked="{{form.contactMe}}"> Should we contact you?</label>
                     </div>
 
                     <button type="submit" class="btn btn-raised btn-primary" on-click="@.submit()">Submit</button>
