@@ -13,11 +13,22 @@ var basicForm = {
 			template: template,
 
 			data: {
-				check: true
+				
+				form: {
+					contactMe: true					
+				}
 			},
 
-			submit: function () {				
+			submit: function () {
 				this.set("submitted", true);
+				
+				let formValues = this.get( 'form' );
+				let filename = this.get( 'form.file[0].name' );
+				formValues.filename= filename;
+				delete formValues.file; // we don't want to render the file detail
+				
+				let values = JSON.stringify(formValues, null, 2);
+				this.set("values", values);
 				return false;
 			},
 
