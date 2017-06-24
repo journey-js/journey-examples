@@ -41,57 +41,58 @@ var lifecycleEvents = {
 	leave: function ( route, nextRoute, options ) {
 		return route.view.teardown();
 	},
-
-	beforeenter: function ( route, prevRoute, options ) {
-		// Noop method for demo purposes
-	},
-
-	update: function ( route, options ) {
-		// Noop method for demo purposes
-		console.log("View updated with :", route.query);
-	}
 };
 
 function startListening() {
 
-	journey.on( events.BEFORE_ENTER, function ( options ) {
-		console.log( "onBeforeenter", options );
+	journey.on( events.BEFORE_LEAVE, function ( e ) {
+		console.log( "onBeforeleave", e, e.options.hasHandler );
 	} );
 
-	journey.on( events.BEFORE_ENTER_COMPLETE, function ( options ) {
-		console.log( "onBeforeenterComplete", options );
+	journey.on( events.BEFORE_LEAVE_COMPLETE, function ( e ) {
+		console.log( "onBeforeleaveComplete", e, e.options.hasHandler );
 	} );
 
-	journey.on( events.ENTER, function ( options ) {
-		console.log( "onEnter:", options );
+	journey.on( events.BEFORE_ENTER, function ( e ) {
+		console.log( "onBeforeenter", e, e.options.hasHandler );
 	} );
 
-	journey.on( events.ENTERED, function ( options ) {
-		console.log( "onEntered", options );
+	journey.on( events.BEFORE_ENTER_COMPLETE, function ( e ) {
+		console.log( "onBeforeenterComplete", e, e.options.hasHandler );
 	} );
 
-	journey.on( events.UPDATE, function ( options ) {
-		console.log( "onUpdate", options );
+	journey.on( events.ENTER, function ( e ) {
+		console.log( "onEnter:", e, e.options.hasHandler );
 	} );
 
-	journey.on( events.UPDATED, function ( options ) {
-		console.log( "onUpdated", options );
+	journey.on( events.ENTERED, function ( e ) {
+		console.log( "onEntered", e, e.options.hasHandler );
 	} );
 
-	journey.on( events.LEAVE, function ( options ) {
-		console.log( "onLeave", options );
+	journey.on( events.UPDATE, function ( e ) {
+		console.log( "onUpdate", e, e.options.hasHandler );
 	} );
 
-	journey.on( events.LEFT, function ( options ) {
-		console.log( "onLeft", options );
+	journey.on( events.UPDATED, function ( e ) {
+		console.log( "onUpdated", e, e.options.hasHandler );
 	} );
 
-	journey.on( events.ERROR, function ( options ) {
-		console.log( "onError", options );
+	journey.on( events.LEAVE, function ( e ) {
+		console.log( "onLeave", e, e.options.hasHandler );
+	} );
+
+	journey.on( events.LEFT, function ( e ) {
+		console.log( "onLeft", e, e.options.hasHandler );
+	} );
+
+	journey.on( events.ERROR, function ( e ) {
+		console.log( "onError", e, e.options.hasHandler );
 	} );
 }
 
 function stopListening() {
+	journey.off( events.BEFORE_LEAVE );
+	journey.off( events.BEFORE_LEAVE_COMPLETE );
 	journey.off( events.BEFORE_ENTER );
 	journey.off( events.BEFORE_ENTER_COMLETE );
 	journey.off( events.ENTER );

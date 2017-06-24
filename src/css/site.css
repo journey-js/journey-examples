@@ -40,6 +40,8 @@ p {
 
 html, body {
   height: 100%;
+  font-size: 18px;
+  
 }
 
 body {
@@ -194,6 +196,7 @@ h2 {
 }
 
 code, pre {
+    
 }
 
 pre.programlisting {

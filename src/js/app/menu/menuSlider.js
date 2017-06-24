@@ -31,7 +31,6 @@ function setupMenuListener() {
 
 	journey.on( "entered", options => {
 		let viewName = getViewName( options );
-		console.log( "viewname:", viewName );
 
 		let $li = getMenu( viewName );
 
