@@ -6,6 +6,7 @@ var redirect = {
 
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
+		console.log("redirect.enter() from: ", prevRoute.pathname, " to:", route.pathname);
 
 		if ( route.query.typeId == null ) {
 
@@ -15,7 +16,9 @@ var redirect = {
 			// 'routeAbuseStart' event because it detects the user is changing routes too quickly. However in this
 			// case the user is not abusing routes, she is simply redirecting. By passing the property 'redirect'
 			// Journey is notified this is a redirect and should not raise the 'routeAbuseStart' event.
-			journey.goto( "/invalid", { redirect: false, invisible: true });
+			console.log("Redirect.enter() GOTO Invalid start")
+			journey.goto( "/invalid", { redirect: true, invisible: true });
+			console.log("Redirect.enter() GOTO Invalid complete")
 			return;
 
 		} else {
@@ -28,9 +31,10 @@ var redirect = {
 	},
 
 	leave: function ( route, nextRoute, options ) {
+		console.log("Redirect.leave() from:", route.pathname, " to:", nextRoute.pathname);
 		if ( route.view == null ) {
 			return;
-		}
+		}		
 		route.view.teardown();
 	}
 };

@@ -970,3 +970,9 @@ input {
 h3, .h3 {
     font-weight: 400;
 }
+.feedbackContainer.container {
+    padding-bottom: 0;
+}
+.navbar {
+    margin-bottom: 0;
+}

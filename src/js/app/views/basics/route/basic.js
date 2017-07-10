@@ -1,6 +1,7 @@
 import journey from "lib/journey/journey";
 import template from "./basic.html";
 import Ractive from "Ractive.js";
+import feedback from "app/comp/feedback/feedback.js";
 
 var basic = {
 
@@ -12,7 +13,7 @@ var basic = {
 
 			template: template,
 
-			reloadRoute: function () {
+			reloadRoute: function () {				
 				journey.goto( "/basic", {forceReload: true} );
 			}
 		} );

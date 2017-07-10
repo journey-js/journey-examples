@@ -1,21 +1,35 @@
 import journey from "lib/journey/journey.js";
 import Ractive from "Ractive.js";
 import template from "./basicAjax.html";
+import feedback from '../../../comp/feedback/feedback.js';
 
 let config;
 
-let rejectRequest = false;
+//let rejectRequest = false;
+
+let ajaxOptions = { throwError: false };
 
 var basicAjax = {
-	
-	beforeenter: function ( route, prevRoute, options ) {
-		// Return promise for beforeenter
-		return $.getJSON( "data/hello.json?delay=2000&reject=" + rejectRequest ).then( function ( response ) {
-			return route.data = JSON.stringify( response );
 
-		} ).catch( ( err ) => {
-			return route.data = "Could not load data for BasicAjax: [" + err.status + ":" + err.statusText + "]";
-		} );
+	beforeenter: function ( route, prevRoute, options ) {
+
+		let promise = $.ajax( {
+			url: 'data/hello.json?delay=3000&reject=' + ajaxOptions.throwError,
+			// global: false // set global: false to override default error handling defined in start.js
+	} );
+
+		promise.then( function ( response ) {
+			route.data = JSON.stringify( response );
+
+		} ).catch( ( XHR, textStatus, errorThrown ) => {			
+			 feedback.setError( "Error: could not fetch data for BasicAjax" );
+		 });
+		 
+//		 setTimeout(function() {
+//			 promise.abort();
+//		 }, 500);
+
+		return promise;
 	},
 
 	enter: function ( route, prevRoute, options ) {
@@ -35,10 +49,10 @@ function createView( json ) {
 	// Convert the JSON data object to a string representation
 	var view = new Ractive( {
 		el: config.target,
-		data: { response: json },
+		data: { response: json, ajaxOptions: ajaxOptions },
 		template: template,
 		reload: function ( ) {
-			journey.goto( "/basicAjax", {forceReload: true} );
+			journey.goto( "/basicAjax", { forceReload: true } );
 		}
 	} );
 

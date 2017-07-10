@@ -7,6 +7,7 @@ var nav = {
 
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
+		console.log("nav.enter() from: ", prevRoute.pathname, " to:", route.pathname);
 
 		route.view = new Ractive( {
 			el: options.target,
@@ -23,10 +24,10 @@ var nav = {
 				journey.goto( '/product/2?index=' + index );
 			}
 		} );
-
 	},
 
 	leave: function ( route, nextRoute ) {
+		console.log("nav.leave from:", route.pathname, " to:", nextRoute.pathname)
 		route.view.teardown();
 	}
 };

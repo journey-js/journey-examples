@@ -15,35 +15,52 @@
             <pre><code  class="line-numbers language-js">{{response}}</code></pre>
         </div>
     </div>
+	
+	 <div class="row">
+        <div class="col-md-12">
+			<p>
+				Use the button below to test again!
+			</p>
+            <button class="btn btn-success" on-click="@.reload()">Reload View</button>
+			<div class="checkbox">
+				<label><input type="checkbox" checked="{{ajaxOptions.throwError}}">Throw error?</label>
+			</div>
+        </div>
+    </div>
 
     <div class="row">
 
         <div class="col-md-12">
-            <p>We want to make an Ajax request <span class="var">before</span> we render the view. So, instead of returning a view from the
-                <span class="met">onInit</span> method, we return a <span class="met">Promise</span> which <span class="var">resolves</span>
-                to the view we want to render. By returning a <span class="met">Promise</span>, we can wait for the Ajax request to complete,
-                and pass the response to the view to render. If the ajax call fails, we can <span class="var">reject</span> the promise,
-                and the view will not be rendered.
-            </p>
-            
+            <p>Often a view is dependent on data that needs to be fetched from a server. In these scenarios we need to fetch the data <span class="var">before</span>
+				we transition to the target route. If an error occurs while fetching the data the user will still be at the current route and can try to transition
+				again.
+			</p>
+			
+			<p>While fetching the data we generally show a loading indicator so the user can see the application is busy. In this example we use 
+				<a href="http://github.hubspot.com/pace/docs/welcome/" target="_blank">Pace.js</a>, which displays a small loading bar at the top of the screen.
+			</p>
+
             <p>
                 Below is the code:
             </p>
-            
-            <pre><code  class="line-numbers language-js">	that.onInit = function (options) {
 
-			var promise = new Promise(function (resolve, reject) {
+            <pre><code  class="line-numbers language-js"> var route = {
+	
+	beforeenter: function ( route, prevRoute, options ) {
+		// We use jQuery to call ajax
+		// Return promise from beforeenter so that Journey waits for the Ajax call to resolve before calling 'enter'
+		let id = 10;
+		return $.getJSON( "service/person/' + id ).then( function ( response ) {
+			route.data = JSON.stringify( response );
 
-				$.getJSON("/data").then(function (data) {
-					var view = createView(data);
-					resolve(view);
-				}, function () {
-					reject("Could not load data for BasicAjax");
-				});
-			});
+		} ).catch( ( err ) => {
+			route.data = "Could not load data for BasicAjax: [" + err.status + ":" + err.statusText + "]";
+		} );
+	},
 
-			return promise;
-		};
+	enter: function ( route, prevRoute, options ) {
+		// route.data contains the data loaded in 'beforeenter'
+	};
 }); </code></pre>
             
              <p>In <span class="ln">line 3</span> we create a ES6 Promise, which receives the <span class="var">resolve</span> and 
@@ -55,12 +72,6 @@
             <p>If the Ajax call failed for some reason, <span class="ln">line 9</span> <span class="var">rejects</span> the promise, 
                 and the view is not rendered, in other words, we stay at the current view.</p>
             
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-2">
-            <button class="btn btn-success" on-click="@.reload()">Reload View</button>
         </div>
     </div>
 </div>

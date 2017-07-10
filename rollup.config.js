@@ -6,7 +6,7 @@ var includePaths = require( 'rollup-plugin-includepaths' );
 const pkg = require( './package.json' );
 
 let includePathOptions = {
-	paths: [ '../journey/src/js', './src/js' ]
+	paths: [ '../journey/src/js', './src/js',  './src/js/lib/ractive' ]
 };
 
 module.exports = {
@@ -16,7 +16,7 @@ module.exports = {
     // we want to import Ractive in our modules with: import Ractive fcrom 'Ractibe.js'.
     // So we inform Rollup that the 'Ractive.js' import is for an external library
 	 external: [
-		'Ractive.js'
+		//'Ractive.js'
 	],
 
 	plugins: [
@@ -28,7 +28,7 @@ module.exports = {
 		} ),
 		
 		stringToModule({
-			include: '**/*.text.html'
+			include: ['**/*.text.html', '**/*.css']
 		}),
 
 		buble( {

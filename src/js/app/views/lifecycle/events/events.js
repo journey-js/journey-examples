@@ -1,5 +1,5 @@
 import journey from "lib/journey/journey.js";
-import events from "lib/journey/utils/events";
+import events from "lib/journey/event/events";
 import Ractive from "Ractive.js";
 import template from "./events.html";
 
@@ -36,6 +36,11 @@ var lifecycleEvents = {
 			isListening = newValue;
 			isListening ? startListening() : stopListening();
 		}, { init: false } );
+	},
+	
+	update: function ( route, options ) {
+		// noop, just for demo purposes so that the onupdate events are fired
+		console.log(route);
 	},
 
 	leave: function ( route, nextRoute, options ) {
