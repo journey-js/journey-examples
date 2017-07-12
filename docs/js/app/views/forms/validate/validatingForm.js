@@ -21,6 +21,7 @@ var validatingForm = {
 			},
 
 			submit: function () {
+				
 				var valid = parsley.validate();
 				return false;
 			},

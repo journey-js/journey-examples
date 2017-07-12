@@ -6,6 +6,7 @@ var invalid = {
 	
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
+		console.log("invalid.enter() from: ", prevRoute.pathname, " to:", route.pathname);
 		
 		route.view = new Ractive( {
 			el: options.target,
@@ -14,6 +15,7 @@ var invalid = {
 	},
 	
 	leave: function ( route, nextRoute, options ) {
+		console.log("invalid.leave() from:", route.pathname, " to:", nextRoute.pathname);
 		route.view.teardown();
 	}
 };

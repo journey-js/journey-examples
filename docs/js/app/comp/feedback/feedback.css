@@ -1,0 +1,14 @@
+.feedback {
+    display:block;
+    font-size: 14px;
+}
+.feedback .alert {
+    border-radius: 0;
+    margin-bottom: 0;
+}
+.feedback pre {
+    overflow: auto;
+  word-wrap: normal;
+  white-space: pre;
+  max-height: 400px;
+}

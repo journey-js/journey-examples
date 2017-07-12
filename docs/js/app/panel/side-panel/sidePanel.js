@@ -50,8 +50,8 @@ function close( event ) {
 }
 
 function getUrlPath() {
-	var route = journey.getCurrentRoute();
-	return route.path;
+	var data = journey.getCurrentData();
+	return data.path;
 }
 
 // Private 

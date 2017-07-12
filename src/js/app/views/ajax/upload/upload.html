@@ -1,43 +1,30 @@
-<div class="container" fade-in={duration:1500}>
+<div class="container" fade-in={duration:200}>
     <div class="row">
-
         <div class="col-md-12">
             <h1 style="padding-top:30px; padding-bottom:0px;">Ajax <span class="highlightLetter">File Upload</span></h1>
         </div>
     </div>
 
     <div class="row">
-
         <div class="col-md-12">
-            <p>In this demo, we show how to perform an Ajax call to fetch data for the view.</p>
-            <p>Below is the response returned from the Ajax request:</p>
-
-            <div style="background-color:#303030;border:none;color:#fff;margin-bottom: 10px">
-                {{#display}}
-                <span fade-in="{duration:200}" >{{response}}</span>
-                {{else}}
-                <span fade-in="{duration:200}">{{msg}}</span>
-                {{/display}}
-            </div>
-        </div>
+            <p>In this demo, we perform a file upload using HTML5 <span class="met">FormData</span> to upload the file content.</p>
+		</div>
     </div>
 
-        <div class="row">
-            <div class="col-md-12">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="well">
+				<form>
+					<div class="form-group">
+						<label for="file">File input</label>
+						<input type="file" id="file" name="file" style="color: #fff">
+					</div>
 
-                <div class="well">
+					<button type="submit" class="btn btn-raised btn-primary" on-click="@.submit()">Submit</button>
+					<button type="reset" class="btn btn-raised btn-default" on-click="@.resetData()">Reset</button>
+				</form>
+			</div>
+		</div>
+	</div>
 
-                    <form>
-
-                        <div class="form-group">
-                            <label for="file">File input</label>
-                            <input type="file" id="file">
-                        </div>
-
-                        <button type="submit" class="btn btn-raised btn-primary" on-click="@.submit()">Submit</button>
-                        <button type="reset" class="btn btn-raised btn-default" on-click="@.resetData()">Reset</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+</div>

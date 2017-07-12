@@ -1,0 +1,47 @@
+<div class="feedback">
+
+	{{#error.length > 0}}
+    <div class="alert alert-danger" slide-in-out="{duration:200}">
+		{{#error}}
+        <div class="error" >
+			<i class="fa fa-times"></i>
+            <span>{{{msg}}}</span>
+        </div>
+		{{/}}
+    </div>
+	{{/}}
+	
+	{{#warning.length > 0}}
+    <div class="alert alert-warning" slide-in-out="{duration:200}">
+		{{#warning}}
+        <div class="warning">
+			<i class="fa fa-warning"></i>
+            <span>{{{msg}}}</span>
+        </div>
+		{{/}}
+    </div>
+	{{/}}
+	
+	{{#info.length > 0}}
+    <div class="alert alert-info" slide-in-out="{duration:200}">
+		{{#info}}
+        <div class="info">
+			<i class="fa fa-info"></i>
+            <span>{{{msg}}}</span>
+        </div>
+		{{/}}
+    </div>
+	{{/}}
+	
+	{{#success.length > 0}}
+    <div class="alert alert-success" slide-in-out="{duration:200}">
+		{{#success}}
+        <div class="success">
+			<i class="fa fa-check"></i>
+            <span>{{{msg}}}</span>
+        </div>
+		{{/}}
+    </div>
+	{{/}}
+	
+</div>

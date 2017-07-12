@@ -4,70 +4,78 @@
         <div class="col-md-12">
             <h1 style="padding-top:30px; padding-bottom:0px;">Lifecycle <span class="highlightLetter">Events</span></h1>
         </div>
-
     </div>
 
 
     <div class="row">
         <div class="col-md-12">
-            Controllers provide a number of lifecycle hooks for you to take action in. To add a hook, simply declare the function on your
-            controller: <span class="fun">controller.onInit</span> as shown below.
-
-            <pre><code  class="line-numbers language-js">function myController() {
-
-		var that = {};
-
-		that.onInit = function (options) {
-        console.log("onInit called", options);
-        return new template();
-    };
-
-    that.onRender = function(options) {
-        console.log("onRender called", options);
-    }
-
-    that.onComplete = function(options) {
-        console.log("onComplete called", options);
-    }
-
-    that.onRemove = function(options) {
-        console.log("onRemove called", options);
-    }
-} </code></pre>
+            <p>Journey provides <em><a href="https://github.com/journey-js/journey#events" target="_blank">lifecycle events</a></em>
+                            we can listen to when changing routes. </p>
 
         </div>
     </div>
-    
-      <div class="row">
-        <div class="col-md-12 ">
-            <p>Here is the list of controller lifecycle events available and the order in which they are invoked:</p>
-            <ul>
-                <li><span class="met">onInit</span></li>
-                <li><span class="met">onRender</span></li>
-                <li><span class="met">onComplete</span></li>
-                <li><span class="met">onRemove</span></li>
-                <li><span class="met">onUnrender</span></li>
-            </ul>
-        </div>
-    </div>
-    
+
     <div class="row">
-        <div class="col-md-12 ">
+        <div class="col-md-12 ">          
 
-            <p style="margin-top: 20px">
-                <strong>Note:</strong> open the browser console and click
-                the <span class='var'>Reload view</span> button below, to see the order of events called.
+            <p>Open your browser <met>console</met> and click <span class="var">Start listening</span> to register Journey to events.</p>
+            
+            <p>Click the <span class='var'>Reload view</span> button
+                below, to see the order of events fired. Click <span class="var">Update view</span> to fire an <span class="fun">update</span> event.
             </p>
-            <p style="margin-top: 1 0px">
-                
+
+            <p style="margin: 20px">
+
                 <button class="btn btn-success" on-click="@.toggle( 'isListening' )">{{isListening ? "Stop" : "Start"}} listening</button>
 
                 <!-- Below we use JS expression to call journey.goto() -->
                 <button class="btn btn-success" on-click="@.journey.goto('/events', {forceReload: true})">Reload view</button>
-                
+
                 <!-- We invoke -->
                 <button class="btn btn-success" on-click="@.updateView()">Update view</button>
 
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 ">      
+
+            <p>If we want display a <em>loading indicator</em> whenever we transition between routes, we can listen to the
+                <span
+                    class="fun">beforeenter</span> and
+                    <span class="fun">entered</span> events to show and hide the loader. Journey fires the <span class="fun">beforeenter</span>                    event <em>before</em> the current route <em>leaves</em> and fires the <span class="fun">entered</span>                    event for the new route <em>after</em> the new route is complete. We also need to hide the loader whenever
+                    an <span class="fun">error</span> events is fired in case something goes wrong during the routing.
+            </p>
+            <p>
+                For example:
+            </p>
+
+            <em class="ln">start.js</em>:
+
+            <pre><code  class="line-numbers language-js">import journey from "lib/journey";
+import loading from "app/lib/loading";
+
+	journey.on("beforeenter", function(options) {
+        loading.show();
+    });
+
+    journey.on("entered", function(options) {
+        loading.hide();
+        });
+
+    journey.on("error", function(options) {
+        loading.hide();
+    });
+} </code></pre>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 ">
+            <p>The <span class="var">order</span> in which Journey fires the <span class="fun">events</span> can be seen
+            <a href="https://github.com/journey-js/journey#events" target="_blank">here</a>.
+            </p>            
         </div>
     </div>
 </div>

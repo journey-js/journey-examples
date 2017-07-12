@@ -1,6 +1,7 @@
 import journey from "lib/journey/journey.js";
 import Ractive from "Ractive.js";
 import template from "./upload.html";
+import feedback from '../../../comp/feedback/feedback.js';
 
 let config;
 
@@ -25,11 +26,14 @@ function createView( json ) {
 	// Convert the JSON data objectr to a string representation
 	view = new Ractive( {
 		el: config.target,
-		data: { response: json, msg: "Upload a file" },
 		template: template,
 		submit: function ( ) {
 			submitForm();
 			return false;
+		},
+
+		resetData: function () {
+			feedback.clear();
 		}
 	} );
 
@@ -37,20 +41,24 @@ function createView( json ) {
 }
 
 function submitForm( ) {
-	view.set("display", false);
-	view.set("msg", "Busy uploading...");
 
 	let files = $( "#file" )[0].files;
-	if (files.length === 0) {
-		view.set("msg", "Please select a file");
+	if ( files.length === 0 ) {
+		feedback.clear().setError( "Please select a file" );
 		return;
 	}
+	feedback.clear().setInfo( "Busy uploading..." );
+
+	let file = files[0];
+
+	// Simulate a large upload
+	performUpload( file );
+}
+
+function performUpload( file ) {
 
 	let data = new FormData();
-
-	$.each( files, function ( key, value ) {
-		data.append( key, value );
-	} );
+	data.append( 0, file );
 
 	let promise = $.ajax( {
 		url: 'data/submitForm?delay=2000',
@@ -63,12 +71,10 @@ function submitForm( ) {
 	} );
 
 	promise.then( ( data, textStatus, jqXHR ) => {
-		view.set("display", true);
-		view.set("response", data.msg);
+		feedback.clear().setSuccess( "Successfully uploaded file: " + file.name );
 
 	} ).catch( ( jqXHR, textStatus, errorThrown ) => {
-		view.set("display", true);
-		view.set("response", errorThrown);
+		feedback.clear().setError( "Error: could not upload file: " + file.name, jqXHR );
 	} );
 }
 

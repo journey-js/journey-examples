@@ -2,6 +2,7 @@ import journey from "lib/journey/journey.js";
 import Ractive from "Ractive.js";
 import template from "./basicAjax.html";
 import feedback from '../../../comp/feedback/feedback.js';
+import utils from 'app/utils/utils.js';
 
 let config;
 
@@ -14,20 +15,17 @@ var basicAjax = {
 	beforeenter: function ( route, prevRoute, options ) {
 
 		let promise = $.ajax( {
-			url: 'data/hello.json?delay=3000&reject=' + ajaxOptions.throwError,
-			// global: false // set global: false to override default error handling defined in start.js
-	} );
+			url: 'data/hello.json?delay=2000&reject=' + ajaxOptions.throwError
+					// global: false // set global: false to override default error handling defined in start.js
+		} );
 
 		promise.then( function ( response ) {
+			feedback.setSuccess( "Data loaded successfully" );
 			route.data = JSON.stringify( response );
 
-		} ).catch( ( XHR, textStatus, errorThrown ) => {			
-			 feedback.setError( "Error: could not fetch data for BasicAjax" );
-		 });
-		 
-//		 setTimeout(function() {
-//			 promise.abort();
-//		 }, 500);
+		} ).catch( ( jqXHR, textStatus, errorThrown ) => {
+			feedback.setError( "Error: could not fetch data for BasicAjax", jqXHR );
+		} );
 
 		return promise;
 	},

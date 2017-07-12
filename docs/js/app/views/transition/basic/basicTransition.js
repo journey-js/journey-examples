@@ -19,7 +19,7 @@ var basicTransition = {
 	},
 
 	leave: function ( route, nextRoute, options ) {
-		route.view.teardown();
+		return route.view.teardown();
 	}
 };
 

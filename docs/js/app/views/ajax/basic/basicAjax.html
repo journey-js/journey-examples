@@ -15,52 +15,72 @@
             <pre><code  class="line-numbers language-js">{{response}}</code></pre>
         </div>
     </div>
-
-    <div class="row">
-
+	
+	 <div class="row">
         <div class="col-md-12">
-            <p>We want to make an Ajax request <span class="var">before</span> we render the view. So, instead of returning a view from the
-                <span class="met">onInit</span> method, we return a <span class="met">Promise</span> which <span class="var">resolves</span>
-                to the view we want to render. By returning a <span class="met">Promise</span>, we can wait for the Ajax request to complete,
-                and pass the response to the view to render. If the ajax call fails, we can <span class="var">reject</span> the promise,
-                and the view will not be rendered.
-            </p>
-            
-            <p>
-                Below is the code:
-            </p>
-            
-            <pre><code  class="line-numbers language-js">	that.onInit = function (options) {
-
-			var promise = new Promise(function (resolve, reject) {
-
-				$.getJSON("/data").then(function (data) {
-					var view = createView(data);
-					resolve(view);
-				}, function () {
-					reject("Could not load data for BasicAjax");
-				});
-			});
-
-			return promise;
-		};
-}); </code></pre>
-            
-             <p>In <span class="ln">line 3</span> we create a ES6 Promise, which receives the <span class="var">resolve</span> and 
-                <span class="var">reject</span> callbacks.</p>
-            <p>In <span class="ln">line 5</span>, we use jQuery to fetch a <span class="var">JSON</span> file from the server. Once
-                the Ajax request is completed, it passes in the response, <span class="var">data</span>.</p>
-            <p><span class="ln">Line 6</span> creates the view and passes the data to render.</p>
-            <p>Finally in <span class="ln">line 7</span> the promise is <span class="var">resolved</span>, passing the view as argument.</p>
-            <p>If the Ajax call failed for some reason, <span class="ln">line 9</span> <span class="var">rejects</span> the promise, 
-                and the view is not rendered, in other words, we stay at the current view.</p>
-            
+			<p>
+				Use the button below to test again!
+			</p>
+            <button class="btn btn-success" on-click="@.reload()">Reload View</button>
+			<div class="checkbox">
+				<label><input type="checkbox" checked="{{ajaxOptions.throwError}}">Throw error? (Check if you want to see how errors are handled?)</label>
+			</div>
         </div>
     </div>
 
     <div class="row">
-        <div class="col-md-2">
-            <button class="btn btn-success" on-click="@.reload()">Reload View</button>
+
+        <div class="col-md-12">
+            <p>Often a view is dependent on data that needs to be fetched from a server. In these scenarios we need to fetch the data <span class="var">before</span>
+				we transition to the target route. We normally use the handler <span class="met">beforeenter</span> to fetch the data, store the result in the 
+				<span class="var">route</span> and transition to <span class="met">enter</span> to render and display the data.</p>
+			
+			<p>Note: <span class="met">beforeenter</span> of the target route is called before the current route' <span class="met">leave</span> handler is 
+				called. If an <span class="met">error</span> occurs while fetching the data, Journey will not transition to the next route.
+				In other words the user will still be on the current page and can try to route again or to a different route.
+			</p>
+			
+			<p>While fetching the data we generally show a loading indicator so the user can see the application is busy. In this example we use 
+				<a href="http://github.hubspot.com/pace/docs/welcome/" target="_blank">Pace.js</a>, which displays a small loading bar at the top of the screen.
+			</p>
+
+            <p>
+                Below is the relevant code:
+            </p>
+
+            <pre><code  class="line-numbers language-js"> var route = {
+	
+	beforeenter: function ( route, prevRoute, options ) {
+
+		let id = 10;
+
+		// We use jQuery to fetch the data
+		let promise = $.getJSON( "service/person/' + id ).then( function ( response ) {
+			route.data = JSON.stringify( response );
+
+		} ).catch( ( err ) => {
+			// feedback is a Ractive component to show feedback messages in the header of the application.
+			feedback.setError( "Error: could not fetch data for BasicAjax" );
+		} );
+
+		// Return promise from beforeenter so that Journey waits for the Ajax call to resolve before calling 'enter'
+		return promise;
+	},
+
+	enter: function ( route, prevRoute, options ) {
+		// route.data contains the data loaded in 'beforeenter'
+	};
+}); </code></pre>
+            
+			<p>In <span class="ln">line 3</span> we have our <span class="met">beforeenter</span> handler.</p>
+            <p>In <span class="ln">line 8</span> we use jQuery to fetch a <span class="var">JSON</span> file from the server. Once
+                the Ajax request completes, it sets the response on the <span class="var">route.data</span> property.</p>
+			<p><span class="ln">Line 17</span> returns the Ajax promise so Journey won't call the <span class="met">enter</span> handler until the data is received
+				from teh server.</p>
+			
+            <p>Finally in <span class="ln">line 21</span> we can access the JSON from the <span class="var">route.data</span> property. Note that <span class="var">route.data</span>
+				is an arbitrary property, you could have called it <span class="var">route.foo</span>.</p>
+            
         </div>
     </div>
 </div>

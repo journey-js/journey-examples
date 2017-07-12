@@ -13,7 +13,7 @@ let srcFolder;
 module.exports.start = function(options) {
 	buildFolder = options.buildFolder;
 	srcFolder = options.srcFolder;
-	contextPath = options.contextPath || 'build';
+	contextPath = options.contextPath || contextPath;
 
 	var app = express();
 
@@ -83,4 +83,5 @@ module.exports.start = function(options) {
 	}
 }
 
+// Test distribution? Uncomment below and run on prompt> node server
 //module.exports.start( { buildFolder: 'docs', srcFolder: 'src', contextPath: 'docs'});

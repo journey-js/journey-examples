@@ -1,5 +1,5 @@
 import journey from 'lib/journey/journey.js';
-import events from "lib/journey/utils/events";
+import events from "lib/journey/event/events.js";
 import Ractive from "Ractive.js";
 import fade from "lib/fade.js";
 import slide from "lib/slide.js";
@@ -8,30 +8,51 @@ import "./config/routes.js";
 import menu from "./menu/menu.js";
 import "lib/bootstrap.js";
 import "./animationMonitor.js";
-
-Ractive.defaults.data = { 'journey': journey };
+import feedback from 'comp/feedback/feedback.js';
+import config from './config/config.js';
+import ajaxPool from './utils/ajaxPool.js'
+		import utils from './utils/utils.js'
 
 //let contextPath = "/build";
-let contextPath = "/journey-examples/";
+		let contextPath = "/journey-examples/";
 //let contextPath = "";
 
 menu.init( { target: "#menu", fallbackMenu: "#menu-home" } );
+feedback.init( { target: '#feedback' } );
 
-Ractive.transitions = {
-	fade,
-	slide
-};
-
-journey.on( events.ENTERED, function ( options ) {
+journey.on( events.ENTERED, function ( event ) {
 	Prism.highlightAll();
 } );
 
+journey.on( events.LEFT, function ( event ) {
+	// abort active AjaxRequests when leaving route
+	console.log( "LEFT: Abort all AJAX" )
+	ajaxPool.abortAll();
+} );
+
+// Set a default ajax error handler
+$( document ).ajaxError( function ( event, jqXHR, ajaxSettings, thrownError ) {
+
+	if ( utils.isAborted( jqXHR ) ) {
+		// don't display message for aborted requests
+		return;
+	}
+
+	// Default messages
+	if ( utils.isOffline( jqXHR ) ) {
+		feedback.addError( "Sorry, you are currently offline. Try again when you are online." );
+
+	} else {
+		feedback.addError( "Sorry, an unkonwn error occurred. Please try again later." );
+	}
+} );
+
 journey.start( {
-	target: "#container",
+	target: config.el,
 	debug: Ractive.DEBUG = true,
 	fallback: '/notFound',
 	base: contextPath,
-	defaultRoute: '/home',
-	//useHash: false,
-	//hash: '#!'
+	defaultRoute: '/home'
+			//useHash: false,
+			//hash: '#!'
 } );
