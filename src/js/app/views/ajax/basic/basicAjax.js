@@ -20,6 +20,9 @@ var basicAjax = {
 		} );
 
 		promise.then( function ( response ) {
+			if ( ajaxOptions.throwError ) {
+				throw new Error( 'this is an error' );
+			}
 			feedback.setSuccess( "Data loaded successfully" );
 			route.data = JSON.stringify( response );
 
