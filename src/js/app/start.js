@@ -51,7 +51,7 @@ journey.start( {
 	debug: Ractive.DEBUG = true,
 	fallback: '/notFound',
 	base: contextPath,
-	defaultRoute: '/home',
+	defaultRoute: '/home'
 	//useOnHashChange: true,
 			//useHash: false,
 			//hash: '#!'
