@@ -48,7 +48,7 @@ function createView( options ) {
 function createData() {
 	let data = {
 		persons: [
-			{ name: "Bob", age: 20, id: 11 },
+			{ name: "Jeff", age: 20, id: 11 },
 			{ name: "Steve", age: 30, id: 12 },
 			{ name: "James", age: 40, id: 13 },
 			{ name: "Henry", age: 50, id: 14 }

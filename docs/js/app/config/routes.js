@@ -17,7 +17,7 @@ import upload from "../views/ajax/upload/upload.js";
 import basicPartial from "../views/partial/basic/basicPartial.js";
 import basicComp from "../views/comp/basic/basicComp.js";
 import dynamicComp from "../views/comp/dynamic/dynamicComp.js";
-import compParent from "../views/comp/dataflow/parent.js";
+import parent from "../views/comp/dataflow/parent.js";
 import basicTransition from "../views/transition/basic/basicTransition.js";
 import sortable from "../views/decorator/sortable.js";
 
@@ -40,6 +40,6 @@ journey.add("/upload", upload);
 journey.add("/basicPartial", basicPartial);
 journey.add("/basicComp", basicComp);
 journey.add("/dynamicComp", dynamicComp);
-journey.add("/compDataFlow", compParent);
+journey.add("/parent", parent);
 journey.add("/basicTransition", basicTransition);
 journey.add("/sortable", sortable);

@@ -1,7 +1,7 @@
 /*
-	Ractive.js v1.0.0-edge
-	Build: d5c7fc7a739eccff073e7c18febb67dd5d916d62
-	Date: Wed Jul 12 2017 06:17:42 GMT+0000 (UTC)
+	Ractive.js v0.9.2
+	Build: 914a7dac7cbeaf720abf7913326927e1dda77767
+	Date: Fri Jun 30 2017 16:35:02 GMT+0000 (UTC)
 	Website: http://ractivejs.org
 	License: MIT
 */
@@ -16,263 +16,6 @@
 	})();
 }(this, (function () { 'use strict';
 
-if (!Array.prototype.find) {
-	Object.defineProperty( Array.prototype, 'find', {
-		value: function value (callback, thisArg) {
-			if (this === null || this === undefined)
-				{ throw new TypeError('Array.prototype.find called on null or undefined'); }
-
-			if (typeof callback !== 'function')
-				{ throw new TypeError((callback + " is not a function")); }
-
-			var array = Object(this);
-			var arrayLength = array.length >>> 0;
-
-			for (var index = 0; index < arrayLength; index++) {
-				if (!Object.hasOwnProperty.call(array, index)) { continue; }
-				if (!callback.call(thisArg, array[index], index, array)) { continue; }
-				return array[index];
-			}
-
-			return undefined;
-		},
-		configurable: true,
-		writable: true
-	});
-}
-
-// NOTE: Node doesn't exist in IE8. Nothing can be done.
-if (typeof window !== 'undefined' && window.Node && window.Node.prototype && !window.Node.prototype.contains) {
-	Node.prototype.contains = function (node) {
-		var this$1 = this;
-
-		if (!node)
-			{ throw new TypeError('node required'); }
-
-		do {
-			if (this$1 === node) { return true; }
-		} while (node = node && node.parentNode);
-
-		return false;
-	};
-}
-
-if (!Object.assign) {
-	Object.assign = function (target) {
-		var sources = [], len = arguments.length - 1;
-		while ( len-- > 0 ) sources[ len ] = arguments[ len + 1 ];
-
-		if (target == null)
-			{ throw new TypeError('Cannot convert undefined or null to object'); }
-
-		var to = Object(target);
-		var sourcesLength = sources.length;
-
-		for (var index = 0; index < sourcesLength; index++) {
-			var nextSource = sources[index];
-			for (var nextKey in nextSource) {
-				if (!Object.prototype.hasOwnProperty.call(nextSource, nextKey)) { continue; }
-				to[nextKey] = nextSource[nextKey];
-			}
-		}
-
-		return to;
-	};
-}
-
-if (typeof window !== 'undefined' && window.performance && !window.performance.now) {
-	window.performance = window.performance || {};
-
-	var nowOffset = Date.now();
-
-	window.performance.now = function () {
-		return Date.now() - nowOffset;
-	};
-}
-
-if (typeof window !== 'undefined' && !window.Promise) {
-	var PENDING = {};
-	var FULFILLED = {};
-	var REJECTED = {};
-
-	var Promise$1 = window.Promise = function (callback) {
-		var fulfilledHandlers = [];
-		var rejectedHandlers = [];
-		var state = PENDING;
-		var result;
-		var dispatchHandlers;
-
-		var makeResolver = function (newState) {
-			return function (value) {
-				if (state !== PENDING) { return; }
-				result = value;
-				state = newState;
-				dispatchHandlers = makeDispatcher((state === FULFILLED ? fulfilledHandlers : rejectedHandlers), result);
-				wait(dispatchHandlers);
-			};
-		};
-
-		var fulfill = makeResolver(FULFILLED);
-		var reject = makeResolver(REJECTED);
-
-		try {
-			callback(fulfill, reject);
-		} catch (err) {
-			reject(err);
-		}
-
-		return {
-			// `then()` returns a Promise - 2.2.7
-			then: function then(onFulfilled, onRejected) {
-				var promise2 = new Promise$1(function (fulfill, reject) {
-
-					var processResolutionHandler = function (handler, handlers, forward) {
-						if (typeof handler === 'function') {
-							handlers.push(function (p1result) {
-								try {
-									resolve$1(promise2, handler(p1result), fulfill, reject);
-								} catch (err) {
-									reject(err);
-								}
-							});
-						} else {
-							handlers.push(forward);
-						}
-					};
-
-					processResolutionHandler(onFulfilled, fulfilledHandlers, fulfill);
-					processResolutionHandler(onRejected, rejectedHandlers, reject);
-
-					if (state !== PENDING) {
-						wait(dispatchHandlers);
-					}
-
-				});
-				return promise2;
-			},
-			'catch': function catch$1(onRejected) {
-				return this.then(null, onRejected);
-			}
-		};
-	};
-
-	Promise$1.all = function (promises) {
-		return new Promise$1(function (fulfil, reject) {
-			var result = [];
-			var pending;
-			var i;
-
-			if (!promises.length) {
-				fulfil(result);
-				return;
-			}
-
-			var processPromise = function (promise, i) {
-				if (promise && typeof promise.then === 'function') {
-					promise.then(function (value) {
-						result[i] = value;
-						--pending || fulfil(result);
-					}, reject);
-				} else {
-					result[i] = promise;
-					--pending || fulfil(result);
-				}
-			};
-
-			pending = i = promises.length;
-
-			while (i--) {
-				processPromise(promises[i], i);
-			}
-		});
-	};
-
-	Promise$1.resolve = function (value) {
-		return new Promise$1(function (fulfill) {
-			fulfill(value);
-		});
-	};
-
-	Promise$1.reject = function (reason) {
-		return new Promise$1(function (fulfill, reject) {
-			reject(reason);
-		});
-	};
-
-	// TODO use MutationObservers or something to simulate setImmediate
-	var wait = function (callback) {
-		setTimeout(callback, 0);
-	};
-
-	var makeDispatcher = function (handlers, result) {
-		return function () {
-			for (var handler = (void 0); handler = handlers.shift();) {
-				handler(result);
-			}
-		};
-	};
-
-	var resolve$1 = function (promise, x, fulfil, reject) {
-		var then;
-		if (x === promise) {
-			throw new TypeError("A promise's fulfillment handler cannot return the same promise");
-		}
-		if (x instanceof Promise$1) {
-			x.then(fulfil, reject);
-		} else if (x && (typeof x === 'object' || typeof x === 'function')) {
-			try {
-				then = x.then;
-			} catch (e) {
-				reject(e);
-				return;
-			}
-			if (typeof then === 'function') {
-				var called;
-
-				var resolvePromise = function (y) {
-					if (called) { return; }
-					called = true;
-					resolve$1(promise, y, fulfil, reject);
-				};
-				var rejectPromise = function (r) {
-					if (called) { return; }
-					called = true;
-					reject(r);
-				};
-
-				try {
-					then.call(x, resolvePromise, rejectPromise);
-				} catch (e) {
-					if (!called) {
-						reject(e);
-						called = true;
-						return;
-					}
-				}
-			} else {
-				fulfil(x);
-			}
-		} else {
-			fulfil(x);
-		}
-	};
-
-}
-
-if (typeof window !== 'undefined' && !(window.requestAnimationFrame && window.cancelAnimationFrame)) {
-	var lastTime = 0;
-	window.requestAnimationFrame = function (callback) {
-		var currentTime = Date.now();
-		var timeToNextCall = Math.max(0, 16 - (currentTime - lastTime));
-		var id = window.setTimeout(function () { callback(currentTime + timeToNextCall); }, timeToNextCall);
-		lastTime = currentTime + timeToNextCall;
-		return id;
-	};
-	window.cancelAnimationFrame = function (id) {
-		clearTimeout(id);
-	};
-}
-
 var defaults = {
 	// render placement:
 	el:                     void 0,
@@ -283,7 +26,6 @@ var defaults = {
 	template:               null,
 
 	// parse:
-	allowExpressions:       true,
 	delimiters:             [ '{{', '}}' ],
 	tripleDelimiters:       [ '{{{', '}}}' ],
 	staticDelimiters:       [ '[[', ']]' ],
@@ -345,15 +87,10 @@ var defaults = {
 
 var easing = {
 	linear: function linear ( pos ) { return pos; },
-	easeIn: function easeIn ( pos ) {
-		/* istanbul ignore next */
-		return Math.pow( pos, 3 );
-	},
+	easeIn: function easeIn ( pos ) { return Math.pow( pos, 3 ); },
 	easeOut: function easeOut ( pos ) { return ( Math.pow( ( pos - 1 ), 3 ) + 1 ); },
 	easeInOut: function easeInOut ( pos ) {
-		/* istanbul ignore next */
 		if ( ( pos /= 0.5 ) < 1 ) { return ( 0.5 * Math.pow( pos, 3 ) ); }
-		/* istanbul ignore next */
 		return ( 0.5 * ( Math.pow( ( pos - 2 ), 3 ) + 2 ) );
 	}
 };
@@ -412,13 +149,13 @@ var welcome;
 
 if ( hasConsole ) {
 	var welcomeIntro = [
-		"%cRactive.js %c1.0.0-edge %cin debug mode, %cmore...",
+		"%cRactive.js %c0.9.2 %cin debug mode, %cmore...",
 		'color: rgb(114, 157, 52); font-weight: normal;',
 		'color: rgb(85, 85, 85); font-weight: normal;',
 		'color: rgb(85, 85, 85); font-weight: normal;',
 		'color: rgb(82, 140, 224); font-weight: normal; text-decoration: underline;'
 	];
-	var welcomeMessage = "You're running Ractive 1.0.0-edge in debug mode - messages will be printed to the console to help you fix problems and optimise your application.\n\nTo disable debug mode, add this line at the start of your app:\n  Ractive.DEBUG = false;\n\nTo disable debug mode when your app is minified, add this snippet:\n  Ractive.DEBUG = /unminified/.test(function(){/*unminified*/});\n\nGet help and support:\n  http://docs.ractivejs.org\n  http://stackoverflow.com/questions/tagged/ractivejs\n  http://groups.google.com/forum/#!forum/ractive-js\n  http://twitter.com/ractivejs\n\nFound a bug? Raise an issue:\n  https://github.com/ractivejs/ractive/issues\n\n";
+	var welcomeMessage = "You're running Ractive 0.9.2 in debug mode - messages will be printed to the console to help you fix problems and optimise your application.\n\nTo disable debug mode, add this line at the start of your app:\n  Ractive.DEBUG = false;\n\nTo disable debug mode when your app is minified, add this snippet:\n  Ractive.DEBUG = /unminified/.test(function(){/*unminified*/});\n\nGet help and support:\n  http://docs.ractivejs.org\n  http://stackoverflow.com/questions/tagged/ractivejs\n  http://groups.google.com/forum/#!forum/ractive-js\n  http://twitter.com/ractivejs\n\nFound a bug? Raise an issue:\n  https://github.com/ractivejs/ractive/issues\n\n";
 
 	welcome = function () {
 		if ( Ractive.WELCOME_MESSAGE === false ) {
@@ -561,6 +298,10 @@ function interpolate ( from, to, ractive, type ) {
 	       null;
 }
 
+function snap ( to ) {
+	return function () { return to; };
+}
+
 var interpolators = {
 	number: function number ( from, to ) {
 		if ( !isNumeric( from ) || !isNumeric( to ) ) {
@@ -625,20 +366,18 @@ var interpolators = {
 		var intermediate = {};
 		var interpolators = {};
 
-		var loop = function ( prop ) {
+		for ( var prop in from ) {
 			if ( from.hasOwnProperty( prop ) ) {
 				if ( to.hasOwnProperty( prop ) ) {
 					properties.push( prop );
-					interpolators[ prop ] = interpolate( from[ prop ], to[ prop ] ) || ( function () { return to[ prop ]; } );
+					interpolators[ prop ] = interpolate( from[ prop ], to[ prop ] ) || snap( to[ prop ] );
 				}
 
 				else {
 					intermediate[ prop ] = from[ prop ];
 				}
 			}
-		};
-
-		for ( var prop in from ) loop( prop );
+		}
 
 		for ( var prop$1 in to ) {
 			if ( to.hasOwnProperty( prop$1 ) && !from.hasOwnProperty( prop$1 ) ) {
@@ -1245,7 +984,7 @@ KeypathModel.prototype.removeChild = function removeChild ( model ) {
 	if ( model.ractive ) { delete this.children[ model.ractive._guid ]; }
 };
 
-KeypathModel.prototype.teardown = function teardown () {
+KeypathModel.prototype.teardown = function teardown$$1 () {
 		var this$1 = this;
 
 	if ( this.owner ) { this.owner.removeChild( this ); }
@@ -1716,9 +1455,9 @@ var Missing = {
 };
 Missing.parent = Missing;
 
-var LinkModel = (function (ModelBase) {
+var LinkModel = (function (ModelBase$$1) {
 	function LinkModel ( parent, owner, target, key ) {
-		ModelBase.call( this, parent );
+		ModelBase$$1.call( this, parent );
 
 		this.owner = owner;
 		this.target = target;
@@ -1732,8 +1471,8 @@ var LinkModel = (function (ModelBase) {
 		this.isLink = true;
 	}
 
-	if ( ModelBase ) LinkModel.__proto__ = ModelBase;
-	LinkModel.prototype = Object.create( ModelBase && ModelBase.prototype );
+	if ( ModelBase$$1 ) LinkModel.__proto__ = ModelBase$$1;
+	LinkModel.prototype = Object.create( ModelBase$$1 && ModelBase$$1.prototype );
 	LinkModel.prototype.constructor = LinkModel;
 
 	LinkModel.prototype.animate = function animate ( from, to, options, interpolator ) {
@@ -1769,7 +1508,7 @@ var LinkModel = (function (ModelBase) {
 		}
 
 		var bind$$1 = 'shouldBind' in opts ? opts.shouldBind : true;
-		opts.shouldBind = this.mapping && this.target.parent.isRoot;
+		opts.shouldBind = false;
 
 		return maybeBind( this, this.target.get( false, opts ), bind$$1 );
 	};
@@ -1777,7 +1516,7 @@ var LinkModel = (function (ModelBase) {
 	LinkModel.prototype.getKeypath = function getKeypath ( ractive ) {
 		if ( ractive && ractive !== this.root.ractive ) { return this.target.getKeypath( ractive ); }
 
-		return ModelBase.prototype.getKeypath.call( this, ractive );
+		return ModelBase$$1.prototype.getKeypath.call( this, ractive );
 	};
 
 	LinkModel.prototype.getKeypathModel = function getKeypathModel ( ractive ) {
@@ -1786,7 +1525,7 @@ var LinkModel = (function (ModelBase) {
 		return this.keypathModel;
 	};
 
-	LinkModel.prototype.handleChange = function handleChange$2 () {
+	LinkModel.prototype.handleChange = function handleChange$1 () {
 		this.deps.forEach( handleChange );
 		this.links.forEach( handleChange );
 		this.notifyUpstream();
@@ -1807,7 +1546,7 @@ var LinkModel = (function (ModelBase) {
 		return this.childByKey[ key ];
 	};
 
-	LinkModel.prototype.mark = function mark ( force ) {
+	LinkModel.prototype.mark = function mark$$1 ( force ) {
 		this.target.mark( force );
 	};
 
@@ -1887,7 +1626,7 @@ var LinkModel = (function (ModelBase) {
 		else { return this.target; }
 	};
 
-	LinkModel.prototype.teardown = function teardown$2 () {
+	LinkModel.prototype.teardown = function teardown$1 () {
 		if ( this._link ) { this._link.teardown(); }
 		this.target.unregisterLink( this );
 		this.children.forEach( teardown );
@@ -1899,7 +1638,6 @@ var LinkModel = (function (ModelBase) {
 ModelBase.prototype.link = function link ( model, keypath, options ) {
 	var lnk = this._link || new LinkModel( this.parent, this, model, this.key );
 	lnk.implicit = options && options.implicit;
-	lnk.mapping = options && options.mapping;
 	lnk.sourcePath = keypath;
 	lnk.rootLink = true;
 	if ( this._link ) { this._link.relinking( model, false ); }
@@ -1996,7 +1734,6 @@ Ticker.prototype.stop = function stop () {
 var prefixers = {};
 
 // TODO this is legacy. sooner we can replace the old adaptor API the better
-/* istanbul ignore next */
 function prefixKeypath ( obj, prefix ) {
 	var prefixed = {};
 
@@ -2021,7 +1758,6 @@ function getPrefixer ( rootKeypath ) {
 	if ( !prefixers[ rootKeypath ] ) {
 		rootDot = rootKeypath ? rootKeypath + '.' : '';
 
-		/* istanbul ignore next */
 		prefixers[ rootKeypath ] = function ( relativeKeypath, value ) {
 			var obj;
 
@@ -2041,9 +1777,9 @@ function getPrefixer ( rootKeypath ) {
 	return prefixers[ rootKeypath ];
 }
 
-var Model = (function (ModelBase) {
+var Model = (function (ModelBase$$1) {
 	function Model ( parent, key ) {
-		ModelBase.call( this, parent );
+		ModelBase$$1.call( this, parent );
 
 		this.ticker = null;
 
@@ -2059,8 +1795,8 @@ var Model = (function (ModelBase) {
 		}
 	}
 
-	if ( ModelBase ) Model.__proto__ = ModelBase;
-	Model.prototype = Object.create( ModelBase && ModelBase.prototype );
+	if ( ModelBase$$1 ) Model.__proto__ = ModelBase$$1;
+	Model.prototype = Object.create( ModelBase$$1 && ModelBase$$1.prototype );
 	Model.prototype.constructor = Model;
 
 	Model.prototype.adapt = function adapt () {
@@ -2138,7 +1874,7 @@ var Model = (function (ModelBase) {
 				if ( options.complete ) { options.complete( to ); }
 
 				this$1.ticker = null;
-				fulfilPromise( to );
+				fulfilPromise();
 			}
 		});
 
@@ -2317,13 +2053,13 @@ var Model = (function (ModelBase) {
 		this.applyValue( value );
 	};
 
-	Model.prototype.shuffle = function shuffle$2 ( newIndices, unsafe ) {
+	Model.prototype.shuffle = function shuffle$1 ( newIndices, unsafe ) {
 		shuffle( this, newIndices, false, unsafe );
 	};
 
 	Model.prototype.source = function source () { return this; };
 
-	Model.prototype.teardown = function teardown$3 () {
+	Model.prototype.teardown = function teardown$1 () {
 		if ( this._link ) { this._link.teardown(); }
 		this.children.forEach( teardown );
 		if ( this.wrapper ) { this.wrapper.teardown(); }
@@ -2346,9 +2082,9 @@ function recreateArray( model ) {
 /* global global */
 var data = {};
 
-var SharedModel = (function (Model) {
+var SharedModel = (function (Model$$1) {
 	function SharedModel ( value, name ) {
-		Model.call( this, null, ("@" + name) );
+		Model$$1.call( this, null, ("@" + name) );
 		this.key = "@" + name;
 		this.value = value;
 		this.isRoot = true;
@@ -2356,8 +2092,8 @@ var SharedModel = (function (Model) {
 		this.adaptors = [];
 	}
 
-	if ( Model ) SharedModel.__proto__ = Model;
-	SharedModel.prototype = Object.create( Model && Model.prototype );
+	if ( Model$$1 ) SharedModel.__proto__ = Model$$1;
+	SharedModel.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	SharedModel.prototype.constructor = SharedModel;
 
 	SharedModel.prototype.getKeypath = function getKeypath () {
@@ -2731,11 +2467,8 @@ function Ractive$add ( keypath, d, options ) {
 	return add( this, keypath, num, opts );
 }
 
-function immediate ( value ) {
-	var result = Promise.resolve( value );
-	Object.defineProperty( result, 'stop', { value: noop });
-	return result;
-}
+var noAnimation = Promise.resolve();
+Object.defineProperty( noAnimation, 'stop', { value: noop });
 
 var linear = easing.linear;
 
@@ -2764,7 +2497,7 @@ function animate ( ractive, model, to, options ) {
 	// don't bother animating values that stay the same
 	if ( isEqual( from, to ) ) {
 		options.complete( options.to );
-		return immediate( to );
+		return noAnimation; // TODO should this have .then and .catch methods?
 	}
 
 	var interpolator = interpolate( from, to, ractive, options.interpolator );
@@ -2775,7 +2508,7 @@ function animate ( ractive, model, to, options ) {
 		model.set( to );
 		runloop.end();
 
-		return immediate( to );
+		return noAnimation;
 	}
 
 	return model.animate( from, to, options, interpolator );
@@ -3505,9 +3238,9 @@ var modelSort = makeArrayMethod( 'sort' ).model;
 var modelSplice = makeArrayMethod( 'splice' ).model;
 var modelReverse = makeArrayMethod( 'reverse' ).model;
 
-var ContextData = (function (Model) {
+var ContextData = (function (Model$$1) {
 	function ContextData ( options ) {
-		Model.call( this, null, null );
+		Model$$1.call( this, null, null );
 
 		this.isRoot = true;
 		this.root = this;
@@ -3517,8 +3250,8 @@ var ContextData = (function (Model) {
 		this.context = options.context;
 	}
 
-	if ( Model ) ContextData.__proto__ = Model;
-	ContextData.prototype = Object.create( Model && Model.prototype );
+	if ( Model$$1 ) ContextData.__proto__ = Model$$1;
+	ContextData.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	ContextData.prototype.constructor = ContextData;
 
 	ContextData.prototype.getKeypath = function getKeypath () {
@@ -3562,7 +3295,7 @@ Context.prototype.add = function add ( keypath, d, options ) {
 	}), opts );
 };
 
-Context.prototype.animate = function animate$1 ( keypath, value, options ) {
+Context.prototype.animate = function animate$$1 ( keypath, value, options ) {
 	var model = findModel( this, keypath ).model;
 	return animate( this.ractive, model, value, options );
 };
@@ -3658,7 +3391,7 @@ Context.prototype.reverse = function reverse ( keypath ) {
 	return modelReverse( findModel( this, keypath ).model, [] );
 };
 
-Context.prototype.set = function set$2 ( keypath, value, options ) {
+Context.prototype.set = function set$$1 ( keypath, value, options ) {
 	return set( this.ractive, build$1( this, keypath, value ), options );
 };
 
@@ -3715,7 +3448,7 @@ Context.prototype.unshift = function unshift ( keypath ) {
 	return modelUnshift( findModel( this, keypath ).model, add );
 };
 
-Context.prototype.update = function update ( keypath, options ) {
+Context.prototype.update = function update$$1 ( keypath, options ) {
 	return update$1( this.ractive, findModel( this, keypath ).model, options );
 };
 
@@ -3800,21 +3533,15 @@ function Ractive$fire ( eventName ) {
 	var args = [], len = arguments.length - 1;
 	while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
 
-	var ctx;
-
 	// watch for reproxy
-	if ( args[0] instanceof Context  ) {
+	if ( args[0] instanceof Context ) {
 		var proto = args.shift();
-		ctx = Object.create( proto );
+		var ctx = Object.create( proto );
 		Object.assign( ctx, proto );
-	} else if ( typeof args[0] === 'object' && args[0].constructor === Object ) {
-		ctx = Context.forRactive( this, args.shift() );
+		return fireEvent( this, eventName, ctx, args );
 	} else {
-		ctx = Context.forRactive( this );
+		return fireEvent( this, eventName, Context.forRactive( this ), args );
 	}
-
-
-	return fireEvent( this, eventName, ctx, args );
 }
 
 function Ractive$get ( keypath, opts ) {
@@ -3896,7 +3623,6 @@ var makeFunction;
 
 // Test for SVG support
 if ( !svg ) {
-	/* istanbul ignore next */
 	createElement = function ( type, ns, extend ) {
 		if ( ns && ns !== html ) {
 			throw 'This browser does not support namespaces other than http://www.w3.org/1999/xhtml. The most likely cause of this error is that you\'re trying to render SVG in an older browser. See http://docs.ractivejs.org/latest/svg-and-older-browsers for more information';
@@ -3929,7 +3655,6 @@ function getElement ( input ) {
 
 	if ( !input || typeof input === 'boolean' ) { return; }
 
-	/* istanbul ignore next */
 	if ( !win || !doc || !input ) {
 		return null;
 	}
@@ -3997,8 +3722,7 @@ if ( !isClient ) {
 		}
 	}
 
-	// IE8... and apparently phantom some?
-	/* istanbul ignore next */
+	// IE8...
 	if ( !matches ) {
 		matches = function ( node, selector ) {
 			var parentNode, i;
@@ -5235,7 +4959,7 @@ Parser.prototype = {
 		return this.str.charAt( this.pos );
 	},
 
-	warn: function warn ( message ) {
+	warn: function warn$$1 ( message ) {
 		var msg = this.getContextMessage( this.pos, message )[2];
 
 		warnIfDebug( msg );
@@ -5376,7 +5100,6 @@ function escapeHtml ( str ) {
 // to replace them ourselves
 //
 // Source: http://en.wikipedia.org/wiki/Character_encodings_in_HTML#Illegal_characters
-/* istanbul ignore next */
 function validateCode ( code ) {
 	if ( !code ) {
 		return invalid;
@@ -6173,13 +5896,6 @@ function getConditional ( parser ) {
 }
 
 function readExpression ( parser ) {
-	// if eval is false, no expressions
-	if ( parser.allowExpressions === false ) {
-		var ref = readReference( parser );
-		parser.allowWhitespace();
-		return ref;
-	}
-
 	// The conditional operator is the lowest precedence operator (except yield,
 	// assignment operators, and commas, none of which are supported), so we
 	// start there. If it doesn't match, it 'falls through' to progressively
@@ -8110,7 +7826,6 @@ var StandardParser = Parser.extend({
 		this.includeLinePositions = options.includeLinePositions;
 		this.textOnlyMode = options.textOnlyMode;
 		this.csp = options.csp;
-		this.allowExpressions = options.allowExpressions;
 
 		this.transforms = options.transforms || options.parserTransforms;
 		if ( this.transforms ) {
@@ -8217,9 +7932,7 @@ var parseOptions = [
 	'preserveWhitespace',
 	'sanitize',
 	'stripComments',
-	'contextLines',
-	'parserTransforms',
-	'allowExpressions'
+	'contextLines'
 ];
 
 var TEMPLATE_INSTRUCTIONS = "Either preparse or use a ractive runtime source that includes the parser. ";
@@ -8761,24 +8474,24 @@ var ContainerItem = (function (Item) {
 	return ContainerItem;
 }(Item));
 
-var ComputationChild = (function (Model) {
+var ComputationChild = (function (Model$$1) {
 	function ComputationChild ( parent, key ) {
-		Model.call( this, parent, key );
+		Model$$1.call( this, parent, key );
 
 		this.isReadonly = !this.root.ractive.syncComputedChildren;
 		this.dirty = true;
 	}
 
-	if ( Model ) ComputationChild.__proto__ = Model;
-	ComputationChild.prototype = Object.create( Model && Model.prototype );
+	if ( Model$$1 ) ComputationChild.__proto__ = Model$$1;
+	ComputationChild.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	ComputationChild.prototype.constructor = ComputationChild;
 
-	var prototypeAccessors$1 = { setRoot: {} };
+	var prototypeAccessors = { setRoot: {} };
 
-	prototypeAccessors$1.setRoot.get = function () { return this.parent.setRoot; };
+	prototypeAccessors.setRoot.get = function () { return this.parent.setRoot; };
 
 	ComputationChild.prototype.applyValue = function applyValue ( value ) {
-		Model.prototype.applyValue.call( this, value );
+		Model$$1.prototype.applyValue.call( this, value );
 
 		if ( !this.isReadonly ) {
 			var source = this.parent;
@@ -8809,7 +8522,7 @@ var ComputationChild = (function (Model) {
 		return this.value;
 	};
 
-	ComputationChild.prototype.handleChange = function handleChange$3 () {
+	ComputationChild.prototype.handleChange = function handleChange$1 () {
 		this.dirty = true;
 
 		if ( this.boundValue ) { this.boundValue = null; }
@@ -8831,7 +8544,7 @@ var ComputationChild = (function (Model) {
 		return this.childByKey[ key ];
 	};
 
-	Object.defineProperties( ComputationChild.prototype, prototypeAccessors$1 );
+	Object.defineProperties( ComputationChild.prototype, prototypeAccessors );
 
 	return ComputationChild;
 }(Model));
@@ -8839,9 +8552,9 @@ var ComputationChild = (function (Model) {
 /* global console */
 /* eslint no-console:"off" */
 
-var Computation = (function (Model) {
+var Computation = (function (Model$$1) {
 	function Computation ( viewmodel, signature, key ) {
-		Model.call( this, null, null );
+		Model$$1.call( this, null, null );
 
 		this.root = this.parent = viewmodel;
 		this.signature = signature;
@@ -8866,13 +8579,13 @@ var Computation = (function (Model) {
 		this.shuffle = undefined;
 	}
 
-	if ( Model ) Computation.__proto__ = Model;
-	Computation.prototype = Object.create( Model && Model.prototype );
+	if ( Model$$1 ) Computation.__proto__ = Model$$1;
+	Computation.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	Computation.prototype.constructor = Computation;
 
-	var prototypeAccessors$2 = { setRoot: {} };
+	var prototypeAccessors = { setRoot: {} };
 
-	prototypeAccessors$2.setRoot.get = function () {
+	prototypeAccessors.setRoot.get = function () {
 		if ( this.signature.setter ) { return this; }
 	};
 
@@ -8964,10 +8677,10 @@ var Computation = (function (Model) {
 			if ( this$1.dependencies[i] ) { this$1.dependencies[i].unregister( this$1 ); }
 		}
 		if ( this.root.computations[this.key] === this ) { delete this.root.computations[this.key]; }
-		Model.prototype.teardown.call(this);
+		Model$$1.prototype.teardown.call(this);
 	};
 
-	Object.defineProperties( Computation.prototype, prototypeAccessors$2 );
+	Object.defineProperties( Computation.prototype, prototypeAccessors );
 
 	return Computation;
 }(Model));
@@ -8977,11 +8690,11 @@ var child = ComputationChild.prototype;
 prototype$1.handleChange = child.handleChange;
 prototype$1.joinKey = child.joinKey;
 
-var ExpressionProxy = (function (Model) {
+var ExpressionProxy = (function (Model$$1) {
 	function ExpressionProxy ( fragment, template ) {
 		var this$1 = this;
 
-		Model.call( this, fragment.ractive.viewmodel, null );
+		Model$$1.call( this, fragment.ractive.viewmodel, null );
 
 		this.fragment = fragment;
 		this.template = template;
@@ -8989,9 +8702,7 @@ var ExpressionProxy = (function (Model) {
 		this.isReadonly = true;
 		this.dirty = true;
 
-		this.fn = fragment.ractive.allowExpressions === false ?
-			noop :
-			getFunction( template.s, template.r.length );
+		this.fn = getFunction( template.s, template.r.length );
 
 		this.models = this.template.r.map( function (ref) {
 			return resolveReference( this$1.fragment, ref );
@@ -9003,8 +8714,8 @@ var ExpressionProxy = (function (Model) {
 		this.bubble();
 	}
 
-	if ( Model ) ExpressionProxy.__proto__ = Model;
-	ExpressionProxy.prototype = Object.create( Model && Model.prototype );
+	if ( Model$$1 ) ExpressionProxy.__proto__ = Model$$1;
+	ExpressionProxy.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	ExpressionProxy.prototype.constructor = ExpressionProxy;
 
 	ExpressionProxy.prototype.bubble = function bubble ( actuallyChanged ) {
@@ -9086,16 +8797,16 @@ var ExpressionProxy = (function (Model) {
 		this.unbind();
 		this.fragment = undefined;
 		if ( this.dependencies ) { this.dependencies.forEach( function (d) { return d.unregister( this$1 ); } ); }
-		Model.prototype.teardown.call(this);
+		Model$$1.prototype.teardown.call(this);
 	};
 
 	ExpressionProxy.prototype.unreference = function unreference () {
-		Model.prototype.unreference.call(this);
+		Model$$1.prototype.unreference.call(this);
 		if ( !this.deps.length && !this.refs ) { this.teardown(); }
 	};
 
 	ExpressionProxy.prototype.unregister = function unregister ( dep ) {
-		Model.prototype.unregister.call( this, dep );
+		Model$$1.prototype.unregister.call( this, dep );
 		if ( !this.deps.length && !this.refs ) { this.teardown(); }
 	};
 
@@ -9110,13 +8821,13 @@ prototype.joinKey = computation.joinKey;
 prototype.mark = computation.mark;
 prototype.unbind = noop;
 
-var ReferenceExpressionChild = (function (Model) {
+var ReferenceExpressionChild = (function (Model$$1) {
 	function ReferenceExpressionChild ( parent, key ) {
-		Model.call ( this, parent, key );
+		Model$$1.call ( this, parent, key );
 	}
 
-	if ( Model ) ReferenceExpressionChild.__proto__ = Model;
-	ReferenceExpressionChild.prototype = Object.create( Model && Model.prototype );
+	if ( Model$$1 ) ReferenceExpressionChild.__proto__ = Model$$1;
+	ReferenceExpressionChild.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	ReferenceExpressionChild.prototype.constructor = ReferenceExpressionChild;
 
 	ReferenceExpressionChild.prototype.applyValue = function applyValue ( value ) {
@@ -9139,7 +8850,7 @@ var ReferenceExpressionChild = (function (Model) {
 
 	ReferenceExpressionChild.prototype.get = function get ( shouldCapture, opts ) {
 		this.value = this.retrieve();
-		return Model.prototype.get.call( this, shouldCapture, opts );
+		return Model$$1.prototype.get.call( this, shouldCapture, opts );
 	};
 
 	ReferenceExpressionChild.prototype.joinKey = function joinKey ( key ) {
@@ -9162,11 +8873,11 @@ var ReferenceExpressionChild = (function (Model) {
 	return ReferenceExpressionChild;
 }(Model));
 
-var ReferenceExpressionProxy = (function (Model) {
+var ReferenceExpressionProxy = (function (Model$$1) {
 	function ReferenceExpressionProxy ( fragment, template ) {
 		var this$1 = this;
 
-		Model.call( this, null, null );
+		Model$$1.call( this, null, null );
 		this.dirty = true;
 		this.root = fragment.ractive.viewmodel;
 		this.template = template;
@@ -9222,8 +8933,8 @@ var ReferenceExpressionProxy = (function (Model) {
 		this.bubble();
 	}
 
-	if ( Model ) ReferenceExpressionProxy.__proto__ = Model;
-	ReferenceExpressionProxy.prototype = Object.create( Model && Model.prototype );
+	if ( Model$$1 ) ReferenceExpressionProxy.__proto__ = Model$$1;
+	ReferenceExpressionProxy.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	ReferenceExpressionProxy.prototype.constructor = ReferenceExpressionProxy;
 
 	ReferenceExpressionProxy.prototype.bubble = function bubble () {
@@ -9284,7 +8995,7 @@ var ReferenceExpressionProxy = (function (Model) {
 		return this.model ? this.model.getKeypath() : '@undefined';
 	};
 
-	ReferenceExpressionProxy.prototype.handleChange = function handleChange () {
+	ReferenceExpressionProxy.prototype.handleChange = function handleChange$$1 () {
 		this.dirty = true;
 		this.mark();
 	};
@@ -9301,7 +9012,7 @@ var ReferenceExpressionProxy = (function (Model) {
 		return this.childByKey[ key ];
 	};
 
-	ReferenceExpressionProxy.prototype.mark = function mark$2 () {
+	ReferenceExpressionProxy.prototype.mark = function mark$1 () {
 		if ( this.dirty ) {
 			this.deps.forEach( handleChange );
 		}
@@ -9318,7 +9029,7 @@ var ReferenceExpressionProxy = (function (Model) {
 		this.model.set( value );
 	};
 
-	ReferenceExpressionProxy.prototype.teardown = function teardown () {
+	ReferenceExpressionProxy.prototype.teardown = function teardown$$1 () {
 		var this$1 = this;
 
 		if ( this.model ) {
@@ -9331,12 +9042,12 @@ var ReferenceExpressionProxy = (function (Model) {
 	};
 
 	ReferenceExpressionProxy.prototype.unreference = function unreference () {
-		Model.prototype.unreference.call(this);
+		Model$$1.prototype.unreference.call(this);
 		if ( !this.deps.length && !this.refs ) { this.teardown(); }
 	};
 
 	ReferenceExpressionProxy.prototype.unregister = function unregister ( dep ) {
-		Model.prototype.unregister.call( this, dep );
+		Model$$1.prototype.unregister.call( this, dep );
 		if ( !this.deps.length && !this.refs ) { this.teardown(); }
 	};
 
@@ -9373,15 +9084,15 @@ function resolveAliases( aliases, fragment ) {
 	return resolved;
 }
 
-var Alias = (function (ContainerItem) {
+var Alias = (function (ContainerItem$$1) {
 	function Alias ( options ) {
-		ContainerItem.call( this, options );
+		ContainerItem$$1.call( this, options );
 
 		this.fragment = null;
 	}
 
-	if ( ContainerItem ) Alias.__proto__ = ContainerItem;
-	Alias.prototype = Object.create( ContainerItem && ContainerItem.prototype );
+	if ( ContainerItem$$1 ) Alias.__proto__ = ContainerItem$$1;
+	Alias.prototype = Object.create( ContainerItem$$1 && ContainerItem$$1.prototype );
 	Alias.prototype.constructor = Alias;
 
 	Alias.prototype.bind = function bind () {
@@ -9812,9 +9523,9 @@ function doInAttributes( fn ) {
 	attributes = false;
 }
 
-var ConditionalAttribute = (function (Item) {
+var ConditionalAttribute = (function (Item$$1) {
 	function ConditionalAttribute ( options ) {
-		Item.call( this, options );
+		Item$$1.call( this, options );
 
 		this.attributes = [];
 
@@ -9831,8 +9542,8 @@ var ConditionalAttribute = (function (Item) {
 		this.dirty = false;
 	}
 
-	if ( Item ) ConditionalAttribute.__proto__ = Item;
-	ConditionalAttribute.prototype = Object.create( Item && Item.prototype );
+	if ( Item$$1 ) ConditionalAttribute.__proto__ = Item$$1;
+	ConditionalAttribute.prototype = Object.create( Item$$1 && Item$$1.prototype );
 	ConditionalAttribute.prototype.constructor = ConditionalAttribute;
 
 	ConditionalAttribute.prototype.bind = function bind () {
@@ -9886,10 +9597,10 @@ var ConditionalAttribute = (function (Item) {
 			var current = attributes;
 			attributes = true;
 			this.fragment.update();
+			attributes = current || false;
 
 			if ( this.rendered && this.node ) {
 				str = this.fragment.toString();
-
 				attrs = parseAttributes( str, this.isSvg );
 
 				// any attributes that previously existed but no longer do
@@ -9904,17 +9615,13 @@ var ConditionalAttribute = (function (Item) {
 
 				this.attributes = attrs;
 			}
-
-			attributes = current || false;
 		}
 	};
 
 	return ConditionalAttribute;
 }(Item));
 
-var onlyWhitespace = /^\s*$/;
 function parseAttributes ( str, isSvg ) {
-	if ( onlyWhitespace.test( str ) ) { return []; }
 	var tagName = isSvg ? 'svg' : 'div';
 	return str
 		? (div$1.innerHTML = "<" + tagName + " " + str + "></" + tagName + ">") &&
@@ -9948,9 +9655,9 @@ function lookupNamespace ( node, prefix ) {
 var attribute = false;
 function inAttribute () { return attribute; }
 
-var Attribute = (function (Item) {
+var Attribute = (function (Item$$1) {
 	function Attribute ( options ) {
-		Item.call( this, options );
+		Item$$1.call( this, options );
 
 		this.name = options.template.n;
 		this.namespace = null;
@@ -9988,8 +9695,8 @@ var Attribute = (function (Item) {
 		if ( this.interpolator ) { this.interpolator.owner = this; }
 	}
 
-	if ( Item ) Attribute.__proto__ = Item;
-	Attribute.prototype = Object.create( Item && Item.prototype );
+	if ( Item$$1 ) Attribute.__proto__ = Item$$1;
+	Attribute.prototype = Object.create( Item$$1 && Item$$1.prototype );
 	Attribute.prototype.constructor = Attribute;
 
 	Attribute.prototype.bind = function bind () {
@@ -10127,9 +9834,9 @@ var Attribute = (function (Item) {
 	return Attribute;
 }(Item));
 
-var BindingFlag = (function (Item) {
+var BindingFlag = (function (Item$$1) {
 	function BindingFlag ( options ) {
-		Item.call( this, options );
+		Item$$1.call( this, options );
 
 		this.owner = options.owner || options.parentFragment.owner || findElement( options.parentFragment );
 		this.element = this.owner.attributeByName ? this.owner : findElement( options.parentFragment );
@@ -10150,8 +9857,8 @@ var BindingFlag = (function (Item) {
 		}
 	}
 
-	if ( Item ) BindingFlag.__proto__ = Item;
-	BindingFlag.prototype = Object.create( Item && Item.prototype );
+	if ( Item$$1 ) BindingFlag.__proto__ = Item$$1;
+	BindingFlag.prototype = Object.create( Item$$1 && Item$$1.prototype );
 	BindingFlag.prototype.constructor = BindingFlag;
 
 	BindingFlag.prototype.bind = function bind () {
@@ -10219,9 +9926,9 @@ function set$1 ( flag, value, update ) {
 	return flag.value;
 }
 
-var RactiveModel = (function (Model) {
+var RactiveModel = (function (Model$$1) {
 	function RactiveModel ( ractive ) {
-		Model.call( this, null, '' );
+		Model$$1.call( this, null, '' );
 		this.value = ractive;
 		this.isRoot = true;
 		this.root = this;
@@ -10229,12 +9936,12 @@ var RactiveModel = (function (Model) {
 		this.ractive = ractive;
 	}
 
-	if ( Model ) RactiveModel.__proto__ = Model;
-	RactiveModel.prototype = Object.create( Model && Model.prototype );
+	if ( Model$$1 ) RactiveModel.__proto__ = Model$$1;
+	RactiveModel.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	RactiveModel.prototype.constructor = RactiveModel;
 
 	RactiveModel.prototype.joinKey = function joinKey ( key ) {
-		var model = Model.prototype.joinKey.call( this, key );
+		var model = Model$$1.prototype.joinKey.call( this, key );
 
 		if ( ( key === 'root' || key === 'parent' ) && !model.isLink ) { return initLink( model, key ); }
 		else if ( key === 'data' ) { return this.ractive.viewmodel; }
@@ -10273,9 +9980,9 @@ function initLink ( model, key ) {
 
 var hasProp$1 = Object.prototype.hasOwnProperty;
 
-var RootModel = (function (Model) {
+var RootModel = (function (Model$$1) {
 	function RootModel ( options ) {
-		Model.call( this, null, null );
+		Model$$1.call( this, null, null );
 
 		this.isRoot = true;
 		this.root = this;
@@ -10289,8 +9996,8 @@ var RootModel = (function (Model) {
 		this.computations = {};
 	}
 
-	if ( Model ) RootModel.__proto__ = Model;
-	RootModel.prototype = Object.create( Model && Model.prototype );
+	if ( Model$$1 ) RootModel.__proto__ = Model$$1;
+	RootModel.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	RootModel.prototype.constructor = RootModel;
 
 	RootModel.prototype.attached = function attached ( fragment ) {
@@ -10350,7 +10057,7 @@ var RootModel = (function (Model) {
 	RootModel.prototype.getValueChildren = function getValueChildren () {
 		var this$1 = this;
 
-		var children = Model.prototype.getValueChildren.call( this, this.value );
+		var children = Model$$1.prototype.getValueChildren.call( this, this.value );
 
 		this.children.forEach( function (child) {
 			if ( child._link ) {
@@ -10399,7 +10106,7 @@ var RootModel = (function (Model) {
 		if ( key[0] === '~' && key[1] === '/' ) { key = key.slice( 2 ); }
 
 		return this.computations.hasOwnProperty( key ) ? this.computations[ key ] :
-		       Model.prototype.joinKey.call( this, key, opts );
+		       Model$$1.prototype.joinKey.call( this, key, opts );
 	};
 
 	RootModel.prototype.set = function set ( value ) {
@@ -10427,10 +10134,10 @@ var RootModel = (function (Model) {
 		return this.wrapper ? this.wrapper.get() : this.value;
 	};
 
-	RootModel.prototype.teardown = function teardown () {
+	RootModel.prototype.teardown = function teardown$$1 () {
 		var this$1 = this;
 
-		Model.prototype.teardown.call(this);
+		Model$$1.prototype.teardown.call(this);
 		for ( var k in this$1.computations ) {
 			this$1.computations[ k ].teardown();
 		}
@@ -10438,6 +10145,7 @@ var RootModel = (function (Model) {
 
 	return RootModel;
 }(Model));
+
 RootModel.prototype.update = noop;
 
 function attachImplicits ( model, fragment ) {
@@ -10706,11 +10414,11 @@ function teardown$1 ( instance, getPromise ) {
 	return promise;
 }
 
-var Component = (function (Item) {
+var Component = (function (Item$$1) {
 	function Component ( options, ComponentConstructor ) {
 		var this$1 = this;
 
-		Item.call( this, options );
+		Item$$1.call( this, options );
 		this.isAnchor = this.template.t === ANCHOR;
 		this.type = this.isAnchor ? ANCHOR : COMPONENT; // override ELEMENT from super
 
@@ -10797,11 +10505,11 @@ var Component = (function (Item) {
 		this.eventHandlers = [];
 	}
 
-	if ( Item ) Component.__proto__ = Item;
-	Component.prototype = Object.create( Item && Item.prototype );
+	if ( Item$$1 ) Component.__proto__ = Item$$1;
+	Component.prototype = Object.create( Item$$1 && Item$$1.prototype );
 	Component.prototype.constructor = Component;
 
-	Component.prototype.bind = function bind$2 () {
+	Component.prototype.bind = function bind$1 () {
 		if ( !this.isAnchor ) {
 			this.attributes.forEach( bind );
 
@@ -10824,7 +10532,7 @@ var Component = (function (Item) {
 		}
 	};
 
-	Component.prototype.destroyed = function destroyed () {
+	Component.prototype.destroyed = function destroyed$$1 () {
 		if ( !this.isAnchor && this.instance.fragment ) { this.instance.fragment.destroyed(); }
 	};
 
@@ -10867,15 +10575,15 @@ var Component = (function (Item) {
 		if ( this.instance ) { return this.instance.fragment.firstNode( skipParent ); }
 	};
 
-	Component.prototype.getContext = function getContext () {
+	Component.prototype.getContext = function getContext$$1 () {
 		var assigns = [], len = arguments.length;
 		while ( len-- ) assigns[ len ] = arguments[ len ];
 
-		assigns.unshift( this.instance );
+		assigns.unshift( this );
 		return getRactiveContext.apply( null, assigns );
 	};
 
-	Component.prototype.render = function render$2 ( target, occupants ) {
+	Component.prototype.render = function render$1$$1 ( target, occupants ) {
 		if ( this.isAnchor ) {
 			this.rendered = true;
 			this.target = target;
@@ -10900,7 +10608,7 @@ var Component = (function (Item) {
 		}
 	};
 
-	Component.prototype.toString = function toString () {
+	Component.prototype.toString = function toString$$1 () {
 		if ( this.instance ) { return this.instance.toHTML(); }
 	};
 
@@ -10934,7 +10642,7 @@ var Component = (function (Item) {
 		this.rendered = false;
 	};
 
-	Component.prototype.update = function update$2 () {
+	Component.prototype.update = function update$1 () {
 		this.dirty = false;
 		if ( this.instance ) {
 			this.instance.fragment.update();
@@ -11169,36 +10877,29 @@ Decorator.prototype.unrender = function unrender ( shouldDestroy ) {
 };
 
 Decorator.prototype.update = function update () {
-	var instance = this.intermediary;
-
-	if ( !this.dirty ) {
-		if ( instance && instance.invalidate ) {
-			runloop.scheduleTask( function () { return instance.invalidate(); }, true );
-		}
-		return;
-	}
+	if ( !this.dirty ) { return; }
 
 	this.dirty = false;
 
-	if ( instance ) {
-		if ( !instance.update ) {
+	if ( this.intermediary ) {
+		if ( !this.intermediary.update ) {
 			this.unrender();
 			this.render();
 		}
 		else {
 			var args = this.models.map( function (model) { return model && model.get(); } );
-			instance.update.apply( this.ractive, this.fn.apply( this.ractive, args ) );
+			this.intermediary.update.apply( this.ractive, this.fn.apply( this.ractive, args ) );
 		}
 	}
 };
 
-var Doctype = (function (Item) {
+var Doctype = (function (Item$$1) {
 	function Doctype () {
-		Item.apply(this, arguments);
+		Item$$1.apply(this, arguments);
 	}
 
-	if ( Item ) Doctype.__proto__ = Item;
-	Doctype.prototype = Object.create( Item && Item.prototype );
+	if ( Item$$1 ) Doctype.__proto__ = Item$$1;
+	Doctype.prototype = Object.create( Item$$1 && Item$$1.prototype );
 	Doctype.prototype.constructor = Doctype;
 
 	Doctype.prototype.toString = function toString () {
@@ -11308,17 +11009,17 @@ function handleDomEvent () {
 	this._ractive.binding.handleChange();
 }
 
-var CheckboxBinding = (function (Binding) {
+var CheckboxBinding = (function (Binding$$1) {
 	function CheckboxBinding ( element ) {
-		Binding.call( this, element, 'checked' );
+		Binding$$1.call( this, element, 'checked' );
 	}
 
-	if ( Binding ) CheckboxBinding.__proto__ = Binding;
-	CheckboxBinding.prototype = Object.create( Binding && Binding.prototype );
+	if ( Binding$$1 ) CheckboxBinding.__proto__ = Binding$$1;
+	CheckboxBinding.prototype = Object.create( Binding$$1 && Binding$$1.prototype );
 	CheckboxBinding.prototype.constructor = CheckboxBinding;
 
 	CheckboxBinding.prototype.render = function render () {
-		Binding.prototype.render.call(this);
+		Binding$$1.prototype.render.call(this);
 
 		this.element.on( 'change', handleDomEvent );
 
@@ -11401,9 +11102,9 @@ function getValue() {
 	return res;
 }
 
-var CheckboxNameBinding = (function (Binding) {
+var CheckboxNameBinding = (function (Binding$$1) {
 	function CheckboxNameBinding ( element ) {
-		Binding.call( this, element, 'name' );
+		Binding$$1.call( this, element, 'name' );
 
 		this.checkboxName = true; // so that ractive.updateModel() knows what to do with this
 
@@ -11429,8 +11130,8 @@ var CheckboxNameBinding = (function (Binding) {
 		}
 	}
 
-	if ( Binding ) CheckboxNameBinding.__proto__ = Binding;
-	CheckboxNameBinding.prototype = Object.create( Binding && Binding.prototype );
+	if ( Binding$$1 ) CheckboxNameBinding.__proto__ = Binding$$1;
+	CheckboxNameBinding.prototype = Object.create( Binding$$1 && Binding$$1.prototype );
 	CheckboxNameBinding.prototype.constructor = CheckboxNameBinding;
 
 	CheckboxNameBinding.prototype.bind = function bind () {
@@ -11466,11 +11167,11 @@ var CheckboxNameBinding = (function (Binding) {
 		}
 		// make sure super knows there's a change
 		this.lastValue = null;
-		Binding.prototype.handleChange.call(this);
+		Binding$$1.prototype.handleChange.call(this);
 	};
 
 	CheckboxNameBinding.prototype.render = function render () {
-		Binding.prototype.render.call(this);
+		Binding$$1.prototype.render.call(this);
 
 		var node = this.node;
 
@@ -11540,13 +11241,13 @@ var CheckboxNameBinding = (function (Binding) {
 	return CheckboxNameBinding;
 }(Binding));
 
-var ContentEditableBinding = (function (Binding) {
+var ContentEditableBinding = (function (Binding$$1) {
 	function ContentEditableBinding () {
-		Binding.apply(this, arguments);
+		Binding$$1.apply(this, arguments);
 	}
 
-	if ( Binding ) ContentEditableBinding.__proto__ = Binding;
-	ContentEditableBinding.prototype = Object.create( Binding && Binding.prototype );
+	if ( Binding$$1 ) ContentEditableBinding.__proto__ = Binding$$1;
+	ContentEditableBinding.prototype = Object.create( Binding$$1 && Binding$$1.prototype );
 	ContentEditableBinding.prototype.constructor = ContentEditableBinding;
 
 	ContentEditableBinding.prototype.getInitialValue = function getInitialValue () {
@@ -11558,7 +11259,7 @@ var ContentEditableBinding = (function (Binding) {
 	};
 
 	ContentEditableBinding.prototype.render = function render () {
-		Binding.prototype.render.call(this);
+		Binding$$1.prototype.render.call(this);
 
 		var el = this.element;
 
@@ -11613,13 +11314,13 @@ function handleDelay ( delay ) {
 	};
 }
 
-var GenericBinding = (function (Binding) {
+var GenericBinding = (function (Binding$$1) {
 	function GenericBinding () {
-		Binding.apply(this, arguments);
+		Binding$$1.apply(this, arguments);
 	}
 
-	if ( Binding ) GenericBinding.__proto__ = Binding;
-	GenericBinding.prototype = Object.create( Binding && Binding.prototype );
+	if ( Binding$$1 ) GenericBinding.__proto__ = Binding$$1;
+	GenericBinding.prototype = Object.create( Binding$$1 && Binding$$1.prototype );
 	GenericBinding.prototype.constructor = GenericBinding;
 
 	GenericBinding.prototype.getInitialValue = function getInitialValue () {
@@ -11631,7 +11332,7 @@ var GenericBinding = (function (Binding) {
 	};
 
 	GenericBinding.prototype.render = function render () {
-		Binding.prototype.render.call(this);
+		Binding$$1.prototype.render.call(this);
 
 		// any lazy setting for this element overrides the root
 		// if the value is a number, it's a timeout
@@ -11681,34 +11382,29 @@ var GenericBinding = (function (Binding) {
 	return GenericBinding;
 }(Binding));
 
-var FileBinding = (function (GenericBinding) {
+var FileBinding = (function (GenericBinding$$1) {
 	function FileBinding () {
-		GenericBinding.apply(this, arguments);
+		GenericBinding$$1.apply(this, arguments);
 	}
 
-	if ( GenericBinding ) FileBinding.__proto__ = GenericBinding;
-	FileBinding.prototype = Object.create( GenericBinding && GenericBinding.prototype );
+	if ( GenericBinding$$1 ) FileBinding.__proto__ = GenericBinding$$1;
+	FileBinding.prototype = Object.create( GenericBinding$$1 && GenericBinding$$1.prototype );
 	FileBinding.prototype.constructor = FileBinding;
 
 	FileBinding.prototype.getInitialValue = function getInitialValue () {
-		/* istanbul ignore next */
 		return undefined;
 	};
 
 	FileBinding.prototype.getValue = function getValue () {
-		/* istanbul ignore next */
 		return this.node.files;
 	};
 
 	FileBinding.prototype.render = function render () {
-		/* istanbul ignore next */
 		this.element.lazy = false;
-		/* istanbul ignore next */
-		GenericBinding.prototype.render.call(this);
+		GenericBinding$$1.prototype.render.call(this);
 	};
 
 	FileBinding.prototype.setFromNode = function setFromNode ( node ) {
-		/* istanbul ignore next */
 		this.model.set( node.files );
 	};
 
@@ -11716,7 +11412,6 @@ var FileBinding = (function (GenericBinding) {
 }(GenericBinding));
 
 function getSelectedOptions ( select ) {
-	/* istanbul ignore next */
 	return select.selectedOptions
 		? toArray( select.selectedOptions )
 		: select.options
@@ -11724,13 +11419,13 @@ function getSelectedOptions ( select ) {
 			: [];
 }
 
-var MultipleSelectBinding = (function (Binding) {
+var MultipleSelectBinding = (function (Binding$$1) {
 	function MultipleSelectBinding () {
-		Binding.apply(this, arguments);
+		Binding$$1.apply(this, arguments);
 	}
 
-	if ( Binding ) MultipleSelectBinding.__proto__ = Binding;
-	MultipleSelectBinding.prototype = Object.create( Binding && Binding.prototype );
+	if ( Binding$$1 ) MultipleSelectBinding.__proto__ = Binding$$1;
+	MultipleSelectBinding.prototype = Object.create( Binding$$1 && Binding$$1.prototype );
 	MultipleSelectBinding.prototype.constructor = MultipleSelectBinding;
 
 	MultipleSelectBinding.prototype.getInitialValue = function getInitialValue () {
@@ -11764,14 +11459,14 @@ var MultipleSelectBinding = (function (Binding) {
 		var value = this.getValue();
 
 		if ( previousValue === undefined || !arrayContentsMatch( value, previousValue ) ) {
-			Binding.prototype.handleChange.call(this);
+			Binding$$1.prototype.handleChange.call(this);
 		}
 
 		return this;
 	};
 
 	MultipleSelectBinding.prototype.render = function render () {
-		Binding.prototype.render.call(this);
+		Binding$$1.prototype.render.call(this);
 
 		this.element.on( 'change', handleDomEvent );
 
@@ -11801,13 +11496,13 @@ var MultipleSelectBinding = (function (Binding) {
 	return MultipleSelectBinding;
 }(Binding));
 
-var NumericBinding = (function (GenericBinding) {
+var NumericBinding = (function (GenericBinding$$1) {
 	function NumericBinding () {
-		GenericBinding.apply(this, arguments);
+		GenericBinding$$1.apply(this, arguments);
 	}
 
-	if ( GenericBinding ) NumericBinding.__proto__ = GenericBinding;
-	NumericBinding.prototype = Object.create( GenericBinding && GenericBinding.prototype );
+	if ( GenericBinding$$1 ) NumericBinding.__proto__ = GenericBinding$$1;
+	NumericBinding.prototype = Object.create( GenericBinding$$1 && GenericBinding$$1.prototype );
 	NumericBinding.prototype.constructor = NumericBinding;
 
 	NumericBinding.prototype.getInitialValue = function getInitialValue () {
@@ -11833,16 +11528,16 @@ function getSiblings ( hash ) {
 	return siblings[ hash ] || ( siblings[ hash ] = [] );
 }
 
-var RadioBinding = (function (Binding) {
+var RadioBinding = (function (Binding$$1) {
 	function RadioBinding ( element ) {
-		Binding.call( this, element, 'checked' );
+		Binding$$1.call( this, element, 'checked' );
 
 		this.siblings = getSiblings( this.ractive._guid + this.element.getAttribute( 'name' ) );
 		this.siblings.push( this );
 	}
 
-	if ( Binding ) RadioBinding.__proto__ = Binding;
-	RadioBinding.prototype = Object.create( Binding && Binding.prototype );
+	if ( Binding$$1 ) RadioBinding.__proto__ = Binding$$1;
+	RadioBinding.prototype = Object.create( Binding$$1 && Binding$$1.prototype );
 	RadioBinding.prototype.constructor = RadioBinding;
 
 	RadioBinding.prototype.getValue = function getValue () {
@@ -11860,7 +11555,7 @@ var RadioBinding = (function (Binding) {
 	};
 
 	RadioBinding.prototype.render = function render () {
-		Binding.prototype.render.call(this);
+		Binding$$1.prototype.render.call(this);
 
 		this.element.on( 'change', handleDomEvent );
 
@@ -11892,9 +11587,9 @@ function getValue$1() {
 	}
 }
 
-var RadioNameBinding = (function (Binding) {
+var RadioNameBinding = (function (Binding$$1) {
 	function RadioNameBinding ( element ) {
-		Binding.call( this, element, 'name' );
+		Binding$$1.call( this, element, 'name' );
 
 		this.group = getBindingGroup( 'radioname', this.model, getValue$1 );
 		this.group.add( this );
@@ -11904,8 +11599,8 @@ var RadioNameBinding = (function (Binding) {
 		}
 	}
 
-	if ( Binding ) RadioNameBinding.__proto__ = Binding;
-	RadioNameBinding.prototype = Object.create( Binding && Binding.prototype );
+	if ( Binding$$1 ) RadioNameBinding.__proto__ = Binding$$1;
+	RadioNameBinding.prototype = Object.create( Binding$$1 && Binding$$1.prototype );
 	RadioNameBinding.prototype.constructor = RadioNameBinding;
 
 	RadioNameBinding.prototype.bind = function bind () {
@@ -11939,7 +11634,7 @@ var RadioNameBinding = (function (Binding) {
 		// `name` model gets set to its value
 		if ( this.node.checked ) {
 			this.group.value = this.getValue();
-			Binding.prototype.handleChange.call(this);
+			Binding$$1.prototype.handleChange.call(this);
 		}
 	};
 
@@ -11950,7 +11645,7 @@ var RadioNameBinding = (function (Binding) {
 	};
 
 	RadioNameBinding.prototype.render = function render () {
-		Binding.prototype.render.call(this);
+		Binding$$1.prototype.render.call(this);
 
 		var node = this.node;
 
@@ -11986,13 +11681,13 @@ var RadioNameBinding = (function (Binding) {
 	return RadioNameBinding;
 }(Binding));
 
-var SingleSelectBinding = (function (Binding) {
+var SingleSelectBinding = (function (Binding$$1) {
 	function SingleSelectBinding () {
-		Binding.apply(this, arguments);
+		Binding$$1.apply(this, arguments);
 	}
 
-	if ( Binding ) SingleSelectBinding.__proto__ = Binding;
-	SingleSelectBinding.prototype = Object.create( Binding && Binding.prototype );
+	if ( Binding$$1 ) SingleSelectBinding.__proto__ = Binding$$1;
+	SingleSelectBinding.prototype = Object.create( Binding$$1 && Binding$$1.prototype );
 	SingleSelectBinding.prototype.constructor = SingleSelectBinding;
 
 	SingleSelectBinding.prototype.forceUpdate = function forceUpdate () {
@@ -12070,7 +11765,7 @@ var SingleSelectBinding = (function (Binding) {
 	};
 
 	SingleSelectBinding.prototype.render = function render () {
-		Binding.prototype.render.call(this);
+		Binding$$1.prototype.render.call(this);
 		this.element.on( 'change', handleDomEvent );
 	};
 
@@ -12182,11 +11877,11 @@ function selectBinding ( element ) {
 
 var endsWithSemi = /;\s*$/;
 
-var Element = (function (ContainerItem) {
+var Element = (function (ContainerItem$$1) {
 	function Element ( options ) {
 		var this$1 = this;
 
-		ContainerItem.call( this, options );
+		ContainerItem$$1.call( this, options );
 
 		this.name = options.template.e.toLowerCase();
 		this.isVoid = voidElementNames.test( this.name );
@@ -12253,11 +11948,11 @@ var Element = (function (ContainerItem) {
 		this.binding = null; // filled in later
 	}
 
-	if ( ContainerItem ) Element.__proto__ = ContainerItem;
-	Element.prototype = Object.create( ContainerItem && ContainerItem.prototype );
+	if ( ContainerItem$$1 ) Element.__proto__ = ContainerItem$$1;
+	Element.prototype = Object.create( ContainerItem$$1 && ContainerItem$$1.prototype );
 	Element.prototype.constructor = Element;
 
-	Element.prototype.bind = function bind$3 () {
+	Element.prototype.bind = function bind$1 () {
 		this.attributes.binding = true;
 		this.attributes.forEach( bind );
 		this.attributes.binding = false;
@@ -12414,7 +12109,7 @@ var Element = (function (ContainerItem) {
 		}
 	};
 
-	Element.prototype.render = function render$3 ( target, occupants ) {
+	Element.prototype.render = function render$1 ( target, occupants ) {
 		var this$1 = this;
 
 		// TODO determine correct namespace
@@ -12504,7 +12199,7 @@ var Element = (function (ContainerItem) {
 		this.rendered = true;
 	};
 
-	Element.prototype.toString = function toString () {
+	Element.prototype.toString = function toString$$1 () {
 		var tagName = this.template.e;
 
 		var attrs = this.attributes.map( stringifyAttribute ).join( '' );
@@ -12563,7 +12258,7 @@ var Element = (function (ContainerItem) {
 		return str;
 	};
 
-	Element.prototype.unbind = function unbind$2 () {
+	Element.prototype.unbind = function unbind$1 () {
 		this.attributes.unbinding = true;
 		this.attributes.forEach( unbind );
 		this.attributes.unbinding = false;
@@ -12572,7 +12267,7 @@ var Element = (function (ContainerItem) {
 		if ( this.fragment ) { this.fragment.unbind(); }
 	};
 
-	Element.prototype.unrender = function unrender ( shouldDestroy ) {
+	Element.prototype.unrender = function unrender$$1 ( shouldDestroy ) {
 		if ( !this.rendered ) { return; }
 		this.rendered = false;
 
@@ -12604,7 +12299,7 @@ var Element = (function (ContainerItem) {
 		if ( this.binding ) { this.binding.unrender(); }
 	};
 
-	Element.prototype.update = function update$3 () {
+	Element.prototype.update = function update$1 () {
 		if ( this.dirty ) {
 			this.dirty = false;
 
@@ -12662,7 +12357,6 @@ function getNamespace ( element ) {
 function delegateHandler ( ev ) {
 	var name = ev.type;
 	var end = ev.currentTarget;
-	var endEl = end._ractive && end._ractive.proxy;
 	var node = ev.target;
 	var bubble = true;
 	var listeners;
@@ -12670,7 +12364,7 @@ function delegateHandler ( ev ) {
 	// starting with the origin node, walk up the DOM looking for ractive nodes with a matching event listener
 	while ( bubble && node && node !== end ) {
 		var proxy = node._ractive && node._ractive.proxy;
-		if ( proxy && proxy.parentFragment.delegate === endEl ) {
+		if ( proxy && proxy.parentFragment.delegate ) {
 			listeners = proxy.listeners[name];
 
 			if ( listeners ) {
@@ -12694,24 +12388,24 @@ function handler ( ev ) {
 	el.listeners[ ev.type ].forEach( function (l) { return l.call( this$1, ev ); } );
 }
 
-var Form = (function (Element) {
+var Form = (function (Element$$1) {
 	function Form ( options ) {
-		Element.call( this, options );
+		Element$$1.call( this, options );
 		this.formBindings = [];
 	}
 
-	if ( Element ) Form.__proto__ = Element;
-	Form.prototype = Object.create( Element && Element.prototype );
+	if ( Element$$1 ) Form.__proto__ = Element$$1;
+	Form.prototype = Object.create( Element$$1 && Element$$1.prototype );
 	Form.prototype.constructor = Form;
 
 	Form.prototype.render = function render ( target, occupants ) {
-		Element.prototype.render.call( this, target, occupants );
+		Element$$1.prototype.render.call( this, target, occupants );
 		this.on( 'reset', handleReset );
 	};
 
 	Form.prototype.unrender = function unrender ( shouldDestroy ) {
 		this.off( 'reset', handleReset );
-		Element.prototype.unrender.call( this, shouldDestroy );
+		Element$$1.prototype.unrender.call( this, shouldDestroy );
 	};
 
 	return Form;
@@ -13027,9 +12721,9 @@ function progressiveText ( item, target, occupants, text ) {
 	}
 }
 
-var Mustache = (function (Item) {
+var Mustache = (function (Item$$1) {
 	function Mustache ( options ) {
-		Item.call( this, options );
+		Item$$1.call( this, options );
 
 		this.parentFragment = options.parentFragment;
 		this.template = options.template;
@@ -13042,8 +12736,8 @@ var Mustache = (function (Item) {
 		this.dirty = false;
 	}
 
-	if ( Item ) Mustache.__proto__ = Item;
-	Mustache.prototype = Object.create( Item && Item.prototype );
+	if ( Item$$1 ) Mustache.__proto__ = Item$$1;
+	Mustache.prototype = Object.create( Item$$1 && Item$$1.prototype );
 	Mustache.prototype.constructor = Mustache;
 
 	Mustache.prototype.bind = function bind () {
@@ -13092,13 +12786,13 @@ var Mustache = (function (Item) {
 	return Mustache;
 }(Item));
 
-var MustacheContainer = (function (ContainerItem) {
+var MustacheContainer = (function (ContainerItem$$1) {
 	function MustacheContainer ( options ) {
-		ContainerItem.call( this, options );
+		ContainerItem$$1.call( this, options );
 	}
 
-	if ( ContainerItem ) MustacheContainer.__proto__ = ContainerItem;
-	MustacheContainer.prototype = Object.create( ContainerItem && ContainerItem.prototype );
+	if ( ContainerItem$$1 ) MustacheContainer.__proto__ = ContainerItem$$1;
+	MustacheContainer.prototype = Object.create( ContainerItem$$1 && ContainerItem$$1.prototype );
 	MustacheContainer.prototype.constructor = MustacheContainer;
 
 	return MustacheContainer;
@@ -13110,18 +12804,18 @@ proto$3.handleChange = mustache.handleChange;
 proto$3.rebind = mustache.rebind;
 proto$3.unbind = mustache.unbind;
 
-var Interpolator = (function (Mustache) {
+var Interpolator = (function (Mustache$$1) {
 	function Interpolator () {
-		Mustache.apply(this, arguments);
+		Mustache$$1.apply(this, arguments);
 	}
 
-	if ( Mustache ) Interpolator.__proto__ = Mustache;
-	Interpolator.prototype = Object.create( Mustache && Mustache.prototype );
+	if ( Mustache$$1 ) Interpolator.__proto__ = Mustache$$1;
+	Interpolator.prototype = Object.create( Mustache$$1 && Mustache$$1.prototype );
 	Interpolator.prototype.constructor = Interpolator;
 
 	Interpolator.prototype.bubble = function bubble () {
 		if ( this.owner ) { this.owner.bubble(); }
-		Mustache.prototype.bubble.call(this);
+		Mustache$$1.prototype.bubble.call(this);
 	};
 
 	Interpolator.prototype.detach = function detach () {
@@ -13171,17 +12865,17 @@ var Interpolator = (function (Mustache) {
 	return Interpolator;
 }(Mustache));
 
-var Input = (function (Element) {
+var Input = (function (Element$$1) {
 	function Input () {
-		Element.apply(this, arguments);
+		Element$$1.apply(this, arguments);
 	}
 
-	if ( Element ) Input.__proto__ = Element;
-	Input.prototype = Object.create( Element && Element.prototype );
+	if ( Element$$1 ) Input.__proto__ = Element$$1;
+	Input.prototype = Object.create( Element$$1 && Element$$1.prototype );
 	Input.prototype.constructor = Input;
 
 	Input.prototype.render = function render ( target, occupants ) {
-		Element.prototype.render.call( this, target, occupants );
+		Element$$1.prototype.render.call( this, target, occupants );
 		this.node.defaultValue = this.node.value;
 	};
 	Input.prototype.compare = function compare ( value, attrValue ) {
@@ -13217,7 +12911,7 @@ var specialsPattern = new RegExp( '^(?:' + Object.keys( specials$1 ).join( '|' )
 var numberPattern$1 = /^(?:[+-]?)(?:(?:(?:0|[1-9]\d*)?\.\d+)|(?:(?:0|[1-9]\d*)\.)|(?:0|[1-9]\d*))(?:[eE][+-]?\d+)?/;
 var placeholderPattern = /\$\{([^\}]+)\}/g;
 var placeholderAtStartPattern = /^\$\{([^\}]+)\}/;
-var onlyWhitespace$1 = /^\s*$/;
+var onlyWhitespace = /^\s*$/;
 
 var JsonParser = Parser.extend({
 	init: function init ( str, options ) {
@@ -13226,7 +12920,7 @@ var JsonParser = Parser.extend({
 	},
 
 	postProcess: function postProcess ( result ) {
-		if ( result.length !== 1 || !onlyWhitespace$1.test( this.leftover ) ) {
+		if ( result.length !== 1 || !onlyWhitespace.test( this.leftover ) ) {
 			return null;
 		}
 
@@ -13357,9 +13051,9 @@ var parseJSON = function ( str, values ) {
 	return parser.result;
 };
 
-var Mapping = (function (Item) {
+var Mapping = (function (Item$$1) {
 	function Mapping ( options ) {
-		Item.call( this, options );
+		Item$$1.call( this, options );
 
 		this.name = options.template.n;
 
@@ -13373,8 +13067,8 @@ var Mapping = (function (Item) {
 		this.value = options.template.f;
 	}
 
-	if ( Item ) Mapping.__proto__ = Item;
-	Mapping.prototype = Object.create( Item && Item.prototype );
+	if ( Item$$1 ) Mapping.__proto__ = Item$$1;
+	Mapping.prototype = Object.create( Item$$1 && Item$$1.prototype );
 	Mapping.prototype.constructor = Mapping;
 
 	Mapping.prototype.bind = function bind () {
@@ -13431,7 +13125,7 @@ function createMapping ( item ) {
 		// if the interpolator is not static
 		if ( !template[0].s ) {
 			item.model = model;
-			item.link = viewmodel.createLink( item.name, model, template[0].r, { mapping: true } );
+			item.link = viewmodel.createLink( item.name, model, template[0].r );
 
 			// initialize parent side of the mapping from child data
 			if ( val === undefined && !model.isReadonly && item.name in childData ) {
@@ -13471,7 +13165,7 @@ function createMapping ( item ) {
 	}
 }
 
-var Option = (function (Element) {
+var Option = (function (Element$$1) {
 	function Option ( options ) {
 		var template = options.template;
 		if ( !template.a ) { template.a = {}; }
@@ -13482,18 +13176,18 @@ var Option = (function (Element) {
 			template.a.value = template.f || '';
 		}
 
-		Element.call( this, options );
+		Element$$1.call( this, options );
 
 		this.select = findElement( this.parent || this.parentFragment, false, 'select' );
 	}
 
-	if ( Element ) Option.__proto__ = Element;
-	Option.prototype = Object.create( Element && Element.prototype );
+	if ( Element$$1 ) Option.__proto__ = Element$$1;
+	Option.prototype = Object.create( Element$$1 && Element$$1.prototype );
 	Option.prototype.constructor = Option;
 
 	Option.prototype.bind = function bind () {
 		if ( !this.select ) {
-			Element.prototype.bind.call(this);
+			Element$$1.prototype.bind.call(this);
 			return;
 		}
 
@@ -13506,7 +13200,7 @@ var Option = (function (Element) {
 			delete this.attributeByName.selected;
 		}
 
-		Element.prototype.bind.call(this);
+		Element$$1.prototype.bind.call(this);
 		this.select.options.push( this );
 	};
 
@@ -13516,7 +13210,7 @@ var Option = (function (Element) {
 		if ( this.node && this.node.value !== value ) {
 			this.node._ractive.value = value;
 		}
-		Element.prototype.bubble.call(this);
+		Element$$1.prototype.bubble.call(this);
 	};
 
 	Option.prototype.getAttribute = function getAttribute ( name ) {
@@ -13550,7 +13244,7 @@ var Option = (function (Element) {
 	};
 
 	Option.prototype.render = function render ( target, occupants ) {
-		Element.prototype.render.call( this, target, occupants );
+		Element$$1.prototype.render.call( this, target, occupants );
 
 		if ( !this.attributeByName.value ) {
 			this.node._ractive.value = this.getAttribute( 'value' );
@@ -13558,7 +13252,7 @@ var Option = (function (Element) {
 	};
 
 	Option.prototype.unbind = function unbind () {
-		Element.prototype.unbind.call(this);
+		Element$$1.prototype.unbind.call(this);
 
 		if ( this.select ) {
 			removeFromArray( this.select.options, this );
@@ -13661,9 +13355,9 @@ function findParentPartial( name, parent ) {
 	}
 }
 
-var Partial = (function (MustacheContainer) {
+var Partial = (function (MustacheContainer$$1) {
 	function Partial ( options ) {
-		MustacheContainer.call( this, options );
+		MustacheContainer$$1.call( this, options );
 
 		this.yielder = options.template.t === YIELDER;
 
@@ -13679,8 +13373,8 @@ var Partial = (function (MustacheContainer) {
 		}
 	}
 
-	if ( MustacheContainer ) Partial.__proto__ = MustacheContainer;
-	Partial.prototype = Object.create( MustacheContainer && MustacheContainer.prototype );
+	if ( MustacheContainer$$1 ) Partial.__proto__ = MustacheContainer$$1;
+	Partial.prototype = Object.create( MustacheContainer$$1 && MustacheContainer$$1.prototype );
 	Partial.prototype.constructor = Partial;
 
 	Partial.prototype.bind = function bind () {
@@ -13699,7 +13393,7 @@ var Partial = (function (MustacheContainer) {
 		}
 
 		if ( !template ) {
-			MustacheContainer.prototype.bind.call(this);
+			MustacheContainer$$1.prototype.bind.call(this);
 			if ( ( templateObj = this.model.get() ) && typeof templateObj === 'object' && ( typeof templateObj.template === 'string' || Array.isArray( templateObj.t ) ) ) {
 				if ( templateObj.template ) {
 					this.source = templateObj.template;
@@ -13743,12 +13437,12 @@ var Partial = (function (MustacheContainer) {
 			this.containerFragment.bubble();
 			this.dirty = true;
 		} else {
-			MustacheContainer.prototype.bubble.call(this);
+			MustacheContainer$$1.prototype.bubble.call(this);
 		}
 	};
 
 	Partial.prototype.findNextNode = function findNextNode () {
-		return this.yielder ? this.containerFragment.findNextNode( this ) : MustacheContainer.prototype.findNextNode.call(this);
+		return this.yielder ? this.containerFragment.findNextNode( this ) : MustacheContainer$$1.prototype.findNextNode.call(this);
 	};
 
 	Partial.prototype.forceResetTemplate = function forceResetTemplate () {
@@ -13797,7 +13491,7 @@ var Partial = (function (MustacheContainer) {
 	};
 
 	Partial.prototype.unbind = function unbind () {
-		MustacheContainer.prototype.unbind.call(this);
+		MustacheContainer$$1.prototype.unbind.call(this);
 		this.fragment.aliases = {};
 		this.fragment.unbind();
 	};
@@ -13861,11 +13555,9 @@ var RepeatedFragment = function RepeatedFragment ( options ) {
 	this.parentFragment = this;
 	this.owner = options.owner;
 	this.ractive = this.parent.ractive;
-	this.delegate = this.ractive.delegate !== false && ( this.parent.delegate || findDelegate( findElement( options.owner ) ) );
+	this.delegate = this.parent.delegate || findElement( options.owner );
 	// delegation disabled by directive
 	if ( this.delegate && this.delegate.delegate === false ) { this.delegate = false; }
-	// let the element know it's a delegate handler
-	if ( this.delegate ) { this.delegate.delegate = this.delegate; }
 
 	// encapsulated styles should be inherited until they get applied by an element
 	this.cssIds = 'cssIds' in options ? options.cssIds : ( this.parent ? this.parent.cssIds : null );
@@ -13886,7 +13578,7 @@ var RepeatedFragment = function RepeatedFragment ( options ) {
 	this.isArray = false;
 };
 
-RepeatedFragment.prototype.bind = function bind ( context ) {
+RepeatedFragment.prototype.bind = function bind$$1 ( context ) {
 		var this$1 = this;
 
 	this.context = context;
@@ -13950,7 +13642,7 @@ RepeatedFragment.prototype.createIteration = function createIteration ( key, ind
 	return fragment.bind( model );
 };
 
-RepeatedFragment.prototype.destroyed = function destroyed$2 () {
+RepeatedFragment.prototype.destroyed = function destroyed$1 () {
 	this.iterations.forEach( destroyed );
 };
 
@@ -14007,7 +13699,7 @@ RepeatedFragment.prototype.rebind = function rebind ( next ) {
 	});
 };
 
-RepeatedFragment.prototype.render = function render ( target, occupants ) {
+RepeatedFragment.prototype.render = function render$$1 ( target, occupants ) {
 	// TODO use docFrag.cloneNode...
 
 	var xs = this.iterations;
@@ -14050,18 +13742,18 @@ RepeatedFragment.prototype.shuffled = function shuffled$1 () {
 	this.iterations.forEach( shuffled );
 };
 
-RepeatedFragment.prototype.toString = function toString ( escape ) {
+RepeatedFragment.prototype.toString = function toString$1$$1 ( escape ) {
 	return this.iterations ?
 		this.iterations.map( escape ? toEscapedString : toString$1 ).join( '' ) :
 		'';
 };
 
-RepeatedFragment.prototype.unbind = function unbind$3 () {
+RepeatedFragment.prototype.unbind = function unbind$1 () {
 	this.iterations.forEach( unbind );
 	return this;
 };
 
-RepeatedFragment.prototype.unrender = function unrender$2 ( shouldDestroy ) {
+RepeatedFragment.prototype.unrender = function unrender$1 ( shouldDestroy ) {
 	this.iterations.forEach( shouldDestroy ? unrenderAndDestroy : unrender );
 	if ( this.pendingNewIndices && this.previousIterations ) {
 		this.previousIterations.forEach( function (fragment) {
@@ -14072,7 +13764,7 @@ RepeatedFragment.prototype.unrender = function unrender$2 ( shouldDestroy ) {
 };
 
 // TODO smart update
-RepeatedFragment.prototype.update = function update$4 () {
+RepeatedFragment.prototype.update = function update$1 () {
 		var this$1 = this;
 
 	// skip dirty check, since this is basically just a facade
@@ -14289,19 +13981,6 @@ RepeatedFragment.prototype.updatePostShuffle = function updatePostShuffle () {
 	this.shuffled();
 };
 
-// find the topmost delegate
-function findDelegate ( start ) {
-	var el = start;
-	var delegate = start;
-
-	while ( el ) {
-		if ( el.delegate ) { delegate = el; }
-		el = el.parent;
-	}
-
-	return delegate;
-}
-
 function isEmpty ( value ) {
 	return !value ||
 	       ( Array.isArray( value ) && value.length === 0 ) ||
@@ -14315,9 +13994,9 @@ function getType ( value, hasIndexRef ) {
 	return SECTION_IF;
 }
 
-var Section = (function (MustacheContainer) {
+var Section = (function (MustacheContainer$$1) {
 	function Section ( options ) {
-		MustacheContainer.call( this, options );
+		MustacheContainer$$1.call( this, options );
 
 		this.sectionType = options.template.n || null;
 		this.templateSectionType = this.sectionType;
@@ -14325,12 +14004,12 @@ var Section = (function (MustacheContainer) {
 		this.fragment = null;
 	}
 
-	if ( MustacheContainer ) Section.__proto__ = MustacheContainer;
-	Section.prototype = Object.create( MustacheContainer && MustacheContainer.prototype );
+	if ( MustacheContainer$$1 ) Section.__proto__ = MustacheContainer$$1;
+	Section.prototype = Object.create( MustacheContainer$$1 && MustacheContainer$$1.prototype );
 	Section.prototype.constructor = Section;
 
 	Section.prototype.bind = function bind () {
-		MustacheContainer.prototype.bind.call(this);
+		MustacheContainer$$1.prototype.bind.call(this);
 
 		if ( this.subordinate ) {
 			this.sibling = this.parentFragment.items[ this.parentFragment.items.indexOf( this ) - 1 ];
@@ -14351,7 +14030,7 @@ var Section = (function (MustacheContainer) {
 
 	Section.prototype.detach = function detach () {
 		var frag = this.fragment || this.detached;
-		return frag ? frag.detach() : MustacheContainer.prototype.detach.call(this);
+		return frag ? frag.detach() : MustacheContainer$$1.prototype.detach.call(this);
 	};
 
 	Section.prototype.isTruthy = function isTruthy () {
@@ -14361,7 +14040,7 @@ var Section = (function (MustacheContainer) {
 	};
 
 	Section.prototype.rebind = function rebind ( next, previous, safe ) {
-		if ( MustacheContainer.prototype.rebind.call( this, next, previous, safe ) ) {
+		if ( MustacheContainer$$1.prototype.rebind.call( this, next, previous, safe ) ) {
 			if ( this.fragment && this.sectionType !== SECTION_IF && this.sectionType !== SECTION_UNLESS ) {
 				this.fragment.rebind( next );
 			}
@@ -14380,7 +14059,7 @@ var Section = (function (MustacheContainer) {
 	};
 
 	Section.prototype.unbind = function unbind () {
-		MustacheContainer.prototype.unbind.call(this);
+		MustacheContainer$$1.prototype.unbind.call(this);
 		if ( this.fragment ) { this.fragment.unbind(); }
 	};
 
@@ -14496,14 +14175,14 @@ function attach ( section, fragment ) {
 	}
 }
 
-var Select = (function (Element) {
+var Select = (function (Element$$1) {
 	function Select ( options ) {
-		Element.call( this, options );
+		Element$$1.call( this, options );
 		this.options = [];
 	}
 
-	if ( Element ) Select.__proto__ = Element;
-	Select.prototype = Object.create( Element && Element.prototype );
+	if ( Element$$1 ) Select.__proto__ = Element$$1;
+	Select.prototype = Object.create( Element$$1 && Element$$1.prototype );
 	Select.prototype.constructor = Select;
 
 	Select.prototype.foundNode = function foundNode ( node ) {
@@ -14517,7 +14196,7 @@ var Select = (function (Element) {
 	};
 
 	Select.prototype.render = function render ( target, occupants ) {
-		Element.prototype.render.call( this, target, occupants );
+		Element$$1.prototype.render.call( this, target, occupants );
 		this.sync();
 
 		var node = this.node;
@@ -14606,7 +14285,7 @@ var Select = (function (Element) {
 	};
 	Select.prototype.update = function update () {
 		var dirty = this.dirty;
-		Element.prototype.update.call(this);
+		Element$$1.prototype.update.call(this);
 		if ( dirty ) {
 			this.sync();
 		}
@@ -14615,13 +14294,13 @@ var Select = (function (Element) {
 	return Select;
 }(Element));
 
-var Textarea = (function (Input) {
+var Textarea = (function (Input$$1) {
 	function Textarea( options ) {
 		var template = options.template;
 
 		options.deferContent = true;
 
-		Input.call( this, options );
+		Input$$1.call( this, options );
 
 		// check for single interpolator binding
 		if ( !this.attributeByName.value ) {
@@ -14637,8 +14316,8 @@ var Textarea = (function (Input) {
 		}
 	}
 
-	if ( Input ) Textarea.__proto__ = Input;
-	Textarea.prototype = Object.create( Input && Input.prototype );
+	if ( Input$$1 ) Textarea.__proto__ = Input$$1;
+	Textarea.prototype = Object.create( Input$$1 && Input$$1.prototype );
 	Textarea.prototype.constructor = Textarea;
 
 	Textarea.prototype.bubble = function bubble () {
@@ -14661,14 +14340,14 @@ var Textarea = (function (Input) {
 	return Textarea;
 }(Input));
 
-var Text = (function (Item) {
+var Text = (function (Item$$1) {
 	function Text ( options ) {
-		Item.call( this, options );
+		Item$$1.call( this, options );
 		this.type = TEXT;
 	}
 
-	if ( Item ) Text.__proto__ = Item;
-	Text.prototype = Object.create( Item && Item.prototype );
+	if ( Item$$1 ) Text.__proto__ = Item$$1;
+	Text.prototype = Object.create( Item$$1 && Item$$1.prototype );
 	Text.prototype.constructor = Text;
 
 	Text.prototype.detach = function detach () {
@@ -14747,7 +14426,6 @@ var hidden = 'hidden';
 if ( doc ) {
 	var prefix$2;
 
-	/* istanbul ignore next */
 	if ( hidden in doc ) {
 		prefix$2 = '';
 	} else {
@@ -14763,7 +14441,6 @@ if ( doc ) {
 		}
 	}
 
-	/* istanbul ignore else */
 	if ( prefix$2 !== undefined ) {
 		doc.addEventListener( prefix$2 + 'visibilitychange', onChange );
 		onChange();
@@ -14790,12 +14467,10 @@ function onChange () {
 	visible = !doc[ hidden ];
 }
 
-/* istanbul ignore next */
 function onHide () {
 	visible = false;
 }
 
-/* istanbul ignore next */
 function onShow () {
 	visible = true;
 }
@@ -15269,7 +14944,7 @@ Transition.prototype.shouldFire = function shouldFire ( type ) {
 	if ( !this.element.parent ) { return true; }
 
 	// if there is a local param, it takes precedent
-	if ( params && params[0] && isObject(params[0]) && 'nested' in params[0] ) {
+	if ( params && params[0] && 'nested' in params[0] ) {
 		if ( params[0].nested !== false ) { return true; }
 	} else { // use the nearest instance setting
 		// find the nearest instance that actually has a nested setting
@@ -15361,7 +15036,7 @@ var ieBlacklist;
 
 try {
 	createElement( 'table' ).innerHTML = 'foo';
-} catch /* istanbul ignore next */ ( err ) {
+} catch ( err ) {
 	ieBug = true;
 
 	ieBlacklist = {
@@ -15383,7 +15058,6 @@ var insertHtml = function ( html$$1, node ) {
 	var wrapper;
 	var selectedOption;
 
-	/* istanbul ignore if */
 	if ( ieBug && ( wrapper = ieBlacklist[ node.tagName ] ) ) {
 		container = element( 'DIV' );
 		container.innerHTML = wrapper[0] + html$$1 + wrapper[1];
@@ -15447,13 +15121,13 @@ function element ( tagName ) {
 	return elementCache[ tagName ] || ( elementCache[ tagName ] = createElement( tagName ) );
 }
 
-var Triple = (function (Mustache) {
+var Triple = (function (Mustache$$1) {
 	function Triple ( options ) {
-		Mustache.call( this, options );
+		Mustache$$1.call( this, options );
 	}
 
-	if ( Mustache ) Triple.__proto__ = Mustache;
-	Triple.prototype = Object.create( Mustache && Mustache.prototype );
+	if ( Mustache$$1 ) Triple.__proto__ = Mustache$$1;
+	Triple.prototype = Object.create( Mustache$$1 && Mustache$$1.prototype );
 	Triple.prototype.constructor = Triple;
 
 	Triple.prototype.detach = function detach () {
@@ -15754,7 +15428,7 @@ var Fragment = function Fragment ( options ) {
 	this.createItems();
 };
 
-Fragment.prototype.bind = function bind$4 ( context ) {
+Fragment.prototype.bind = function bind$1 ( context ) {
 	this.context = context;
 	this.items.forEach( bind );
 	this.bound = true;
@@ -15796,7 +15470,7 @@ Fragment.prototype.createItems = function createItems () {
 	}
 };
 
-Fragment.prototype.destroyed = function destroyed$3 () {
+Fragment.prototype.destroyed = function destroyed$1 () {
 	this.items.forEach( destroyed );
 };
 
@@ -15909,7 +15583,7 @@ Fragment.prototype.rebind = function rebind ( next ) {
 	this.context = next;
 };
 
-Fragment.prototype.render = function render ( target, occupants ) {
+Fragment.prototype.render = function render$$1 ( target, occupants ) {
 	if ( this.rendered ) { throw new Error( 'Fragment is already rendered!' ); }
 	this.rendered = true;
 
@@ -15952,15 +15626,15 @@ Fragment.prototype.resetTemplate = function resetTemplate ( template ) {
 	}
 };
 
-Fragment.prototype.shuffled = function shuffled$2 () {
+Fragment.prototype.shuffled = function shuffled$1 () {
 	this.items.forEach( shuffled );
 };
 
-Fragment.prototype.toString = function toString ( escape ) {
+Fragment.prototype.toString = function toString$1$$1 ( escape ) {
 	return this.items.map( escape ? toEscapedString : toString$1 ).join( '' );
 };
 
-Fragment.prototype.unbind = function unbind$4 () {
+Fragment.prototype.unbind = function unbind$1 () {
 	this.context = null;
 	this.items.forEach( unbind );
 	this.bound = false;
@@ -15968,12 +15642,12 @@ Fragment.prototype.unbind = function unbind$4 () {
 	return this;
 };
 
-Fragment.prototype.unrender = function unrender$3 ( shouldDestroy ) {
+Fragment.prototype.unrender = function unrender$1 ( shouldDestroy ) {
 	this.items.forEach( shouldDestroy ? unrenderAndDestroy$1 : unrender );
 	this.rendered = false;
 };
 
-Fragment.prototype.update = function update$5 () {
+Fragment.prototype.update = function update$1 () {
 	if ( this.dirty ) {
 		if ( !this.updating ) {
 			this.dirty = false;
@@ -16005,6 +15679,7 @@ Fragment.prototype.valueOf = function valueOf () {
 
 	return this.value;
 };
+
 Fragment.prototype.getContext = getContext;
 
 function getChildQueue ( queue, ractive ) {
@@ -16690,13 +16365,12 @@ function Ractive ( options ) {
 
 // check to see if we're being asked to force Ractive as a global for some weird environments
 if ( win && !win.Ractive ) {
-	var opts$1 = '';
-	var script = document.currentScript || /* istanbul ignore next */ document.querySelector( 'script[data-ractive-options]' );
+	var opts = '';
+	var script = document.currentScript || document.querySelector( 'script[data-ractive-options]' );
 
-	if ( script ) { opts$1 = script.getAttribute( 'data-ractive-options' ) || ''; }
+	if ( script ) { opts = script.getAttribute( 'data-ractive-options' ) || ''; }
 
-	/* istanbul iggnore next */
-	if ( ~opts$1.indexOf( 'ForceGlobal' ) ) { win.Ractive = Ractive; }
+	if ( ~opts.indexOf( 'ForceGlobal' ) ) { win.Ractive = Ractive; }
 }
 
 Object.assign( Ractive.prototype, proto, defaults );
@@ -16737,7 +16411,7 @@ Object.defineProperties( Ractive, {
 	svg:              { value: svg },
 
 	// version
-	VERSION:          { value: '1.0.0-edge' },
+	VERSION:          { value: '0.9.2' },
 
 	// plugins
 	adaptors:         { writable: true, value: {} },

@@ -26,7 +26,6 @@ journey.on( events.ENTERED, function ( event ) {
 
 journey.on( events.LEFT, function ( event ) {
 	// abort active AjaxRequests when leaving route
-	console.log( "LEFT: Abort all AJAX" )
 	ajaxPool.abortAll();
 } );
 
@@ -53,6 +52,7 @@ journey.start( {
 	fallback: '/notFound',
 	base: contextPath,
 	defaultRoute: '/home'
+	//useOnHashChange: true,
 			//useHash: false,
 			//hash: '#!'
 } );

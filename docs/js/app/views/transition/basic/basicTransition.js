@@ -8,7 +8,6 @@ var basicTransition = {
 	enter: function ( route, prevRoute, options ) {
 		/*%injectPath%*/
 		route.view = new Ractive( {
-			el: options.target,
 			template: template, loadView: function () {
 				journey.goto( "/basicTransition", { forceReload: true } );
 			},
@@ -16,6 +15,8 @@ var basicTransition = {
 				fade: fade
 			}
 		} );
+		
+		return route.view.render( options.target );
 	},
 
 	leave: function ( route, nextRoute, options ) {
