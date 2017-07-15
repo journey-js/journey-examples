@@ -9,196 +9,73 @@
     <div class="row">
 
         <div class="col-md-12">
-            <p>This demo shows a variety of ways one can listen to events fired from a component.
+            <p>This demo shows how data flows from a parent component to the child and back up.</p>
+			
+			<p>Let's see the example in action:</p>
 
-            <p>In this demo we create a <span class="var">Grid</span> <span class="fun">component</span> with two actions (buttons), one to
-                <span class="met">add</span> a new row, the other to <span class="met">remove</span> an existing
-                row. The <span class="var">Grid</span> <span class="met">publishes (fires)</span> two events in correspondence to <span class="met">add</span>
-                and <span class="met">remove</span> actions, namely the <span class="var">public.add</span> event and the <span class="var">public.remove</span>
-                event. Listeners can subscribe to these events using <a href="http://docs.ractivejs.org/edge/ractive-on" target="_blank" class="link">ractive.on</a>.
-            </p>
-            <p>Note: The <span class="met">.public</span> namespace is not a best practice, but simply to illustrate that the events are for 
-                public use by subscribers of the grid component.
-            </p>
+						<div class="row">
+							<div class="col-md-2">
+								<table class='table'>
+									<thead>
+										<tr>
 
-            <p>Let's see the component in action. Open your browser console to see the events fired from the [component] and received by the [parent] view:</p>
+											<th>Name</th>
+											<th>Age</th>                
+											<th>Delete</th>  
+										</tr>
+									</thead>
 
-            <child on-rowAdded="@.handleAdd($0)" rows="{{rows}}"/>
-            
-            
-            <p>Let's look at some code.</p>
-            
-            <p>Grid.js</p>
-            
-            <pre><code  class="line-numbers language-js"> var data = {
-    rows: [
-        {name: "Bob", age: 20, id: 11},
-        {name: "Steve", age: 30, id: 12},
-        {name: "James", age: 40, id: 13},
-        {name: "Henry", age: 50, id: 14}
-    ]
-};
+									<tbody>
+										{{#persons}}
 
- var grid = template.extend({
+									<child person="{{ this }}"/>
 
-    // The onrender lifecycle event
-    onrender: function () {
 
-        // public.remove and public.add are public events that subscribers can listen to,
-        // even the grid component itself
-                
-        // Here we subscribe to the remove event
-        this.on("public.remove", function (id, index) {
-            var row = data.rows[index];
+									{{/}}
+									</tbody>
+								</table>
+							</div>
+						</div>
 
-            // We remove the row from data rows array
-            this.splice("rows", index, 1);
-        });
-    },
-            
-    // Unlike subscribing to the remove event, we declare an 'add' method
-    // for the template to call and then 'fire' the public.add event
-    add: function (row) {
+						<div class="row">
+							<div class="col-md-2">
+								<button class="btn btn-success" on-click="@.addPerson({name: 'RandomName', age: 10})">Add row</button>
+							</div>
+						</div>			
+			<p style="margin-top: 20px">The <span class="ln">parent</span> component renders an array of <span class="var">persons</span> in a table. 
+				Each <span class="var">person</span> row is represented by a <span class="ln">child</span> component. The <span class="ln">parent</span> 
+				passes a <span class="var">person</span> object to each child. See the snippet below how a <span class="var">person</span> is mapped to the child.
+				The child can then access properties on the <span class="var">person</span> as <span class="met">\{{person.name}}</span> etc.
+			</p>
 
-    // We add the new row to the data rows array
-    this.push("rows", row);
-
-    // Fire public.add event for listeners to act upon
-        this.fire("public.add", row);
-    },
-
-    data: function () {
-        return data;
-    }
-});</code></pre>
-            
-            <p>In <span class="ln">line 10</span> we create a grid component.
-            </p>
-            <p><span class="ln">line 19</span> we register to the <span class="var">public.remove</span> event.
-                This event is published (fired) in the <span class="var">Grid.html</span> template, below. The <span class="var">public.remove</span>
-                event is passed two arguments, <span class="var">id</span> of the person, and <span class="var">index</span> of the person in the data array to remove.
-            </p>
-            <p>In <span class="ln">Line 29</span>, instead of subscribing to the <span class="var">public.add</span> event as we did above, we call the 
-                <span class="met">add</span> method directly from the <span class="var">Grid.html</span> template below. This is how we have been invoking methods from templates
-                in the previous examples. 
-            </p>
-            <p>We want to alert users of our grid component to receive the add event as well, so in <span class="ln">Line 35</span>, we publish the <span class="var">public.add</span>
-                event and pass the row as an argument.
-            </p>
-            
-            <p>Grid.html</p>
-            
-<pre><code  class="line-numbers language-markup"> 
-&lt;table class='table'>
-    &lt;thead>
-        &lt;tr>
-
-            &lt;th>Name&lt;/th>
-            &lt;th>Age&lt;/th>                
-            &lt;th>Delete&lt;/th>  
-        &lt;/tr>
-    &lt;/thead>
-
-    &lt;tbody>
-        \{{#rows:i}}
-        &lt;tr>
-            &lt;td>{{name}}&lt;/td>
-            &lt;td>{{age}}v/td>
-            &lt;td>
-                &lt;button class="btn btn-danger" on-click="fire('public.remove', id, i)">Remove&lt;/button>
-            &lt;/td>
-        &lt;/tr>
-        \{{/rows}}
-    &lt;/tbody>
-&lt;/table>
-
-&lt;button class="btn btn-success" on-click="add({name: 'Default', age: 10})">Add row&lt;/button>
+			<pre><code class="line-numbers language-markup"> <script type="text/html"><child person="\{{ this }}"/></script>
 </code></pre>
-            
-            <p>In <span class="ln">line 18</span> we <span class="met">fire</span> the <span class="var">public.remove</span>
-                event and pass in <span class="met">id</span> and <span class="met">index of the row</span> as arguments.
-                Because we <span class="met">fire</span> the event, anyone can subscribe (listen) to the event, event the <span class="var">Grid</span>
-                component itself, as is done <span class="ln">line 19</span> of the previous code snippet.
-            </p>
-            <p>In <span class="ln">line 25</span> instead of firing an event we call the <span class="met">add</span>
-                method of the <span class="var">Grid</span> component, passing the a row object consisting of a <span class="fun">name</span>
-                and <span class="fun">id</span>.
-            </p>
 
-        </div>
-    </div>
+				<p> The child renders the person and a <span class="met">remove button</span>. When the <span class="met">remove button</span> is clicked, the child
+					<span class="met">fires</span> an event that the parent can listen to.
+				</p>
 
-    <div class="row">
-
-        <div class="col-md-12">
-            <p>Below is the view where we use the grid.
-            </p>
-            <p>comp-pusub.js:</p>
-
-            <pre><code  class="line-numbers language-js"> function createView() {
-
-    var view = new template({
-        components: {
-            grid: gridComponent
-        },
-
-        handleAdd: function (row) {
-            // handleRowAdded is called from the template as: on-public.add="handleRowAdded($1)
-            // $1 is a mapping to the first argument that the grid component 'public.add' event passed along
-            // Other arguments would be mapped as $2, $3 or all with (...arguments)
-
-            // If we want to invoke API on the grid, we can get a reference to the
-            // component as follows:
-            var comp = this.findComponent("grid");
-        }
-    });
-
-    // Subscribe to the public.remove event fired by the Grid component, note we use the 'grid.' namespace to
-    // listen to the public.remove event of the grid component
-    view.on("grid.public.remove", function (id, index) {
-        console.log("[parent] on('grid.public.remove') invoked with arguments, id:", id, "index:", index);
-    });
-
-    // We can also subsribe to all public.remove events from all components using the '*.' notation.
-        view.on("*.public.remove", function (id, index) {
-            console.log("[parent] on('*.public.remove') invoked with arguments:, id:", id, "index:", index);
-        });
-
-    return view;
-}</code></pre>
-            <p>Above we show a number of ways we can <span class="met">subscribe</span> to events <span class="met">published</span> by the grid component.</p>
-            
-            <p>In <span class="ln">line 5</span> we register the <span class="var">grid</span> component
-                on the view.
-            </p>
-            <p><span class="ln">Line 8</span> is a method which is called from the view template directly based on the <span class="var">public.add</span>
-                published from the grid. See the <span class="met">comp-pubsub.html</span> template below on how this method is called.</p>
-            <p><span class="ln">Line 21</span> shows how to subscribe to the <span class="var">public.remove</span> event using <span class="ln">ractie.on</span>.
-                Note that we use the namespace, <span class="var">grid.</span>, to specify where the <span class="var">public.remove</span> event comes from.
-            </p>
-            <p>
-                <span class="ln">Line 26</span> we show how to subscribe to the <span class="var">public.remove</span> event using the
-                <span class="var">*.</span> namespace. <span class="var">*.</span> allows us to listen to any <span class="var">public.remove</span>
-                event, fired from any component in our view.                
-            </p>
-
-            <p>Here is the view markup, comp-pubsub.html:</p>            
-          
-            <pre><code  class="line-numbers language-markup">&lt;grid on-public.add="handleAdd($1)"/>
+				<pre><code class="line-numbers language-markup"> <script type="text/html"><tr>
+	<td>\{{person.name}}</td>
+	<td>\{{person.age}}</td>
+	<td>		
+		<!-- fire an event to the parent with the person and index to remove -->
+		<button class="btn btn-danger" on-click="@.fire( 'removePerson', person, @index)">Remove</button>
+	</td>
+</tr></script>
 </code></pre>
-            <p><span class="ln">Line 1</span> shows the markup to render the grid. We can use the attribute <span class="var">on-&lt;event></span>
-                to listen to events published (fired) from components.
-            </p>
-            <p>Since the grid component fires the event <span class="var">public.add</span> we can set an attribute <span class="var">on-public.add</span>
-                to handle the event. In this case we invoke the <span class="met">handleAdd</span> method of our view. Note that since the <span class="var">public.add</span>
-                event passes an argument, we need to map that argument to our method, otherwise the argument won't be passed along.
-            </p>
-            <p>We use the <span class="var">$1</span> placeholder to mark the first argument from the <span class="var">public.add</span> method to pass 
-                to the <span class="met">handleAdd</span> method. Other arguments can be marked as, <span class="var">$2</span>, <span class="var">$3</span> etc.
-                The argument placeholders can be reordered to fit your handler function.
-            </p>
-            
-            <p>Just like the spread operator in Javascript, we can use <span class="var">...arguments</span> to reference all arguments.</p>
-        </div>
-    </div>
-</div>
+
+					The parent listens to the <span class="met">removePerson</span> event and remove the given person:
+
+					<pre><code class="line-numbers language-js"> let parent = new Ractive({
+	on: { 'child.removePerson': function ( ctx, person, index ) {
+
+			// Remove the person from the persons array
+			this.splice( "persons", index, 1 );
+		}
+	}
+});
+</code></pre>
+					</div>
+				</div>
+			</div>

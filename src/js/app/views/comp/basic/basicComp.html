@@ -9,19 +9,12 @@
     <div class="row">
 
         <div class="col-md-12">
-            <p>In this demo, we show how to create a basic component. While components are really a Ractive feature, 
-                we will be showcasing it here as well.</p>
+            <p>In this demo, we show how to create a basic component with Ractive.</p>
 
-            <p>In this demo we create a very simple <span class="fun">component</span>:
-                a <span class="var">&lt;div></span> tag with a <span class="var">label</span> and a
-                <span class="met">click</span> action that <span class="met">alerts</span>
-                the user.
-            </p>
             <p>Below is the component in action!</p>
 
-            
-            <simple message='I am a Component. You can click me!'/>
-            
+            <simple message='I am a Component. You can click me!' hidden={{hidden}} feedback={{feedback}}/>
+
             <div class="bs-callout bs-callout-info" class-hidden="hidden" >{{feedback}}</div>
 
         </div>
@@ -30,35 +23,31 @@
     <div class="row">
 
         <div class="col-md-12">
-            <p>Below is the code to create the component:
+            <p>Below we create the component:
             </p>
 
-            <pre><code  class="line-numbers language-js">function createComponent() {
-            
+			<pre><code class="line-numbers language-markup"><script type="text/plain"><div on-click="activate()"> \{{message}} </div></script></code></pre>
+
+            <pre><code  class="line-numbers language-js">import compTemplate from './compTemplate.html';
+
+function createComponent() {
+
 			 var comp = ractive.extend({
-                template: '&lt;div on-click="activate()"> \{{message}} &lt;/div>',
+                template: compTemplate,
                 activate: function() {
-                    alert("Active!");
-                },
-                data: {
-                    // A default message if none is provided
-                    message: 'No message specified, using the default'
-                }
+                    this.set( "hidden", false );
+					this.set( "feedback", "Component clicked!" );
+                }                
             });
 };</code></pre>
-            
-            <p>Looking at the code above, you'll note that a Ractive <span class="fun">component</span>
-                is just a normal Ractive instance. <span class="ln">Line 4</span>
-                shows the <span class="var">template</span>, <span class="ln">line 5</span>
-                a <span class="fun">method</span> to invoke, and <span class="ln">line 8</span> a 
-                <span class="var">data</span> object.
-            </p>
-            
-            <p>What turns a ractive instance into a <span class="fun">component</span>
-            is when it referenced inside another ractive instance, as show below:</p>
-            
-                        <pre><code  class="line-numbers language-js">function createView() {
+
+            <p>To use the component in our view we declare it with the <span class="met">components</span> property under the <span class="var">name</span> we want
+				to use in our markup. In this case we call our component <span class="var">simple</span>.</p>
+
+			<pre><code  class="line-numbers language-js">function createView() {
+
     var comp = createComponent():
+
     var view = new template({
         components: {
             simple: comp
@@ -66,24 +55,26 @@
     });
 };
 </code></pre>
-            
-            <p><span class="ln">Line 4</span> registers the ractive
-            components, as key/value pairs.</p>
-            <p><span class="ln">Line 5</span> we register a component called
-                <span class="var">simple</span> which references the <span class="fun">comp</span>
-                instance. <span class="var">simple</span> becomes a new <span class="var">tag</span>
-                that we can reference in our template:
-            </p>
-            
-            <pre><code  class="line-numbers language-markup">&lt;simple message='Click to activate!'/>
-</code></pre>
-            <p><span class="ln">Line 1</span> shows how to specify the component
-            in our html markup. The name of the tag is the same used when
-            registering our component.
-            </p>
-            <p>We can set the component <span class="var">message</span> as an
-            attribute.</p>            
 
+			<p>Below we show how the component is used by the view:</p>
+
+            <pre><code  class="line-numbers language-markup"><script type="text/plain"><simple message='I am a Component. You can click me!' hidden=\{{hidden}} feedback=\{{feedback}}/>
+
+<!-- Below is a feedback panel on the view that is initially hidden, but the component 
+will make it visible through mapped data. -->						
+<div class-hidden="hidden" >\{{feedback}}</div></script></code></pre> 
+			<p>We can <em>map data</em> from the view to the component through attributes when declaring the component.</p>
+			<p>In the snippet above we map 3 values, <span class="var">message</span>, <span class="var">hidden</span> and <span class="var">feedback</span>.</p>
+			
+			<p>The <span class="var">message</span> is passed from the view to the component and displayed on the component through the
+				<span class="var">\{{message}}</span> mustache.</p>
+			
+			<p>The <span class="var">hidden</span> variable is mapped to the component so when the component changes <span class="var">hidden</span> to true,
+				the view' <span class="var">hidden</span> variable is updated as well, meaning the <span class="met">class-hidden</span> directive becomes
+				false and the feedback box is displayed.
+			<p>The <span class="var">feedback</span> variables that is mapped to the component allows the component to set the feedback message that the view
+				will display.					
+			</p>
         </div>
     </div>
 </div>

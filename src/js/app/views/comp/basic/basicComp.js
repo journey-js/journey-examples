@@ -17,30 +17,35 @@ var basicComp = {
 
 function createView( options ) {
 
-	var component = Ractive.extend( {
-		template: compTemplate,
-
-		activate () {
-			// We reference the parent ractive instance through "comp.parent" and set the parent data variables, hidden and feedback
-			this.parent.set( "hidden", false );
-			this.parent.set( "feedback", "Component clicked!" );
-		}
-	} );
+	var component = createComponent();
 
 	var view = new Ractive( {
 		el: options.target,
 		template: template,
 		data: { hidden: true },
 
-		// We register our component as "simple"
+		// We register our component under the name "simple"
 		components: {
 			simple: component
 		}
 	} );
-	
-	//view.attachChild(component, {target: "simple"});
-
 	return view;
+}
+
+function createComponent() {
+	let comp = Ractive.extend( {
+		template: compTemplate,
+
+		activate() {
+			this.set( "hidden", false );
+			this.set( "feedback", "Component clicked!" );
+		},
+		data: {
+			// A default message if none is provided
+			message: 'No message specified, using the default'
+		}
+	} );
+	return comp;
 }
 
 export default basicComp;

@@ -1,35 +1,10 @@
-<div class="row">
-    <div class="col-md-2">
-        <table class='table'>
-            <thead>
-                <tr>
-
-                    <th>Name</th>
-                    <th>Age</th>                
-                    <th>Delete</th>  
-                </tr>
-            </thead>
-
-            <tbody>
-                {{#rows:i}}
-                <tr>
-                    <td>{{name}}</td>
-                    <td>{{age}}</td>
-                    <td>
-                        <button class="btn btn-danger" on-click="removeRow( @context, id, i)">Remove</button>
-                    </td>
-
-                </tr>
-
-
-                {{/rows}}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-2">
-        <button class="btn btn-success" on-click="addRow({name: 'Default', age: 10})">Add row</button>
-    </div>
-</div>
+<tr>
+	<td>{{person.name}}</td>
+	<td>{{person.age}}</td>
+	<td>
+		
+		<!-- fire an event to the parent with the person and index to remove -->
+		<button class="btn btn-danger" on-click="@.fire( 'removePerson', person, @index)">Remove</button>
+		
+	</td>
+</tr>
