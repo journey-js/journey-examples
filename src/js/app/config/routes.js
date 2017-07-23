@@ -20,6 +20,9 @@ import dynamicComp from "../views/comp/dynamic/dynamicComp.js";
 import parent from "../views/comp/dataflow/parent.js";
 import basicTransition from "../views/transition/basic/basicTransition.js";
 import sortable from "../views/decorator/sortable.js";
+import activity from "../views/basics/activity/activity.js";
+
+journey.add("/activity", activity);
 
 journey.add("/home", home);
 journey.add("/basic", basic);

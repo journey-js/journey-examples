@@ -1,7 +1,6 @@
 import journey from 'lib/journey/journey.js';
 import events from "lib/journey/event/events.js";
 import Ractive from "Ractive.js";
-import fade from "lib/fade.js";
 import slide from "lib/slide.js";
 import 'lib/prism.js';
 import "./config/routes.js";
@@ -10,8 +9,9 @@ import "lib/bootstrap.js";
 import "./animationMonitor.js";
 import feedback from 'comp/feedback/feedback.js';
 import config from './config/config.js';
-import ajaxPool from './utils/ajaxPool.js'
-		import utils from './utils/utils.js'
+import ajaxPool from './utils/ajaxPool.js';
+import utils from './utils/utils.js';
+import 'lib/dropzone.js';
 
 //let contextPath = "/build";
 		let contextPath = "/journey-examples/";
@@ -52,7 +52,7 @@ journey.start( {
 	fallback: '/notFound',
 	base: contextPath,
 	defaultRoute: '/home'
-	//useOnHashChange: true,
+			//useOnHashChange: true,
 			//useHash: false,
 			//hash: '#!'
 } );

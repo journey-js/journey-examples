@@ -1,7 +1,7 @@
 /*
-	Ractive.js v0.9.2
-	Build: 914a7dac7cbeaf720abf7913326927e1dda77767
-	Date: Fri Jun 30 2017 16:35:02 GMT+0000 (UTC)
+	Ractive.js v1.0.0-edge
+	Build: 55fac29311aa067e871490d4c7aeb8f00808ccf1
+	Date: Sun Jun 04 2017 18:20:45 GMT+0000 (UTC)
 	Website: http://ractivejs.org
 	License: MIT
 */
@@ -149,13 +149,13 @@ var welcome;
 
 if ( hasConsole ) {
 	var welcomeIntro = [
-		"%cRactive.js %c0.9.2 %cin debug mode, %cmore...",
+		"%cRactive.js %c1.0.0-edge %cin debug mode, %cmore...",
 		'color: rgb(114, 157, 52); font-weight: normal;',
 		'color: rgb(85, 85, 85); font-weight: normal;',
 		'color: rgb(85, 85, 85); font-weight: normal;',
 		'color: rgb(82, 140, 224); font-weight: normal; text-decoration: underline;'
 	];
-	var welcomeMessage = "You're running Ractive 0.9.2 in debug mode - messages will be printed to the console to help you fix problems and optimise your application.\n\nTo disable debug mode, add this line at the start of your app:\n  Ractive.DEBUG = false;\n\nTo disable debug mode when your app is minified, add this snippet:\n  Ractive.DEBUG = /unminified/.test(function(){/*unminified*/});\n\nGet help and support:\n  http://docs.ractivejs.org\n  http://stackoverflow.com/questions/tagged/ractivejs\n  http://groups.google.com/forum/#!forum/ractive-js\n  http://twitter.com/ractivejs\n\nFound a bug? Raise an issue:\n  https://github.com/ractivejs/ractive/issues\n\n";
+	var welcomeMessage = "You're running Ractive 1.0.0-edge in debug mode - messages will be printed to the console to help you fix problems and optimise your application.\n\nTo disable debug mode, add this line at the start of your app:\n  Ractive.DEBUG = false;\n\nTo disable debug mode when your app is minified, add this snippet:\n  Ractive.DEBUG = /unminified/.test(function(){/*unminified*/});\n\nGet help and support:\n  http://docs.ractivejs.org\n  http://stackoverflow.com/questions/tagged/ractivejs\n  http://groups.google.com/forum/#!forum/ractive-js\n  http://twitter.com/ractivejs\n\nFound a bug? Raise an issue:\n  https://github.com/ractivejs/ractive/issues\n\n";
 
 	welcome = function () {
 		if ( Ractive.WELCOME_MESSAGE === false ) {
@@ -895,7 +895,6 @@ function cancel             ( x ) { x.cancel(); }
 function destroyed          ( x ) { x.destroyed(); }
 function handleChange       ( x ) { x.handleChange(); }
 function mark               ( x ) { x.mark(); }
-function markForce          ( x ) { x.mark( true ); }
 function marked             ( x ) { x.marked(); }
 function markedAll          ( x ) { x.markedAll(); }
 function render             ( x ) { x.render(); }
@@ -1330,7 +1329,7 @@ function fireShuffleTasks ( stage ) {
 	}
 }
 
-function shuffle ( model, newIndices, link, unsafe ) {
+function shuffle ( model, newIndices, link ) {
 	model.shuffling = true;
 
 	var i = newIndices.length;
@@ -1342,7 +1341,7 @@ function shuffle ( model, newIndices, link, unsafe ) {
 		}
 
 		// rebind the children on i to idx
-		if ( i in model.childByKey ) { model.childByKey[ i ].rebind( !~idx ? undefined : model.joinKey( idx ), model.childByKey[ i ], !unsafe ); }
+		if ( i in model.childByKey ) { model.childByKey[ i ].rebind( !~idx ? undefined : model.joinKey( idx ), model.childByKey[ i ], true ); }
 
 		if ( !~idx && model.keyModels[ i ] ) {
 			model.keyModels[i].rebind( undefined, model.keyModels[i], false );
@@ -1596,10 +1595,7 @@ var LinkModel = (function (ModelBase$$1) {
 
 		if ( this.rootLink ) { this.addShuffleTask( function () {
 			this$1.relinked();
-			if ( !safe ) {
-				this$1.markedAll();
-				this$1.notifyUpstream();
-			}
+			if ( !safe ) { this$1.notifyUpstream(); }
 		}); }
 	};
 
@@ -1640,7 +1636,7 @@ ModelBase.prototype.link = function link ( model, keypath, options ) {
 	lnk.implicit = options && options.implicit;
 	lnk.sourcePath = keypath;
 	lnk.rootLink = true;
-	if ( this._link ) { this._link.relinking( model, false ); }
+	if ( this._link ) { this._link.relinking( model, true, false ); }
 	this.rebind( lnk, this, false );
 	fireShuffleTasks();
 
@@ -1655,7 +1651,7 @@ ModelBase.prototype.unlink = function unlink () {
 	if ( this._link ) {
 		var ln = this._link;
 		this._link = undefined;
-		ln.rebind( this, ln, false );
+		ln.rebind( this, this._link );
 		fireShuffleTasks();
 		ln.teardown();
 		this.notifyUpstream();
@@ -1874,7 +1870,7 @@ var Model = (function (ModelBase$$1) {
 				if ( options.complete ) { options.complete( to ); }
 
 				this$1.ticker = null;
-				fulfilPromise();
+				fulfilPromise( to );
 			}
 		});
 
@@ -1972,7 +1968,7 @@ var Model = (function (ModelBase$$1) {
 	};
 
 	Model.prototype.mark = function mark$1 ( force ) {
-		if ( this._link ) { return this._link.mark( force ); }
+		if ( this._link ) { return this._link.mark(); }
 
 		var value = this.retrieve();
 
@@ -1995,7 +1991,7 @@ var Model = (function (ModelBase$$1) {
 				this.isArray = false;
 			}
 
-			this.children.forEach( force ? markForce : mark );
+			this.children.forEach( mark );
 			this.links.forEach( marked );
 
 			this.deps.forEach( handleChange );
@@ -2041,7 +2037,7 @@ var Model = (function (ModelBase$$1) {
 		});
 
 		this.parent.value[ this.key ] = array;
-		this.shuffle( newIndices, true );
+		this.shuffle( newIndices );
 	};
 
 	Model.prototype.retrieve = function retrieve () {
@@ -2053,8 +2049,8 @@ var Model = (function (ModelBase$$1) {
 		this.applyValue( value );
 	};
 
-	Model.prototype.shuffle = function shuffle$1 ( newIndices, unsafe ) {
-		shuffle( this, newIndices, false, unsafe );
+	Model.prototype.shuffle = function shuffle$1 ( newIndices ) {
+		shuffle( this, newIndices, false );
 	};
 
 	Model.prototype.source = function source () { return this; };
@@ -2173,7 +2169,7 @@ function resolveReference ( fragment, ref ) {
 			var repeater = fragment.findRepeatingFragment();
 			// make sure the found fragment is actually an iteration
 			if ( !repeater.isIteration ) { return; }
-			return repeater.context && repeater.context.getKeyModel( repeater[ ref[1] === 'i' ? 'index' : 'key' ] );
+			return repeater.context.getKeyModel( repeater[ ref[1] === 'i' ? 'index' : 'key' ] );
 		}
 
 		// @global referring to window or global
@@ -2467,8 +2463,11 @@ function Ractive$add ( keypath, d, options ) {
 	return add( this, keypath, num, opts );
 }
 
-var noAnimation = Promise.resolve();
-Object.defineProperty( noAnimation, 'stop', { value: noop });
+function immediate ( value ) {
+	var result = Promise.resolve( value );
+	Object.defineProperty( result, 'stop', { value: noop });
+	return result;
+}
 
 var linear = easing.linear;
 
@@ -2497,7 +2496,7 @@ function animate ( ractive, model, to, options ) {
 	// don't bother animating values that stay the same
 	if ( isEqual( from, to ) ) {
 		options.complete( options.to );
-		return noAnimation; // TODO should this have .then and .catch methods?
+		return immediate( to );
 	}
 
 	var interpolator = interpolate( from, to, ractive, options.interpolator );
@@ -2508,7 +2507,7 @@ function animate ( ractive, model, to, options ) {
 		model.set( to );
 		runloop.end();
 
-		return noAnimation;
+		return immediate( to );
 	}
 
 	return model.animate( from, to, options, interpolator );
@@ -3671,9 +3670,7 @@ function getElement ( input ) {
 
 		// then as selector, if possible
 		if ( !output && doc.querySelector ) {
-			try {
-				output = doc.querySelector( input );
-			} catch (e) { /* this space intentionally left blank */ }
+			output = doc.querySelector( input );
 		}
 
 		// did it work?
@@ -8486,10 +8483,6 @@ var ComputationChild = (function (Model$$1) {
 	ComputationChild.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	ComputationChild.prototype.constructor = ComputationChild;
 
-	var prototypeAccessors = { setRoot: {} };
-
-	prototypeAccessors.setRoot.get = function () { return this.parent.setRoot; };
-
 	ComputationChild.prototype.applyValue = function applyValue ( value ) {
 		Model$$1.prototype.applyValue.call( this, value );
 
@@ -8503,10 +8496,6 @@ var ComputationChild = (function (Model$$1) {
 			if ( source ) {
 				source.dependencies.forEach( mark );
 			}
-		}
-
-		if ( this.setRoot ) {
-			this.setRoot.set( this.setRoot.value );
 		}
 	};
 
@@ -8544,8 +8533,6 @@ var ComputationChild = (function (Model$$1) {
 		return this.childByKey[ key ];
 	};
 
-	Object.defineProperties( ComputationChild.prototype, prototypeAccessors );
-
 	return ComputationChild;
 }(Model));
 
@@ -8582,12 +8569,6 @@ var Computation = (function (Model$$1) {
 	if ( Model$$1 ) Computation.__proto__ = Model$$1;
 	Computation.prototype = Object.create( Model$$1 && Model$$1.prototype );
 	Computation.prototype.constructor = Computation;
-
-	var prototypeAccessors = { setRoot: {} };
-
-	prototypeAccessors.setRoot.get = function () {
-		if ( this.signature.setter ) { return this; }
-	};
 
 	Computation.prototype.get = function get ( shouldCapture ) {
 		if ( shouldCapture ) { capture( this ); }
@@ -8679,8 +8660,6 @@ var Computation = (function (Model$$1) {
 		if ( this.root.computations[this.key] === this ) { delete this.root.computations[this.key]; }
 		Model$$1.prototype.teardown.call(this);
 	};
-
-	Object.defineProperties( Computation.prototype, prototypeAccessors );
 
 	return Computation;
 }(Model));
@@ -10924,7 +10903,7 @@ var Binding = function Binding ( element, name ) {
 
 	var model = interpolator.model;
 
-	if ( model.isReadonly && !model.setRoot ) {
+	if ( model.isReadonly ) {
 		var keypath = model.getKeypath().replace( /^@/, '' );
 		warnOnceIfDebug( ("Cannot use two-way binding on <" + (element.name) + "> element: " + keypath + " is read-only. To suppress this warning use <" + (element.name) + " twoway='false'...>"), { ractive: this.ractive });
 		return false;
@@ -11355,18 +11334,16 @@ var GenericBinding = (function (Binding$$1) {
 
 		el.on( 'change', handleDomEvent );
 
-		if ( node.type !== 'file' ) {
-			if ( !lazy ) {
-				el.on( 'input', this.handler );
+		if ( !lazy ) {
+			el.on( 'input', this.handler );
 
-				// IE is a special snowflake
-				if ( node.attachEvent ) {
-					el.on( 'keyup', this.handler );
-				}
+			// IE is a special snowflake
+			if ( node.attachEvent ) {
+				el.on( 'keyup', this.handler );
 			}
-
-			el.on( 'blur', handleBlur );
 		}
+
+		el.on( 'blur', handleBlur );
 	};
 
 	GenericBinding.prototype.unrender = function unrender () {
@@ -12363,15 +12340,12 @@ function delegateHandler ( ev ) {
 
 	// starting with the origin node, walk up the DOM looking for ractive nodes with a matching event listener
 	while ( bubble && node && node !== end ) {
-		var proxy = node._ractive && node._ractive.proxy;
-		if ( proxy && proxy.parentFragment.delegate ) {
-			listeners = proxy.listeners[name];
+		listeners = node._ractive && node._ractive.proxy && node._ractive.proxy.listeners[name];
 
-			if ( listeners ) {
-				listeners.forEach( function (l) {
-					bubble = l.call( node, ev ) !== false && bubble;
-				});
-			}
+		if ( listeners ) {
+			listeners.forEach( function (l) {
+				bubble = l.call( node, ev ) !== false && bubble;
+			});
 		}
 
 		node = node.parentNode;
@@ -14384,6 +14358,12 @@ var Text = (function (Item$$1) {
 var proto$4 = Text.prototype;
 proto$4.bind = proto$4.unbind = proto$4.update = noop;
 
+var camelizeHyphenated = function ( hyphenatedStr ) {
+	return hyphenatedStr.replace( /-([a-zA-Z])/g, function ( match, $1 ) {
+		return $1.toUpperCase();
+	});
+};
+
 var prefix;
 
 if ( !isClient ) {
@@ -14392,22 +14372,23 @@ if ( !isClient ) {
 	var prefixCache = {};
 	var testStyle = createElement( 'div' ).style;
 
-	// technically this also normalizes on hyphenated styles as well
 	prefix = function ( prop ) {
-		if ( !prefixCache[ prop ] ) {
-			var name = hyphenateCamel( prop );
+		prop = camelizeHyphenated( prop );
 
+		if ( !prefixCache[ prop ] ) {
 			if ( testStyle[ prop ] !== undefined ) {
-				prefixCache[ prop ] = name;
+				prefixCache[ prop ] = prop;
 			}
 
 			else {
 				// test vendors...
+				var capped = prop.charAt( 0 ).toUpperCase() + prop.substring( 1 );
+
 				var i = vendors.length;
 				while ( i-- ) {
-					var vendor = "-" + (vendors[i]) + "-" + name;
-					if ( testStyle[ vendor ] !== undefined ) {
-						prefixCache[ prop ] = vendor;
+					var vendor = vendors[i];
+					if ( testStyle[ vendor + capped ] !== undefined ) {
+						prefixCache[ prop ] = vendor + capped;
 						break;
 					}
 				}
@@ -14474,6 +14455,12 @@ function onHide () {
 function onShow () {
 	visible = true;
 }
+
+var unprefixPattern = new RegExp( '^-(?:' + vendors.join( '|' ) + ')-' );
+
+var unprefix = function ( prop ) {
+	return prop.replace( unprefixPattern, '' );
+};
 
 var vendorPattern = new RegExp( '^(?:' + vendors.join( '|' ) + ')([A-Z])' );
 
@@ -14554,8 +14541,14 @@ if ( !isClient ) {
 				duration: style[ TRANSITION_DURATION ]
 			};
 
+			style[ TRANSITION_PROPERTY ] = changedProperties.map( prefix$1 ).map( hyphenate ).join( ',' );
+			var easingName = hyphenate( options.easing || 'linear' );
+			style[ TRANSITION_TIMING_FUNCTION ] = easingName;
+			var cssTiming = style[ TRANSITION_TIMING_FUNCTION ] === easingName;
+			style[ TRANSITION_DURATION ] = ( options.duration / 1000 ) + 's';
+
 			function transitionEndHandler ( event ) {
-				var index = changedProperties.indexOf( event.propertyName );
+				var index = changedProperties.indexOf( camelizeHyphenated( unprefix( event.propertyName ) ) );
 
 				if ( index !== -1 ) {
 					changedProperties.splice( index, 1 );
@@ -14590,16 +14583,10 @@ if ( !isClient ) {
 			}, options.duration + ( options.delay || 0 ) + 50 );
 			t.registerCompleteHandler( transitionDone );
 
-			style[ TRANSITION_PROPERTY ] = changedProperties.join( ',' );
-			var easingName = hyphenate( options.easing || 'linear' );
-			style[ TRANSITION_TIMING_FUNCTION ] = easingName;
-			var cssTiming = style[ TRANSITION_TIMING_FUNCTION ] === easingName;
-			style[ TRANSITION_DURATION ] = ( options.duration / 1000 ) + 's';
-
 			setTimeout( function () {
 				var i = changedProperties.length;
 				var hash;
-				var originalValue = null;
+				var originalValue;
 				var index;
 				var propertiesToTransitionInJs = [];
 				var prop;
@@ -14611,12 +14598,11 @@ if ( !isClient ) {
 					hash = hashPrefix + prop;
 
 					if ( cssTiming && CSS_TRANSITIONS_ENABLED && !cannotUseCssTransitions[ hash ] ) {
-						var initial = style[ prop ];
-						style[ prop ] = to[ prop ];
+						style[ prefix$1( prop ) ] = to[ prop ];
 
 						// If we're not sure if CSS transitions are supported for
 						// this tag/property combo, find out now
-						if ( !( hash in canUseCssTransitions ) ) {
+						if ( !canUseCssTransitions[ hash ] ) {
 							originalValue = t.getStyle( prop );
 
 							// if this property is transitionable in this browser,
@@ -14626,14 +14612,16 @@ if ( !isClient ) {
 
 							// Reset, if we're going to use timers after all
 							if ( cannotUseCssTransitions[ hash ] ) {
-								style[ prop ] = initial;
+								style[ prefix$1( prop ) ] = originalValue;
 							}
 						}
 					}
 
 					if ( !cssTiming || !CSS_TRANSITIONS_ENABLED || cannotUseCssTransitions[ hash ] ) {
 						// we need to fall back to timer-based stuff
-						if ( originalValue === null ) { originalValue = t.getStyle( prop ); }
+						if ( originalValue === undefined ) {
+							originalValue = t.getStyle( prop );
+						}
 
 						// need to remove this from changedProperties, otherwise transitionEndHandler
 						// will get confused
@@ -14646,21 +14634,15 @@ if ( !isClient ) {
 
 						// TODO Determine whether this property is animatable at all
 
-						suffix = /[^\d]*$/.exec( originalValue )[0];
-						interpolator = interpolate( parseFloat( originalValue ), parseFloat( to[ prop ] ) );
+						suffix = /[^\d]*$/.exec( to[ prop ] )[0];
+						interpolator = interpolate( parseFloat( originalValue ), parseFloat( to[ prop ] ) ) || ( function () { return to[ prop ]; } );
 
 						// ...then kick off a timer-based transition
-						if ( interpolator ) {
-							propertiesToTransitionInJs.push({
-								name: prop,
-								interpolator: interpolator,
-								suffix: suffix
-							});
-						} else {
-							style[ prop ] = to[ prop ];
-						}
-
-						originalValue = null;
+						propertiesToTransitionInJs.push({
+							name: prefix$1( prop ),
+							interpolator: interpolator,
+							suffix: suffix
+						});
 					}
 				}
 
@@ -14688,7 +14670,7 @@ if ( !isClient ) {
 							var i = propertiesToTransitionInJs.length;
 							while ( i-- ) {
 								var prop = propertiesToTransitionInJs[i];
-								style[ prop.name ] = prop.interpolator( pos ) + prop.suffix;
+								t.node.style[ prop.name ] = prop.interpolator( pos ) + prop.suffix;
 							}
 						},
 						complete: function complete () {
@@ -14700,11 +14682,7 @@ if ( !isClient ) {
 					jsTransitionsComplete = true;
 				}
 
-				if ( changedProperties.length ) {
-					style[ TRANSITION_PROPERTY ] = changedProperties.join( ',' );
-				} else {
-					style[ TRANSITION_PROPERTY ] = 'none';
-
+				if ( !changedProperties.length ) {
 					// We need to cancel the transitionEndHandler, and deal with
 					// the fact that it will never fire
 					t.node.removeEventListener( TRANSITIONEND, transitionEndHandler, false );
@@ -14717,6 +14695,17 @@ if ( !isClient ) {
 }
 
 var createTransitions$1 = createTransitions;
+
+function resetStyle ( node, style ) {
+	if ( style ) {
+		node.setAttribute( 'style', style );
+	} else {
+		// Next line is necessary, to remove empty style attribute!
+		// See http://stackoverflow.com/a/7167553
+		node.getAttribute( 'style' );
+		node.removeAttribute( 'style' );
+	}
+}
 
 var getComputedStyle = win && win.getComputedStyle;
 var resolved = Promise.resolve();
@@ -14763,6 +14752,16 @@ Transition.prototype.animateStyle = function animateStyle ( style, value, option
 		options = value;
 	}
 
+	// As of 0.3.9, transition authors should supply an `option` object with
+	// `duration` and `easing` properties (and optional `delay`), plus a
+	// callback function that gets called after the animation completes
+
+	// TODO remove this check in a future version
+	if ( !options ) {
+		warnOnceIfDebug( 'The "%s" transition does not supply an options object to `t.animateStyle()`. This will break in a future version of Ractive. For more info see https://github.com/RactiveJS/Ractive/issues/340', this.name );
+		options = this;
+	}
+
 	return new Promise( function (fulfil) {
 		// Edge case - if duration is zero, set style synchronously and complete
 		if ( !options.duration ) {
@@ -14781,27 +14780,17 @@ Transition.prototype.animateStyle = function animateStyle ( style, value, option
 		var i = propertyNames.length;
 		while ( i-- ) {
 			var prop = propertyNames[i];
-			var name = prefix$1( prop );
-
 			var current = computedStyle[ prefix$1( prop ) ];
 
-			// record the starting points
-			var init = this$1.node.style[name];
-			if ( !( name in this$1.originals ) ) { this$1.originals[ name ] = this$1.node.style[ name ]; }
-			this$1.node.style[ name ] = to[ prop ];
-			this$1.targets[ name ] = this$1.node.style[ name ];
-			this$1.node.style[ name ] = init;
+			if ( current === '0px' ) { current = 0; }
 
 			// we need to know if we're actually changing anything
 			if ( current != to[ prop ] ) { // use != instead of !==, so we can compare strings with numbers
-				changedProperties.push( name );
-
-				// if we happened to prefix, make sure there is a properly prefixed value
-				to[ name ] = to[ prop ];
+				changedProperties.push( prop );
 
 				// make the computed style explicit, so we can animate where
 				// e.g. height='auto'
-				this$1.node.style[ name ] = current;
+				this$1.node.style[ prefix$1( prop ) ] = current;
 			}
 		}
 
@@ -14865,7 +14854,8 @@ Transition.prototype.getStyle = function getStyle ( props ) {
 	var computedStyle = getComputedStyle( this.node );
 
 	if ( typeof props === 'string' ) {
-		return computedStyle[ prefix$1( props ) ];
+		var value = computedStyle[ prefix$1( props ) ];
+		return value === '0px' ? 0 : value;
 	}
 
 	if ( !Array.isArray( props ) ) {
@@ -14877,10 +14867,10 @@ Transition.prototype.getStyle = function getStyle ( props ) {
 	var i = props.length;
 	while ( i-- ) {
 		var prop = props[i];
-		var value = computedStyle[ prefix$1( prop ) ];
+		var value$1 = computedStyle[ prefix$1( prop ) ];
 
-		if ( value === '0px' ) { value = 0; }
-		styles[ prop ] = value;
+		if ( value$1 === '0px' ) { value$1 = 0; }
+		styles[ prop ] = value$1;
 	}
 
 	return styles;
@@ -14914,17 +14904,14 @@ Transition.prototype.setStyle = function setStyle ( style, value ) {
 		var this$1 = this;
 
 	if ( typeof style === 'string' ) {
-		var name = prefix$1(  style );
-		if ( !this.originals.hasOwnProperty( name ) ) { this.originals[ name ] = this.node.style[ name ]; }
-		this.node.style[ name ] = value;
-		this.targets[ name ] = this.node.style[ name ];
+		this.node.style[ prefix$1( style ) ] = value;
 	}
 
 	else {
 		var prop;
 		for ( prop in style ) {
 			if ( style.hasOwnProperty( prop ) ) {
-				this$1.setStyle( prop, style[ prop ] );
+				this$1.node.style[ prefix$1( prop ) ] = style[ prop ];
 			}
 		}
 	}
@@ -14965,8 +14952,7 @@ Transition.prototype.start = function start () {
 		var this$1 = this;
 
 	var node = this.node = this.element.node;
-	var originals = this.originals = {};  //= node.getAttribute( 'style' );
-	var targets = this.targets = {};
+	var originalStyle = node.getAttribute( 'style' );
 
 	var completed;
 	var args = this.getParams();
@@ -14982,9 +14968,7 @@ Transition.prototype.start = function start () {
 
 		this$1.onComplete.forEach( function (fn) { return fn(); } );
 		if ( !noReset && this$1.isIntro ) {
-			for ( var k in targets ) {
-				if ( node.style[ k ] === targets[ k ] ) { node.style[ k ] = originals[ k ]; }
-			}
+			resetStyle( node, originalStyle);
 		}
 
 		this$1._manager.remove( this$1 );
@@ -16240,7 +16224,7 @@ function isInstance ( object ) {
 	return object && object instanceof this;
 }
 
-var callsSuper = /super\s*\(|\.call\s*\(\s*this/;
+var callsSuper = /super\s\(|\.call\s*\(\s*this/;
 
 function extend () {
 	var options = [], len = arguments.length;
@@ -16411,7 +16395,7 @@ Object.defineProperties( Ractive, {
 	svg:              { value: svg },
 
 	// version
-	VERSION:          { value: '0.9.2' },
+	VERSION:          { value: '1.0.0-edge' },
 
 	// plugins
 	adaptors:         { writable: true, value: {} },

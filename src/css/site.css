@@ -9,7 +9,6 @@
 @import url("nav.css");
 @import url("sortable.css");
 
-
 ul,li {
     margin: 0;
     padding: 0;
@@ -39,9 +38,9 @@ p {
 }
 
 html, body {
-  height: 100%;
-  font-size: 18px;
-  
+    height: 100%;
+    font-size: 18px;
+
 }
 
 body {
@@ -124,7 +123,7 @@ h3{
 
 #nav-ind {
     background-color: #FFED38;
-/*    background-color: #000;*/
+    /*    background-color: #000;*/
     position: absolute;
     top: 57px;
     left: 0;
@@ -136,9 +135,9 @@ h3{
 
 @media (max-width: 767px) {
     /* hide nav-ind if the menu collapses*/
-   #nav-ind {
-       display: none;
-   }
+    #nav-ind {
+        display: none;
+    }
 }
 
 
@@ -163,9 +162,9 @@ h3{
 
 @media (max-width: 767px) {
     /* hide nav-ind if the menu collapses*/
-   #nav-ind {
-       display: none;
-   }
+    #nav-ind {
+        display: none;
+    }
 }
 
 .title-wrapper .title {
@@ -196,7 +195,7 @@ h2 {
 }
 
 code, pre {
-    
+
 }
 
 pre.programlisting {
@@ -593,7 +592,7 @@ label.label-floatlabel {
     font-size: 12px;
     position: fixed;
     top: -40px;
-      left: 50%;
+    left: 50%;
     transform: translate(-50%, 0);
     background: #FFED38;
     color: #000;
@@ -642,17 +641,17 @@ a.remove-event, a.remove-event:hover  {
 }
 
 .reorder li {
-			cursor: -webkit-grab;
-			cursor: -moz-grab;
-			cursor: grab;
-			/*background-color: #eee;*/
-		}
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+    cursor: grab;
+    /*background-color: #eee;*/
+}
 
-		li.droptarget {
-			border: 1px dashed rgb(200,200,100);
-			background: rgb(240,240,200);
-			background-image: none !important;
-			color: transparent;
+li.droptarget {
+    border: 1px dashed rgb(200,200,100);
+    background: rgb(240,240,200);
+    background-image: none !important;
+    color: transparent;
 }
 .reorder li i.fa, .selector li i.fa {
     position: absolute;
@@ -677,11 +676,11 @@ a.remove-event, a.remove-event:hover  {
 .dropzone .dz-message .note { font-size: 0.8em; font-weight: 200; display: block; margin-top: 1.4rem; }
 
 .dropzone .dz-preview .dz-image:hover {
-     background: linear-gradient(to bottom, #ddd, #6C5C5C);
+    background: linear-gradient(to bottom, #ddd, #6C5C5C);
     cursor: move;
 }
 .dropzone .dz-preview:hover .dz-image {
-     background: linear-gradient(to bottom, #ddd, #6C5C5C);
+    background: linear-gradient(to bottom, #ddd, #6C5C5C);
     cursor: move;
 }
 .dropzone .dz-preview:hover .dz-details, .dropzone .dz-filename:hover *, .dropzone .dz-size:hover * {
@@ -708,19 +707,19 @@ label.required:after {
     font-size: 22px;
 }
 button.delete {
-margin-left: 10px;
-    
+    margin-left: 10px;
+
 }
 .dropzone .dz-preview .dz-error-message {
     top: 150px;
 }
 
 .dropzone .dz-preview.selected .dz-image {
-       outline: none;
+    outline: none;
     border-color: #9ecaed;
     border: 4px solid #9ecaed;
     box-shadow: 0px 0px 10px #007eff;
-    
+
 }
 
 .row .disabled {
@@ -734,7 +733,7 @@ margin-left: 10px;
 }
 
 .select2-container-multi .select2-choices .select2-search-choice {
-    
+
 }
 .table tbody>tr>td {
     vertical-align: middle;
@@ -870,7 +869,7 @@ h1 {
 
 .required {
     color: #f44336;
-    }
+}
 
 .parsley-errors-list {
     color: #ee5f5b;
@@ -896,7 +895,7 @@ body .container .well {
 }
 .dropdown-menu > .active > a, .dropdown-menu > .active > a:hover, .dropdown-menu > .active > a:focus {
     background-color: #e7e7e7;
-        color: #666;
+    color: #666;
 }
 .link, a.link, a.link:active {
     text-decoration: underline;

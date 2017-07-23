@@ -1,0 +1,22 @@
+<div class="row" >
+
+	<h3>Master</h3>
+
+	<table class="table mytable-hover" >
+		<thead>
+			<tr>
+				<th>Name</th>
+			</tr>
+
+		</thead>
+
+		<tbody id="droptarget">
+
+			{{#activities}}
+			<tr on-click="selectActivity(this)" class-active="rowactive" class="drop">
+				<td>{{name}}</td>
+			</tr>		  
+			{{/}}
+		</tbody>
+	</table>
+</div>

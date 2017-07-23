@@ -94,7 +94,6 @@ var sortableDecorator = (function ( global, factory ) {
 		}
 
 		var srcIdx = src.get( '@index' ), destIdx = dest.get( '@index' );
-		console.log("WTF", destIdx)
 		
 		this.classList.add( sortable.targetClass );
 		event.dataTransfer.dropEffect = 'move';

@@ -1,0 +1,28 @@
+<div class="row" >
+	<div class="col-md-12">
+
+		<h3>File uploads</h3>
+
+		<div class="drag"><div class="handle">New doco</div></div>
+		<div>
+			<form action="/file-upload"  id="fileupload-form" class="dropzone">
+				
+				<div class="form-group label-floating">
+                        <label for="documentName" class="control-label">Document Name</label>
+						<input type="text" name="documentName" class="form-control" placeholder="documentName" id="name">
+				</div>
+				
+				<div class="form-group label-floating">
+                        <label for="policyNumeber" class="control-label">Policy Number</label>
+						<input type="text" name="policyNumber" class="form-control" placeholder="policyNumber" id="name">
+				</div>
+				
+				
+				<div class="dropzone-previews dz-clickable"></div>
+			</form>
+
+
+			<button type="submit" class="btn btn-default" on-click="@.submit()">Submit</button>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,33 @@
+<div class="row" >
+	<div class="col-md-12">
+
+		<div class="flip-container">
+
+			<div class="flipper">
+				{{#downloads}}
+				<div class="front shopdrop" flip-in-out>
+
+					<h3>Shop <button on-click="@.downloads()" class="btn">Downloads</button></h3>
+
+					<div class="row">
+						<div class="col-md-12">
+
+							<ul style="margin-left: 30px" class="shopsort">
+								{{#activity.documents}}
+								<li class="ui-state-default drag"><div class="handle">{{name}}</div></li>					
+								{{/}}
+							</ul>
+						</div>
+					</div>
+				</div>
+				{{/}}
+
+				{{^downloads}}
+				<div class="back" flip-in-out>
+					<h3>Downloads <button on-click="@.downloads()" class="btn">Shop</button></h3>
+				</div>
+				{{/}}
+			</div>
+		</div>
+	</div>
+</div>
