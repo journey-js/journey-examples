@@ -11,11 +11,8 @@ import feedback from 'comp/feedback/feedback.js';
 import config from './config/config.js';
 import ajaxPool from './utils/ajaxPool.js';
 import utils from './utils/utils.js';
-import 'lib/dropzone.js';
 
-//let contextPath = "/build";
-		let contextPath = "/journey-examples/";
-//let contextPath = "";
+let contextPath = "/journey-examples/";
 
 menu.init( { target: "#menu", fallbackMenu: "#menu-home" } );
 feedback.init( { target: '#feedback' } );
